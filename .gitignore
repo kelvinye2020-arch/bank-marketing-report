@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.workbuddy/
+$null
+check_fields.py
+check_titles.py
+check_filtered.py
+test_*.py
+skills/
+fund_agent/
+market_dashboard/
+market_dashboard_cloud/
