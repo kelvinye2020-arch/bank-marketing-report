@@ -1,7 +1,7 @@
 """Generate bank marketing report HTML with clickable xiaohongshu links.
 
 Time filter: only include notes that appear to be from the last 3 months.
-Today is 2026-03-15, so valid months are: Jan 2026, Feb 2026, Mar 2026.
+Date is dynamically set to today's date at runtime.
 """
 import json
 import os
@@ -12,16 +12,15 @@ from urllib.parse import quote
 BASE_DIR = r"c:\Users\kelvinyye\WorkBuddy\20260313150001"
 XHS_BASE = "https://www.xiaohongshu.com/explore/"
 
-# --- Time filter config ---
-TODAY = date(2026, 3, 15)
-# Valid months: current month and 2 months back => Jan, Feb, Mar of 2026
+# --- Time filter config (dynamic) ---
+TODAY = date.today()
 CURRENT_YEAR = TODAY.year
 VALID_MONTHS = set()
 for i in range(3):
     d = TODAY.replace(day=1) - timedelta(days=i * 28)  # approximate month back
     VALID_MONTHS.add((d.year, d.month))
-# Ensure we have exactly Jan/Feb/Mar 2026
-VALID_MONTHS = {(2026, 1), (2026, 2), (2026, 3)}
+# Always include current month in case timedelta approximation missed it
+VALID_MONTHS.add((TODAY.year, TODAY.month))
 
 def to_int(v):
     try:
@@ -176,7 +175,7 @@ html = """<!DOCTYPE html>
 
 <div class="header">
   <h1>小红书 · 银行营销活动搜索报告</h1>
-  <p>搜索时间：2026年3月15日 | 数据来源：小红书 | 时间范围：2026年1月 - 3月 | 点击标题可跳转搜索页查找原文</p>
+  <p>搜索时间：""" + f"{TODAY.year}年{TODAY.month}月{TODAY.day}日" + """ | 数据来源：小红书 | 时间范围：""" + f"{min(VALID_MONTHS)[0]}年{min(VALID_MONTHS)[1]}月 - {max(VALID_MONTHS)[0]}年{max(VALID_MONTHS)[1]}月" + """ | 点击标题可跳转搜索页查找原文</p>
 </div>
 
 <div class="container">
