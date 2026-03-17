@@ -201,7 +201,12 @@ html = """<!DOCTYPE html>
 
   <div class="highlight">
     <h3>核心发现</h3>
-    <p>本报告仅收录<strong>2026年1月至3月</strong>的银行营销活动笔记，已过滤掉标题中明确标注为更早月份（如5月、6月、8月等）的旧活动。以<strong>立减金、满减优惠、资产提升返现</strong>为主要形式，<strong>建设银行、招商银行、工商银行、中信银行</strong>是讨论度最高的银行。<br><br><strong>点击标题跳转小红书搜索页，即可快速找到对应笔记进行复核。</strong></p>
+    <ul style="margin:0; padding-left:20px; line-height:2;">
+      <li>📅 <strong>数据范围</strong>：""" + f"{min(VALID_MONTHS)[0]}年{min(VALID_MONTHS)[1]}月 — {max(VALID_MONTHS)[0]}年{max(VALID_MONTHS)[1]}月" + """，聚焦近3个月银行营销动态</li>
+      <li>🏦 <strong>热门银行</strong>：<strong>建设银行、招商银行、工商银行、中信银行</strong>讨论度最高</li>
+      <li>🎯 <strong>主流玩法</strong>：<strong>立减金、满减优惠、资产提升返现</strong>为三大主要形式</li>
+      <li>🔗 <strong>使用方式</strong>：点击标题跳转小红书搜索页，即可快速找到对应笔记进行复核</li>
+    </ul>
   </div>
 
   <!-- ==================== TOP 热门笔记 ==================== -->
