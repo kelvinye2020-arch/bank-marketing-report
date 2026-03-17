@@ -18,8 +18,10 @@
   .section { margin-bottom: 36px; }
   .section-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; padding-left: 12px; border-left: 4px solid #ff2442; }
   .note-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
-  .note-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform .2s, box-shadow .2s; position: relative; }
+  .note-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform .2s, box-shadow .2s; position: relative; }
   .note-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+  .note-card .cover { width: 100%; height: 180px; object-fit: cover; display: block; }
+  .note-card .card-body { padding: 16px 20px 20px; }
   .note-card .title { font-size: 16px; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
   .note-card .title a { color: #333; text-decoration: none; }
   .note-card .title a:hover { color: #ff2442; text-decoration: underline; }
@@ -27,12 +29,16 @@
   .note-card .stats { display: flex; gap: 16px; flex-wrap: wrap; }
   .note-card .stat { font-size: 12px; color: #999; }
   .note-card .stat span { color: #ff2442; font-weight: 600; font-size: 14px; }
-  .note-card .rank { position: absolute; top: 12px; right: 12px; background: #ff2442; color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+  .note-card .rank { position: absolute; top: 12px; right: 12px; background: #ff2442; color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; z-index: 2; }
   .note-card .rank.top3 { background: linear-gradient(135deg, #ff2442, #ff6b81); }
   .note-card .rank.top10 { background: #ff8c00; }
   .note-card .rank.normal { background: #ddd; color: #666; }
-  .note-card .link-btn { display: inline-block; margin-top: 12px; padding: 4px 14px; background: #ff2442; color: #fff; border-radius: 20px; font-size: 12px; text-decoration: none; transition: background .2s; }
-  .note-card .link-btn:hover { background: #e0203a; }
+  .note-card .link-btns { display: flex; gap: 8px; margin-top: 12px; }
+  .note-card .link-btn { display: inline-block; padding: 5px 14px; border-radius: 20px; font-size: 12px; text-decoration: none; transition: all .2s; }
+  .note-card .link-btn.baidu { background: #4e6ef2; color: #fff; }
+  .note-card .link-btn.baidu:hover { background: #3d5bd9; }
+  .note-card .link-btn.xhs { background: #fff0f2; color: #ff2442; border: 1px solid #ffe0e5; }
+  .note-card .link-btn.xhs:hover { background: #ff2442; color: #fff; }
   .footer { text-align: center; padding: 24px; color: #999; font-size: 12px; }
   table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
   th { background: #ff2442; color: #fff; padding: 12px 16px; text-align: left; font-size: 13px; }
@@ -50,7 +56,7 @@
 
 <div class="header">
   <h1>小红书 · 银行营销活动搜索报告</h1>
-  <p>搜索时间：2026年3月17日 | 数据来源：小红书 | 时间范围：2026年1月 - 2026年3月 | 点击标题可跳转搜索页查找原文</p>
+  <p>搜索时间：2026年3月17日 | 数据来源：小红书 | 时间范围：2026年1月 - 2026年3月 | 点击「百度搜索」免登录查看原文</p>
 </div>
 
 <div class="container">
@@ -80,7 +86,7 @@
       <li>📅 <strong>数据范围</strong>：2026年1月 — 2026年3月，聚焦近3个月银行营销动态</li>
       <li>🏦 <strong>热门银行</strong>：<strong>建设银行、招商银行、工商银行、中信银行</strong>讨论度最高</li>
       <li>🎯 <strong>主流玩法</strong>：<strong>立减金、满减优惠、资产提升返现</strong>为三大主要形式</li>
-      <li>🔗 <strong>使用方式</strong>：点击标题跳转小红书搜索页，即可快速找到对应笔记进行复核</li>
+      <li>🔗 <strong>使用方式</strong>：点击「百度搜索」免登录查看原文，或点击「小红书搜索」在站内查找</li>
     </ul>
   </div>
 
@@ -91,197 +97,287 @@
 
       <div class="note-card">
         <div class="rank top3">1</div>
-        <div class="title"><a href="https://www.xiaohongshu.com/search_result?keyword=3%E6%9C%88%E6%9D%A5%E4%BA%86%EF%BC%8C%E8%BF%99%E4%BA%9B%E7%AB%8B%E5%87%8F%F0%9F%A7%A7%E5%88%AB%E5%BF%98%E4%BA%86%E9%A2%86" target="_blank">3月来了，这些立减🧧别忘了领</a></div>
-        <div class="author">作者：吉士汉堡🍔</div>
-        <div class="stats">
-          <div class="stat">点赞 <span>4,732</span></div>
-          <div class="stat">收藏 <span>4,172</span></div>
-          <div class="stat">评论 <span>114</span></div>
-          <div class="stat">分享 <span>1,314</span></div>
+        <img class="cover" src="http://sns-webpic-qc.xhscdn.com/202603151525/d197b21958482fcfa9ea439d117845cc/notes_pre_post/1040g3k031t5h7mf3l80g4buv1drgb43natrvf50!nc_n_webp_mw_1" alt="3月来了，这些立减🧧别忘了领" onerror="this.style.display='none'">
+        <div class="card-body">
+          <div class="title"><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%203%E6%9C%88%E6%9D%A5%E4%BA%86%EF%BC%8C%E8%BF%99%E4%BA%9B%E7%AB%8B%E5%87%8F%F0%9F%A7%A7%E5%88%AB%E5%BF%98%E4%BA%86%E9%A2%86" target="_blank">3月来了，这些立减🧧别忘了领</a></div>
+          <div class="author">作者：吉士汉堡🍔</div>
+          <div class="stats">
+            <div class="stat">点赞 <span>4,732</span></div>
+            <div class="stat">收藏 <span>4,172</span></div>
+            <div class="stat">评论 <span>114</span></div>
+            <div class="stat">分享 <span>1,314</span></div>
+          </div>
+          <div class="link-btns">
+            <a class="link-btn baidu" href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%203%E6%9C%88%E6%9D%A5%E4%BA%86%EF%BC%8C%E8%BF%99%E4%BA%9B%E7%AB%8B%E5%87%8F%F0%9F%A7%A7%E5%88%AB%E5%BF%98%E4%BA%86%E9%A2%86" target="_blank">🔍 百度搜索</a>
+            <a class="link-btn xhs" href="https://www.xiaohongshu.com/search_result?keyword=3%E6%9C%88%E6%9D%A5%E4%BA%86%EF%BC%8C%E8%BF%99%E4%BA%9B%E7%AB%8B%E5%87%8F%F0%9F%A7%A7%E5%88%AB%E5%BF%98%E4%BA%86%E9%A2%86" target="_blank">📕 小红书搜索</a>
+          </div>
         </div>
-        <a class="link-btn" href="https://www.xiaohongshu.com/search_result?keyword=3%E6%9C%88%E6%9D%A5%E4%BA%86%EF%BC%8C%E8%BF%99%E4%BA%9B%E7%AB%8B%E5%87%8F%F0%9F%A7%A7%E5%88%AB%E5%BF%98%E4%BA%86%E9%A2%86" target="_blank">搜索原文 &rarr;</a>
       </div>
 
       <div class="note-card">
         <div class="rank top3">2</div>
-        <div class="title"><a href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%88%E5%90%84%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%F0%9F%8E%89" target="_blank">1月各行立减金活动汇总🎉</a></div>
-        <div class="author">作者：Holly</div>
-        <div class="stats">
-          <div class="stat">点赞 <span>2,096</span></div>
-          <div class="stat">收藏 <span>1,876</span></div>
-          <div class="stat">评论 <span>78</span></div>
-          <div class="stat">分享 <span>500</span></div>
+        <img class="cover" src="http://sns-webpic-qc.xhscdn.com/202603151525/9b99d048f6aedb59fa7125feb3dc771e/1040g00831qov1ssig0405n10nsi1br4l24qdk8g!nc_n_webp_mw_1" alt="1月各行立减金活动汇总🎉" onerror="this.style.display='none'">
+        <div class="card-body">
+          <div class="title"><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%201%E6%9C%88%E5%90%84%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%F0%9F%8E%89" target="_blank">1月各行立减金活动汇总🎉</a></div>
+          <div class="author">作者：Holly</div>
+          <div class="stats">
+            <div class="stat">点赞 <span>2,096</span></div>
+            <div class="stat">收藏 <span>1,876</span></div>
+            <div class="stat">评论 <span>78</span></div>
+            <div class="stat">分享 <span>500</span></div>
+          </div>
+          <div class="link-btns">
+            <a class="link-btn baidu" href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%201%E6%9C%88%E5%90%84%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%F0%9F%8E%89" target="_blank">🔍 百度搜索</a>
+            <a class="link-btn xhs" href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%88%E5%90%84%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%F0%9F%8E%89" target="_blank">📕 小红书搜索</a>
+          </div>
         </div>
-        <a class="link-btn" href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%88%E5%90%84%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%F0%9F%8E%89" target="_blank">搜索原文 &rarr;</a>
       </div>
 
       <div class="note-card">
         <div class="rank top3">3</div>
-        <div class="title"><a href="https://www.xiaohongshu.com/search_result?keyword=3%E6%9C%88%E5%BB%BA%E8%A1%8C%E7%BB%A7%E7%BB%AD0.08%E5%85%858%E8%AF%9D%E8%B4%B9%2F%E6%B2%B9%E8%B4%B9%E7%AD%89%EF%BC%88%E9%99%84%E6%95%99%E7%A8%8B%EF%BC%89" target="_blank">3月建行继续0.08充8话费/油费等（附教程）</a></div>
-        <div class="author">作者：美满</div>
-        <div class="stats">
-          <div class="stat">点赞 <span>1,342</span></div>
-          <div class="stat">收藏 <span>1,366</span></div>
-          <div class="stat">评论 <span>71</span></div>
-          <div class="stat">分享 <span>503</span></div>
+        <img class="cover" src="http://sns-webpic-qc.xhscdn.com/202603151525/c7b594a3a6d704fda0a1ba8a5f1aec41/notes_pre_post/1040g3k031t3f34hkl83g40l5ehf7pv762ofkd4o!nc_n_webp_mw_1" alt="3月建行继续0.08充8话费/油费等（附教程）" onerror="this.style.display='none'">
+        <div class="card-body">
+          <div class="title"><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%203%E6%9C%88%E5%BB%BA%E8%A1%8C%E7%BB%A7%E7%BB%AD0.08%E5%85%858%E8%AF%9D%E8%B4%B9%2F%E6%B2%B9%E8%B4%B9%E7%AD%89%EF%BC%88%E9%99%84%E6%95%99%E7%A8%8B%EF%BC%89" target="_blank">3月建行继续0.08充8话费/油费等（附教程）</a></div>
+          <div class="author">作者：美满</div>
+          <div class="stats">
+            <div class="stat">点赞 <span>1,342</span></div>
+            <div class="stat">收藏 <span>1,366</span></div>
+            <div class="stat">评论 <span>71</span></div>
+            <div class="stat">分享 <span>503</span></div>
+          </div>
+          <div class="link-btns">
+            <a class="link-btn baidu" href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%203%E6%9C%88%E5%BB%BA%E8%A1%8C%E7%BB%A7%E7%BB%AD0.08%E5%85%858%E8%AF%9D%E8%B4%B9%2F%E6%B2%B9%E8%B4%B9%E7%AD%89%EF%BC%88%E9%99%84%E6%95%99%E7%A8%8B%EF%BC%89" target="_blank">🔍 百度搜索</a>
+            <a class="link-btn xhs" href="https://www.xiaohongshu.com/search_result?keyword=3%E6%9C%88%E5%BB%BA%E8%A1%8C%E7%BB%A7%E7%BB%AD0.08%E5%85%858%E8%AF%9D%E8%B4%B9%2F%E6%B2%B9%E8%B4%B9%E7%AD%89%EF%BC%88%E9%99%84%E6%95%99%E7%A8%8B%EF%BC%89" target="_blank">📕 小红书搜索</a>
+          </div>
         </div>
-        <a class="link-btn" href="https://www.xiaohongshu.com/search_result?keyword=3%E6%9C%88%E5%BB%BA%E8%A1%8C%E7%BB%A7%E7%BB%AD0.08%E5%85%858%E8%AF%9D%E8%B4%B9%2F%E6%B2%B9%E8%B4%B9%E7%AD%89%EF%BC%88%E9%99%84%E6%95%99%E7%A8%8B%EF%BC%89" target="_blank">搜索原文 &rarr;</a>
       </div>
 
       <div class="note-card">
         <div class="rank top10">4</div>
-        <div class="title"><a href="https://www.xiaohongshu.com/search_result?keyword=%E4%B8%AD%E5%9B%BD%E9%93%B6%E8%A1%8C%E5%BE%AE%E4%BF%A1%E7%AB%8B%E5%87%8F%E9%87%91" target="_blank">中国银行微信立减金</a></div>
-        <div class="author">作者：bo</div>
-        <div class="stats">
-          <div class="stat">点赞 <span>970</span></div>
-          <div class="stat">收藏 <span>721</span></div>
-          <div class="stat">评论 <span>121</span></div>
-          <div class="stat">分享 <span>511</span></div>
+        <img class="cover" src="http://sns-webpic-qc.xhscdn.com/202603151525/503bdb2143084234c19d76af8fa23208/cdc75595-dcdb-3cf1-a02a-fb84ddd11c29!nc_n_webp_mw_1" alt="中国银行微信立减金" onerror="this.style.display='none'">
+        <div class="card-body">
+          <div class="title"><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E4%B8%AD%E5%9B%BD%E9%93%B6%E8%A1%8C%E5%BE%AE%E4%BF%A1%E7%AB%8B%E5%87%8F%E9%87%91" target="_blank">中国银行微信立减金</a></div>
+          <div class="author">作者：bo</div>
+          <div class="stats">
+            <div class="stat">点赞 <span>970</span></div>
+            <div class="stat">收藏 <span>721</span></div>
+            <div class="stat">评论 <span>121</span></div>
+            <div class="stat">分享 <span>511</span></div>
+          </div>
+          <div class="link-btns">
+            <a class="link-btn baidu" href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E4%B8%AD%E5%9B%BD%E9%93%B6%E8%A1%8C%E5%BE%AE%E4%BF%A1%E7%AB%8B%E5%87%8F%E9%87%91" target="_blank">🔍 百度搜索</a>
+            <a class="link-btn xhs" href="https://www.xiaohongshu.com/search_result?keyword=%E4%B8%AD%E5%9B%BD%E9%93%B6%E8%A1%8C%E5%BE%AE%E4%BF%A1%E7%AB%8B%E5%87%8F%E9%87%91" target="_blank">📕 小红书搜索</a>
+          </div>
         </div>
-        <a class="link-btn" href="https://www.xiaohongshu.com/search_result?keyword=%E4%B8%AD%E5%9B%BD%E9%93%B6%E8%A1%8C%E5%BE%AE%E4%BF%A1%E7%AB%8B%E5%87%8F%E9%87%91" target="_blank">搜索原文 &rarr;</a>
       </div>
 
       <div class="note-card">
         <div class="rank top10">5</div>
-        <div class="title"><a href="https://www.xiaohongshu.com/search_result?keyword=2026.03.03%EF%BC%9A%E5%85%83%E5%AE%B5%E8%8A%82%E5%BF%AB%E4%B9%90%EF%BC%81%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B" target="_blank">2026.03.03：元宵节快乐！招行喊你薅羊毛</a></div>
-        <div class="author">作者：理财进行时</div>
-        <div class="stats">
-          <div class="stat">点赞 <span>868</span></div>
-          <div class="stat">收藏 <span>724</span></div>
-          <div class="stat">评论 <span>62</span></div>
-          <div class="stat">分享 <span>498</span></div>
+        <img class="cover" src="http://sns-webpic-qc.xhscdn.com/202603151525/1689788e8d1caf52aa135db9eb6d6378/spectrum/1040g34o31t7j1j3dme6g5np09lhg9bek75bn750!nc_n_webp_mw_1" alt="2026.03.03：元宵节快乐！招行喊你薅羊毛" onerror="this.style.display='none'">
+        <div class="card-body">
+          <div class="title"><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202026.03.03%EF%BC%9A%E5%85%83%E5%AE%B5%E8%8A%82%E5%BF%AB%E4%B9%90%EF%BC%81%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B" target="_blank">2026.03.03：元宵节快乐！招行喊你薅羊毛</a></div>
+          <div class="author">作者：理财进行时</div>
+          <div class="stats">
+            <div class="stat">点赞 <span>868</span></div>
+            <div class="stat">收藏 <span>724</span></div>
+            <div class="stat">评论 <span>62</span></div>
+            <div class="stat">分享 <span>498</span></div>
+          </div>
+          <div class="link-btns">
+            <a class="link-btn baidu" href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202026.03.03%EF%BC%9A%E5%85%83%E5%AE%B5%E8%8A%82%E5%BF%AB%E4%B9%90%EF%BC%81%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B" target="_blank">🔍 百度搜索</a>
+            <a class="link-btn xhs" href="https://www.xiaohongshu.com/search_result?keyword=2026.03.03%EF%BC%9A%E5%85%83%E5%AE%B5%E8%8A%82%E5%BF%AB%E4%B9%90%EF%BC%81%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B" target="_blank">📕 小红书搜索</a>
+          </div>
         </div>
-        <a class="link-btn" href="https://www.xiaohongshu.com/search_result?keyword=2026.03.03%EF%BC%9A%E5%85%83%E5%AE%B5%E8%8A%82%E5%BF%AB%E4%B9%90%EF%BC%81%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B" target="_blank">搜索原文 &rarr;</a>
       </div>
 
       <div class="note-card">
         <div class="rank top10">6</div>
-        <div class="title"><a href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%881%E6%97%A5-%E5%90%84%E5%A4%A7%E9%93%B6%E8%A1%8C%E4%BC%98%E6%83%A0%E6%B4%BB%E5%8A%A8%E6%97%B6%E9%97%B4%E8%A1%A8" target="_blank">1月1日-各大银行优惠活动时间表</a></div>
-        <div class="author">作者：努力搬砖人</div>
-        <div class="stats">
-          <div class="stat">点赞 <span>811</span></div>
-          <div class="stat">收藏 <span>766</span></div>
-          <div class="stat">评论 <span>0</span></div>
-          <div class="stat">分享 <span>223</span></div>
+        <img class="cover" src="http://sns-webpic-qc.xhscdn.com/202603151525/700b6f5b5fcdd55959d7d70b5151a02d/1040g00831c30hkdhgk005p00pglk5e3psjld1r8!nc_n_webp_mw_1" alt="1月1日-各大银行优惠活动时间表" onerror="this.style.display='none'">
+        <div class="card-body">
+          <div class="title"><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%201%E6%9C%881%E6%97%A5-%E5%90%84%E5%A4%A7%E9%93%B6%E8%A1%8C%E4%BC%98%E6%83%A0%E6%B4%BB%E5%8A%A8%E6%97%B6%E9%97%B4%E8%A1%A8" target="_blank">1月1日-各大银行优惠活动时间表</a></div>
+          <div class="author">作者：努力搬砖人</div>
+          <div class="stats">
+            <div class="stat">点赞 <span>811</span></div>
+            <div class="stat">收藏 <span>766</span></div>
+            <div class="stat">评论 <span>0</span></div>
+            <div class="stat">分享 <span>223</span></div>
+          </div>
+          <div class="link-btns">
+            <a class="link-btn baidu" href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%201%E6%9C%881%E6%97%A5-%E5%90%84%E5%A4%A7%E9%93%B6%E8%A1%8C%E4%BC%98%E6%83%A0%E6%B4%BB%E5%8A%A8%E6%97%B6%E9%97%B4%E8%A1%A8" target="_blank">🔍 百度搜索</a>
+            <a class="link-btn xhs" href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%881%E6%97%A5-%E5%90%84%E5%A4%A7%E9%93%B6%E8%A1%8C%E4%BC%98%E6%83%A0%E6%B4%BB%E5%8A%A8%E6%97%B6%E9%97%B4%E8%A1%A8" target="_blank">📕 小红书搜索</a>
+          </div>
         </div>
-        <a class="link-btn" href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%881%E6%97%A5-%E5%90%84%E5%A4%A7%E9%93%B6%E8%A1%8C%E4%BC%98%E6%83%A0%E6%B4%BB%E5%8A%A8%E6%97%B6%E9%97%B4%E8%A1%A8" target="_blank">搜索原文 &rarr;</a>
       </div>
 
       <div class="note-card">
         <div class="rank top10">7</div>
-        <div class="title"><a href="https://www.xiaohongshu.com/search_result?keyword=2%E6%9C%88%E7%AB%8B%E5%87%8F%E9%87%91%E5%90%88%E9%9B%86%E2%9C%85%EF%BC%88%E5%B7%B2%E6%9B%B4%E6%96%B0%EF%BC%89" target="_blank">2月立减金合集✅（已更新）</a></div>
-        <div class="author">作者：Holly</div>
-        <div class="stats">
-          <div class="stat">点赞 <span>763</span></div>
-          <div class="stat">收藏 <span>714</span></div>
-          <div class="stat">评论 <span>46</span></div>
-          <div class="stat">分享 <span>193</span></div>
+        <img class="cover" src="http://sns-webpic-qc.xhscdn.com/202603151525/a5062d0f503c2022f89bfb9a9536b289/1040g2sg31e4pmcup0k705n10nsi1br4l4qe9898!nc_n_webp_mw_1" alt="2月立减金合集✅（已更新）" onerror="this.style.display='none'">
+        <div class="card-body">
+          <div class="title"><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202%E6%9C%88%E7%AB%8B%E5%87%8F%E9%87%91%E5%90%88%E9%9B%86%E2%9C%85%EF%BC%88%E5%B7%B2%E6%9B%B4%E6%96%B0%EF%BC%89" target="_blank">2月立减金合集✅（已更新）</a></div>
+          <div class="author">作者：Holly</div>
+          <div class="stats">
+            <div class="stat">点赞 <span>763</span></div>
+            <div class="stat">收藏 <span>714</span></div>
+            <div class="stat">评论 <span>46</span></div>
+            <div class="stat">分享 <span>193</span></div>
+          </div>
+          <div class="link-btns">
+            <a class="link-btn baidu" href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202%E6%9C%88%E7%AB%8B%E5%87%8F%E9%87%91%E5%90%88%E9%9B%86%E2%9C%85%EF%BC%88%E5%B7%B2%E6%9B%B4%E6%96%B0%EF%BC%89" target="_blank">🔍 百度搜索</a>
+            <a class="link-btn xhs" href="https://www.xiaohongshu.com/search_result?keyword=2%E6%9C%88%E7%AB%8B%E5%87%8F%E9%87%91%E5%90%88%E9%9B%86%E2%9C%85%EF%BC%88%E5%B7%B2%E6%9B%B4%E6%96%B0%EF%BC%89" target="_blank">📕 小红书搜索</a>
+          </div>
         </div>
-        <a class="link-btn" href="https://www.xiaohongshu.com/search_result?keyword=2%E6%9C%88%E7%AB%8B%E5%87%8F%E9%87%91%E5%90%88%E9%9B%86%E2%9C%85%EF%BC%88%E5%B7%B2%E6%9B%B4%E6%96%B0%EF%BC%89" target="_blank">搜索原文 &rarr;</a>
       </div>
 
       <div class="note-card">
         <div class="rank top10">8</div>
-        <div class="title"><a href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%88%E5%90%84%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B1%87%E6%80%BB%E6%9D%A5%E5%95%A6" target="_blank">1月各银行立减金汇总来啦</a></div>
-        <div class="author">作者：羊毛小行家</div>
-        <div class="stats">
-          <div class="stat">点赞 <span>692</span></div>
-          <div class="stat">收藏 <span>851</span></div>
-          <div class="stat">评论 <span>18</span></div>
-          <div class="stat">分享 <span>189</span></div>
+        <img class="cover" src="http://sns-webpic-qc.xhscdn.com/202603151525/07071614283ecb0ca17db67f94a5ef83/notes_pre_post/1040g3k031qpj119tn46g5q7r7ksdp1s8tjk5up0!nc_n_webp_mw_1" alt="1月各银行立减金汇总来啦" onerror="this.style.display='none'">
+        <div class="card-body">
+          <div class="title"><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%201%E6%9C%88%E5%90%84%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B1%87%E6%80%BB%E6%9D%A5%E5%95%A6" target="_blank">1月各银行立减金汇总来啦</a></div>
+          <div class="author">作者：羊毛小行家</div>
+          <div class="stats">
+            <div class="stat">点赞 <span>692</span></div>
+            <div class="stat">收藏 <span>851</span></div>
+            <div class="stat">评论 <span>18</span></div>
+            <div class="stat">分享 <span>189</span></div>
+          </div>
+          <div class="link-btns">
+            <a class="link-btn baidu" href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%201%E6%9C%88%E5%90%84%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B1%87%E6%80%BB%E6%9D%A5%E5%95%A6" target="_blank">🔍 百度搜索</a>
+            <a class="link-btn xhs" href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%88%E5%90%84%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B1%87%E6%80%BB%E6%9D%A5%E5%95%A6" target="_blank">📕 小红书搜索</a>
+          </div>
         </div>
-        <a class="link-btn" href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%88%E5%90%84%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B1%87%E6%80%BB%E6%9D%A5%E5%95%A6" target="_blank">搜索原文 &rarr;</a>
       </div>
 
       <div class="note-card">
         <div class="rank top10">9</div>
-        <div class="title"><a href="https://www.xiaohongshu.com/search_result?keyword=2%E6%9C%88%E5%90%84%E9%93%B6%E8%A1%8C%E8%B5%84%E4%BA%A7%E6%8F%90%E5%8D%87%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB" target="_blank">2月各银行资产提升活动汇总</a></div>
-        <div class="author">作者：八月小树</div>
-        <div class="stats">
-          <div class="stat">点赞 <span>645</span></div>
-          <div class="stat">收藏 <span>797</span></div>
-          <div class="stat">评论 <span>110</span></div>
-          <div class="stat">分享 <span>584</span></div>
+        <img class="cover" src="http://sns-webpic-qc.xhscdn.com/202603151525/5c88ff6511d4e9c3eb18e143238fc458/1040g2sg31s74n03668a04bs90h63sd9gdbbrcug!nc_n_webp_mw_1" alt="2月各银行资产提升活动汇总" onerror="this.style.display='none'">
+        <div class="card-body">
+          <div class="title"><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202%E6%9C%88%E5%90%84%E9%93%B6%E8%A1%8C%E8%B5%84%E4%BA%A7%E6%8F%90%E5%8D%87%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB" target="_blank">2月各银行资产提升活动汇总</a></div>
+          <div class="author">作者：八月小树</div>
+          <div class="stats">
+            <div class="stat">点赞 <span>645</span></div>
+            <div class="stat">收藏 <span>797</span></div>
+            <div class="stat">评论 <span>110</span></div>
+            <div class="stat">分享 <span>584</span></div>
+          </div>
+          <div class="link-btns">
+            <a class="link-btn baidu" href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202%E6%9C%88%E5%90%84%E9%93%B6%E8%A1%8C%E8%B5%84%E4%BA%A7%E6%8F%90%E5%8D%87%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB" target="_blank">🔍 百度搜索</a>
+            <a class="link-btn xhs" href="https://www.xiaohongshu.com/search_result?keyword=2%E6%9C%88%E5%90%84%E9%93%B6%E8%A1%8C%E8%B5%84%E4%BA%A7%E6%8F%90%E5%8D%87%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB" target="_blank">📕 小红书搜索</a>
+          </div>
         </div>
-        <a class="link-btn" href="https://www.xiaohongshu.com/search_result?keyword=2%E6%9C%88%E5%90%84%E9%93%B6%E8%A1%8C%E8%B5%84%E4%BA%A7%E6%8F%90%E5%8D%87%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB" target="_blank">搜索原文 &rarr;</a>
       </div>
 
       <div class="note-card">
         <div class="rank top10">10</div>
-        <div class="title"><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%BB%BA%E8%AE%BE%E9%93%B6%E8%A1%8C%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%EF%BC%8C%E5%A4%A7%E6%A6%82%E7%99%BE%E5%85%AB%E5%8D%81%E5%9D%97%E9%92%B1%E5%90%A7%E3%80%82" target="_blank">建设银行活动汇总，大概百八十块钱吧。</a></div>
-        <div class="author">作者：糖哥带你薅羊毛</div>
-        <div class="stats">
-          <div class="stat">点赞 <span>645</span></div>
-          <div class="stat">收藏 <span>527</span></div>
-          <div class="stat">评论 <span>65</span></div>
-          <div class="stat">分享 <span>192</span></div>
+        <img class="cover" src="http://sns-webpic-qc.xhscdn.com/202603151525/0e3bbed340d51cbb95c09e01c13a4786/notes_pre_post/1040g3k831n3eb0ns58ag5pp3fg6ndmurpsfnep0!nc_n_webp_mw_1" alt="建设银行活动汇总，大概百八十块钱吧。" onerror="this.style.display='none'">
+        <div class="card-body">
+          <div class="title"><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E5%BB%BA%E8%AE%BE%E9%93%B6%E8%A1%8C%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%EF%BC%8C%E5%A4%A7%E6%A6%82%E7%99%BE%E5%85%AB%E5%8D%81%E5%9D%97%E9%92%B1%E5%90%A7%E3%80%82" target="_blank">建设银行活动汇总，大概百八十块钱吧。</a></div>
+          <div class="author">作者：糖哥带你薅羊毛</div>
+          <div class="stats">
+            <div class="stat">点赞 <span>645</span></div>
+            <div class="stat">收藏 <span>527</span></div>
+            <div class="stat">评论 <span>65</span></div>
+            <div class="stat">分享 <span>192</span></div>
+          </div>
+          <div class="link-btns">
+            <a class="link-btn baidu" href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E5%BB%BA%E8%AE%BE%E9%93%B6%E8%A1%8C%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%EF%BC%8C%E5%A4%A7%E6%A6%82%E7%99%BE%E5%85%AB%E5%8D%81%E5%9D%97%E9%92%B1%E5%90%A7%E3%80%82" target="_blank">🔍 百度搜索</a>
+            <a class="link-btn xhs" href="https://www.xiaohongshu.com/search_result?keyword=%E5%BB%BA%E8%AE%BE%E9%93%B6%E8%A1%8C%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%EF%BC%8C%E5%A4%A7%E6%A6%82%E7%99%BE%E5%85%AB%E5%8D%81%E5%9D%97%E9%92%B1%E5%90%A7%E3%80%82" target="_blank">📕 小红书搜索</a>
+          </div>
         </div>
-        <a class="link-btn" href="https://www.xiaohongshu.com/search_result?keyword=%E5%BB%BA%E8%AE%BE%E9%93%B6%E8%A1%8C%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%EF%BC%8C%E5%A4%A7%E6%A6%82%E7%99%BE%E5%85%AB%E5%8D%81%E5%9D%97%E9%92%B1%E5%90%A7%E3%80%82" target="_blank">搜索原文 &rarr;</a>
       </div>
 
       <div class="note-card">
         <div class="rank normal">11</div>
-        <div class="title"><a href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%88%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%E6%9D%A5%E5%95%A6" target="_blank">1月银行立减金活动汇总来啦</a></div>
-        <div class="author">作者：薇薇省钱购</div>
-        <div class="stats">
-          <div class="stat">点赞 <span>537</span></div>
-          <div class="stat">收藏 <span>695</span></div>
-          <div class="stat">评论 <span>11</span></div>
-          <div class="stat">分享 <span>198</span></div>
+        <img class="cover" src="http://sns-webpic-qc.xhscdn.com/202603151525/b01985e4661e5371eb6233733ec5f834/1040g2sg31r4bfrjr7gdg5nrlqrv08finqso23sg!nc_n_webp_mw_1" alt="1月银行立减金活动汇总来啦" onerror="this.style.display='none'">
+        <div class="card-body">
+          <div class="title"><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%201%E6%9C%88%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%E6%9D%A5%E5%95%A6" target="_blank">1月银行立减金活动汇总来啦</a></div>
+          <div class="author">作者：薇薇省钱购</div>
+          <div class="stats">
+            <div class="stat">点赞 <span>537</span></div>
+            <div class="stat">收藏 <span>695</span></div>
+            <div class="stat">评论 <span>11</span></div>
+            <div class="stat">分享 <span>198</span></div>
+          </div>
+          <div class="link-btns">
+            <a class="link-btn baidu" href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%201%E6%9C%88%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%E6%9D%A5%E5%95%A6" target="_blank">🔍 百度搜索</a>
+            <a class="link-btn xhs" href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%88%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%E6%9D%A5%E5%95%A6" target="_blank">📕 小红书搜索</a>
+          </div>
         </div>
-        <a class="link-btn" href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%88%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%E6%9D%A5%E5%95%A6" target="_blank">搜索原文 &rarr;</a>
       </div>
 
       <div class="note-card">
         <div class="rank normal">12</div>
-        <div class="title"><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%B0%8F%E7%B1%B3SU7%E5%B0%BE%E6%AC%BE%E6%94%AF%E4%BB%98%E4%BC%98%E6%83%A0" target="_blank">小米SU7尾款支付优惠</a></div>
-        <div class="author">作者：呜哇小鳄鱼</div>
-        <div class="stats">
-          <div class="stat">点赞 <span>510</span></div>
-          <div class="stat">收藏 <span>548</span></div>
-          <div class="stat">评论 <span>225</span></div>
-          <div class="stat">分享 <span>933</span></div>
+        <img class="cover" src="http://sns-webpic-qc.xhscdn.com/202603151525/f80bc4126d7245e4ebe94b6abfd4b5ef/1040g2sg31gur3i653ie04a0kf1es3vkorv48en8!nc_n_webp_mw_1" alt="小米SU7尾款支付优惠" onerror="this.style.display='none'">
+        <div class="card-body">
+          <div class="title"><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E5%B0%8F%E7%B1%B3SU7%E5%B0%BE%E6%AC%BE%E6%94%AF%E4%BB%98%E4%BC%98%E6%83%A0" target="_blank">小米SU7尾款支付优惠</a></div>
+          <div class="author">作者：呜哇小鳄鱼</div>
+          <div class="stats">
+            <div class="stat">点赞 <span>510</span></div>
+            <div class="stat">收藏 <span>548</span></div>
+            <div class="stat">评论 <span>225</span></div>
+            <div class="stat">分享 <span>933</span></div>
+          </div>
+          <div class="link-btns">
+            <a class="link-btn baidu" href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E5%B0%8F%E7%B1%B3SU7%E5%B0%BE%E6%AC%BE%E6%94%AF%E4%BB%98%E4%BC%98%E6%83%A0" target="_blank">🔍 百度搜索</a>
+            <a class="link-btn xhs" href="https://www.xiaohongshu.com/search_result?keyword=%E5%B0%8F%E7%B1%B3SU7%E5%B0%BE%E6%AC%BE%E6%94%AF%E4%BB%98%E4%BC%98%E6%83%A0" target="_blank">📕 小红书搜索</a>
+          </div>
         </div>
-        <a class="link-btn" href="https://www.xiaohongshu.com/search_result?keyword=%E5%B0%8F%E7%B1%B3SU7%E5%B0%BE%E6%AC%BE%E6%94%AF%E4%BB%98%E4%BC%98%E6%83%A0" target="_blank">搜索原文 &rarr;</a>
       </div>
 
       <div class="note-card">
         <div class="rank normal">13</div>
-        <div class="title"><a href="https://www.xiaohongshu.com/search_result?keyword=%E6%94%BB%E7%95%A5%EF%BD%9C2026%E5%B9%B4%E4%BF%A1%E7%94%A8%E5%8D%A1%E5%B9%B4%E5%BA%A6%E7%94%B3%E5%8D%A1%E6%94%BB%E7%95%A5%EF%BC%88%E4%B8%8A%E7%AF%87%EF%BC%89" target="_blank">攻略｜2026年信用卡年度申卡攻略（上篇）</a></div>
-        <div class="author">作者：落落说卡</div>
-        <div class="stats">
-          <div class="stat">点赞 <span>426</span></div>
-          <div class="stat">收藏 <span>474</span></div>
-          <div class="stat">评论 <span>62</span></div>
-          <div class="stat">分享 <span>85</span></div>
+        <img class="cover" src="http://sns-webpic-qc.xhscdn.com/202603151525/7ec1fbd8348c558a148de1307f346f5c/spectrum/1040g34o31ru090b1i6005nc3k5a0be5httv5o78!nc_n_webp_mw_1" alt="攻略｜2026年信用卡年度申卡攻略（上篇）" onerror="this.style.display='none'">
+        <div class="card-body">
+          <div class="title"><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E6%94%BB%E7%95%A5%EF%BD%9C2026%E5%B9%B4%E4%BF%A1%E7%94%A8%E5%8D%A1%E5%B9%B4%E5%BA%A6%E7%94%B3%E5%8D%A1%E6%94%BB%E7%95%A5%EF%BC%88%E4%B8%8A%E7%AF%87%EF%BC%89" target="_blank">攻略｜2026年信用卡年度申卡攻略（上篇）</a></div>
+          <div class="author">作者：落落说卡</div>
+          <div class="stats">
+            <div class="stat">点赞 <span>426</span></div>
+            <div class="stat">收藏 <span>474</span></div>
+            <div class="stat">评论 <span>62</span></div>
+            <div class="stat">分享 <span>85</span></div>
+          </div>
+          <div class="link-btns">
+            <a class="link-btn baidu" href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E6%94%BB%E7%95%A5%EF%BD%9C2026%E5%B9%B4%E4%BF%A1%E7%94%A8%E5%8D%A1%E5%B9%B4%E5%BA%A6%E7%94%B3%E5%8D%A1%E6%94%BB%E7%95%A5%EF%BC%88%E4%B8%8A%E7%AF%87%EF%BC%89" target="_blank">🔍 百度搜索</a>
+            <a class="link-btn xhs" href="https://www.xiaohongshu.com/search_result?keyword=%E6%94%BB%E7%95%A5%EF%BD%9C2026%E5%B9%B4%E4%BF%A1%E7%94%A8%E5%8D%A1%E5%B9%B4%E5%BA%A6%E7%94%B3%E5%8D%A1%E6%94%BB%E7%95%A5%EF%BC%88%E4%B8%8A%E7%AF%87%EF%BC%89" target="_blank">📕 小红书搜索</a>
+          </div>
         </div>
-        <a class="link-btn" href="https://www.xiaohongshu.com/search_result?keyword=%E6%94%BB%E7%95%A5%EF%BD%9C2026%E5%B9%B4%E4%BF%A1%E7%94%A8%E5%8D%A1%E5%B9%B4%E5%BA%A6%E7%94%B3%E5%8D%A1%E6%94%BB%E7%95%A5%EF%BC%88%E4%B8%8A%E7%AF%87%EF%BC%89" target="_blank">搜索原文 &rarr;</a>
       </div>
 
       <div class="note-card">
         <div class="rank normal">14</div>
-        <div class="title"><a href="https://www.xiaohongshu.com/search_result?keyword=2026.02.06%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">2026.02.06：招行喊你薅羊毛🐏🐏🐏</a></div>
-        <div class="author">作者：理财进行时</div>
-        <div class="stats">
-          <div class="stat">点赞 <span>425</span></div>
-          <div class="stat">收藏 <span>305</span></div>
-          <div class="stat">评论 <span>69</span></div>
-          <div class="stat">分享 <span>244</span></div>
+        <img class="cover" src="http://sns-webpic-qc.xhscdn.com/202603151525/3cfc56922d5cc40ac6902f8f46dcb4d9/spectrum/1040g0k031s7avdfg56005np09lhg9bekq1smu7g!nc_n_webp_mw_1" alt="2026.02.06：招行喊你薅羊毛🐏🐏🐏" onerror="this.style.display='none'">
+        <div class="card-body">
+          <div class="title"><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202026.02.06%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">2026.02.06：招行喊你薅羊毛🐏🐏🐏</a></div>
+          <div class="author">作者：理财进行时</div>
+          <div class="stats">
+            <div class="stat">点赞 <span>425</span></div>
+            <div class="stat">收藏 <span>305</span></div>
+            <div class="stat">评论 <span>69</span></div>
+            <div class="stat">分享 <span>244</span></div>
+          </div>
+          <div class="link-btns">
+            <a class="link-btn baidu" href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202026.02.06%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">🔍 百度搜索</a>
+            <a class="link-btn xhs" href="https://www.xiaohongshu.com/search_result?keyword=2026.02.06%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">📕 小红书搜索</a>
+          </div>
         </div>
-        <a class="link-btn" href="https://www.xiaohongshu.com/search_result?keyword=2026.02.06%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">搜索原文 &rarr;</a>
       </div>
 
       <div class="note-card">
         <div class="rank normal">15</div>
-        <div class="title"><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%88%9A%E5%8F%91%E7%8E%B0%E7%9A%84%E6%BE%B3%E6%B4%B2%E9%93%B6%E8%A1%8C%E7%BE%8A%E6%AF%9B" target="_blank">刚发现的澳洲银行羊毛</a></div>
-        <div class="author">作者：Jamie在打袋鼠</div>
-        <div class="stats">
-          <div class="stat">点赞 <span>420</span></div>
-          <div class="stat">收藏 <span>477</span></div>
-          <div class="stat">评论 <span>75</span></div>
-          <div class="stat">分享 <span>322</span></div>
+        <img class="cover" src="http://sns-webpic-qc.xhscdn.com/202603151525/e1cc31ca310f656751c1899b8f56a74c/notes_pre_post/1040g3k831th4a0a75s704579rn9ps230910h1v0!nc_n_webp_mw_1" alt="刚发现的澳洲银行羊毛" onerror="this.style.display='none'">
+        <div class="card-body">
+          <div class="title"><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E5%88%9A%E5%8F%91%E7%8E%B0%E7%9A%84%E6%BE%B3%E6%B4%B2%E9%93%B6%E8%A1%8C%E7%BE%8A%E6%AF%9B" target="_blank">刚发现的澳洲银行羊毛</a></div>
+          <div class="author">作者：Jamie在打袋鼠</div>
+          <div class="stats">
+            <div class="stat">点赞 <span>420</span></div>
+            <div class="stat">收藏 <span>477</span></div>
+            <div class="stat">评论 <span>75</span></div>
+            <div class="stat">分享 <span>322</span></div>
+          </div>
+          <div class="link-btns">
+            <a class="link-btn baidu" href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E5%88%9A%E5%8F%91%E7%8E%B0%E7%9A%84%E6%BE%B3%E6%B4%B2%E9%93%B6%E8%A1%8C%E7%BE%8A%E6%AF%9B" target="_blank">🔍 百度搜索</a>
+            <a class="link-btn xhs" href="https://www.xiaohongshu.com/search_result?keyword=%E5%88%9A%E5%8F%91%E7%8E%B0%E7%9A%84%E6%BE%B3%E6%B4%B2%E9%93%B6%E8%A1%8C%E7%BE%8A%E6%AF%9B" target="_blank">📕 小红书搜索</a>
+          </div>
         </div>
-        <a class="link-btn" href="https://www.xiaohongshu.com/search_result?keyword=%E5%88%9A%E5%8F%91%E7%8E%B0%E7%9A%84%E6%BE%B3%E6%B4%B2%E9%93%B6%E8%A1%8C%E7%BE%8A%E6%AF%9B" target="_blank">搜索原文 &rarr;</a>
       </div>
 
     </div>
@@ -289,388 +385,430 @@
 
   <!-- ==================== 全部笔记列表 ==================== -->
   <div class="section">
-    <h2 class="section-title">全部银行活动笔记列表（点击标题搜索原文）</h2>
+    <h2 class="section-title">全部银行活动笔记列表</h2>
     <table>
       <thead>
         <tr>
           <th style="width:40px">#</th>
-          <th>标题（可点击）</th>
-          <th style="width:130px">作者</th>
-          <th style="width:70px">点赞</th>
-          <th style="width:70px">收藏</th>
-          <th style="width:70px">评论</th>
-          <th style="width:70px">分享</th>
+          <th>标题</th>
+          <th style="width:110px">作者</th>
+          <th style="width:60px">点赞</th>
+          <th style="width:60px">收藏</th>
+          <th style="width:60px">评论</th>
+          <th style="width:60px">分享</th>
+          <th style="width:150px">查看原文</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>1</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=3%E6%9C%88%E6%9D%A5%E4%BA%86%EF%BC%8C%E8%BF%99%E4%BA%9B%E7%AB%8B%E5%87%8F%F0%9F%A7%A7%E5%88%AB%E5%BF%98%E4%BA%86%E9%A2%86" target="_blank">3月来了，这些立减🧧别忘了领</a></td>
+          <td>3月来了，这些立减🧧别忘了领</td>
           <td>吉士汉堡🍔</td>
           <td>4,732</td>
           <td>4,172</td>
           <td>114</td>
           <td>1,314</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%203%E6%9C%88%E6%9D%A5%E4%BA%86%EF%BC%8C%E8%BF%99%E4%BA%9B%E7%AB%8B%E5%87%8F%F0%9F%A7%A7%E5%88%AB%E5%BF%98%E4%BA%86%E9%A2%86" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=3%E6%9C%88%E6%9D%A5%E4%BA%86%EF%BC%8C%E8%BF%99%E4%BA%9B%E7%AB%8B%E5%87%8F%F0%9F%A7%A7%E5%88%AB%E5%BF%98%E4%BA%86%E9%A2%86" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>2</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%88%E5%90%84%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%F0%9F%8E%89" target="_blank">1月各行立减金活动汇总🎉</a></td>
+          <td>1月各行立减金活动汇总🎉</td>
           <td>Holly</td>
           <td>2,096</td>
           <td>1,876</td>
           <td>78</td>
           <td>500</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%201%E6%9C%88%E5%90%84%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%F0%9F%8E%89" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%88%E5%90%84%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%F0%9F%8E%89" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>3</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=3%E6%9C%88%E5%BB%BA%E8%A1%8C%E7%BB%A7%E7%BB%AD0.08%E5%85%858%E8%AF%9D%E8%B4%B9%2F%E6%B2%B9%E8%B4%B9%E7%AD%89%EF%BC%88%E9%99%84%E6%95%99%E7%A8%8B%EF%BC%89" target="_blank">3月建行继续0.08充8话费/油费等（附教程）</a></td>
+          <td>3月建行继续0.08充8话费/油费等（附教程）</td>
           <td>美满</td>
           <td>1,342</td>
           <td>1,366</td>
           <td>71</td>
           <td>503</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%203%E6%9C%88%E5%BB%BA%E8%A1%8C%E7%BB%A7%E7%BB%AD0.08%E5%85%858%E8%AF%9D%E8%B4%B9%2F%E6%B2%B9%E8%B4%B9%E7%AD%89%EF%BC%88%E9%99%84%E6%95%99%E7%A8%8B%EF%BC%89" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=3%E6%9C%88%E5%BB%BA%E8%A1%8C%E7%BB%A7%E7%BB%AD0.08%E5%85%858%E8%AF%9D%E8%B4%B9%2F%E6%B2%B9%E8%B4%B9%E7%AD%89%EF%BC%88%E9%99%84%E6%95%99%E7%A8%8B%EF%BC%89" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>4</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E4%B8%AD%E5%9B%BD%E9%93%B6%E8%A1%8C%E5%BE%AE%E4%BF%A1%E7%AB%8B%E5%87%8F%E9%87%91" target="_blank">中国银行微信立减金</a></td>
+          <td>中国银行微信立减金</td>
           <td>bo</td>
           <td>970</td>
           <td>721</td>
           <td>121</td>
           <td>511</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E4%B8%AD%E5%9B%BD%E9%93%B6%E8%A1%8C%E5%BE%AE%E4%BF%A1%E7%AB%8B%E5%87%8F%E9%87%91" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E4%B8%AD%E5%9B%BD%E9%93%B6%E8%A1%8C%E5%BE%AE%E4%BF%A1%E7%AB%8B%E5%87%8F%E9%87%91" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>5</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=2026.03.03%EF%BC%9A%E5%85%83%E5%AE%B5%E8%8A%82%E5%BF%AB%E4%B9%90%EF%BC%81%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B" target="_blank">2026.03.03：元宵节快乐！招行喊你薅羊毛</a></td>
+          <td>2026.03.03：元宵节快乐！招行喊你薅羊毛</td>
           <td>理财进行时</td>
           <td>868</td>
           <td>724</td>
           <td>62</td>
           <td>498</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202026.03.03%EF%BC%9A%E5%85%83%E5%AE%B5%E8%8A%82%E5%BF%AB%E4%B9%90%EF%BC%81%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=2026.03.03%EF%BC%9A%E5%85%83%E5%AE%B5%E8%8A%82%E5%BF%AB%E4%B9%90%EF%BC%81%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>6</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%881%E6%97%A5-%E5%90%84%E5%A4%A7%E9%93%B6%E8%A1%8C%E4%BC%98%E6%83%A0%E6%B4%BB%E5%8A%A8%E6%97%B6%E9%97%B4%E8%A1%A8" target="_blank">1月1日-各大银行优惠活动时间表</a></td>
+          <td>1月1日-各大银行优惠活动时间表</td>
           <td>努力搬砖人</td>
           <td>811</td>
           <td>766</td>
           <td>0</td>
           <td>223</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%201%E6%9C%881%E6%97%A5-%E5%90%84%E5%A4%A7%E9%93%B6%E8%A1%8C%E4%BC%98%E6%83%A0%E6%B4%BB%E5%8A%A8%E6%97%B6%E9%97%B4%E8%A1%A8" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%881%E6%97%A5-%E5%90%84%E5%A4%A7%E9%93%B6%E8%A1%8C%E4%BC%98%E6%83%A0%E6%B4%BB%E5%8A%A8%E6%97%B6%E9%97%B4%E8%A1%A8" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>7</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=2%E6%9C%88%E7%AB%8B%E5%87%8F%E9%87%91%E5%90%88%E9%9B%86%E2%9C%85%EF%BC%88%E5%B7%B2%E6%9B%B4%E6%96%B0%EF%BC%89" target="_blank">2月立减金合集✅（已更新）</a></td>
+          <td>2月立减金合集✅（已更新）</td>
           <td>Holly</td>
           <td>763</td>
           <td>714</td>
           <td>46</td>
           <td>193</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202%E6%9C%88%E7%AB%8B%E5%87%8F%E9%87%91%E5%90%88%E9%9B%86%E2%9C%85%EF%BC%88%E5%B7%B2%E6%9B%B4%E6%96%B0%EF%BC%89" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=2%E6%9C%88%E7%AB%8B%E5%87%8F%E9%87%91%E5%90%88%E9%9B%86%E2%9C%85%EF%BC%88%E5%B7%B2%E6%9B%B4%E6%96%B0%EF%BC%89" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>8</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%88%E5%90%84%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B1%87%E6%80%BB%E6%9D%A5%E5%95%A6" target="_blank">1月各银行立减金汇总来啦</a></td>
+          <td>1月各银行立减金汇总来啦</td>
           <td>羊毛小行家</td>
           <td>692</td>
           <td>851</td>
           <td>18</td>
           <td>189</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%201%E6%9C%88%E5%90%84%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B1%87%E6%80%BB%E6%9D%A5%E5%95%A6" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%88%E5%90%84%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B1%87%E6%80%BB%E6%9D%A5%E5%95%A6" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>9</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=2%E6%9C%88%E5%90%84%E9%93%B6%E8%A1%8C%E8%B5%84%E4%BA%A7%E6%8F%90%E5%8D%87%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB" target="_blank">2月各银行资产提升活动汇总</a></td>
+          <td>2月各银行资产提升活动汇总</td>
           <td>八月小树</td>
           <td>645</td>
           <td>797</td>
           <td>110</td>
           <td>584</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202%E6%9C%88%E5%90%84%E9%93%B6%E8%A1%8C%E8%B5%84%E4%BA%A7%E6%8F%90%E5%8D%87%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=2%E6%9C%88%E5%90%84%E9%93%B6%E8%A1%8C%E8%B5%84%E4%BA%A7%E6%8F%90%E5%8D%87%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>10</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%BB%BA%E8%AE%BE%E9%93%B6%E8%A1%8C%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%EF%BC%8C%E5%A4%A7%E6%A6%82%E7%99%BE%E5%85%AB%E5%8D%81%E5%9D%97%E9%92%B1%E5%90%A7%E3%80%82" target="_blank">建设银行活动汇总，大概百八十块钱吧。</a></td>
+          <td>建设银行活动汇总，大概百八十块钱吧。</td>
           <td>糖哥带你薅羊毛</td>
           <td>645</td>
           <td>527</td>
           <td>65</td>
           <td>192</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E5%BB%BA%E8%AE%BE%E9%93%B6%E8%A1%8C%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%EF%BC%8C%E5%A4%A7%E6%A6%82%E7%99%BE%E5%85%AB%E5%8D%81%E5%9D%97%E9%92%B1%E5%90%A7%E3%80%82" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E5%BB%BA%E8%AE%BE%E9%93%B6%E8%A1%8C%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%EF%BC%8C%E5%A4%A7%E6%A6%82%E7%99%BE%E5%85%AB%E5%8D%81%E5%9D%97%E9%92%B1%E5%90%A7%E3%80%82" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>11</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%88%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%E6%9D%A5%E5%95%A6" target="_blank">1月银行立减金活动汇总来啦</a></td>
+          <td>1月银行立减金活动汇总来啦</td>
           <td>薇薇省钱购</td>
           <td>537</td>
           <td>695</td>
           <td>11</td>
           <td>198</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%201%E6%9C%88%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%E6%9D%A5%E5%95%A6" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%88%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%E6%9D%A5%E5%95%A6" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>12</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%B0%8F%E7%B1%B3SU7%E5%B0%BE%E6%AC%BE%E6%94%AF%E4%BB%98%E4%BC%98%E6%83%A0" target="_blank">小米SU7尾款支付优惠</a></td>
+          <td>小米SU7尾款支付优惠</td>
           <td>呜哇小鳄鱼</td>
           <td>510</td>
           <td>548</td>
           <td>225</td>
           <td>933</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E5%B0%8F%E7%B1%B3SU7%E5%B0%BE%E6%AC%BE%E6%94%AF%E4%BB%98%E4%BC%98%E6%83%A0" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E5%B0%8F%E7%B1%B3SU7%E5%B0%BE%E6%AC%BE%E6%94%AF%E4%BB%98%E4%BC%98%E6%83%A0" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>13</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E6%94%BB%E7%95%A5%EF%BD%9C2026%E5%B9%B4%E4%BF%A1%E7%94%A8%E5%8D%A1%E5%B9%B4%E5%BA%A6%E7%94%B3%E5%8D%A1%E6%94%BB%E7%95%A5%EF%BC%88%E4%B8%8A%E7%AF%87%EF%BC%89" target="_blank">攻略｜2026年信用卡年度申卡攻略（上篇）</a></td>
+          <td>攻略｜2026年信用卡年度申卡攻略（上篇）</td>
           <td>落落说卡</td>
           <td>426</td>
           <td>474</td>
           <td>62</td>
           <td>85</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E6%94%BB%E7%95%A5%EF%BD%9C2026%E5%B9%B4%E4%BF%A1%E7%94%A8%E5%8D%A1%E5%B9%B4%E5%BA%A6%E7%94%B3%E5%8D%A1%E6%94%BB%E7%95%A5%EF%BC%88%E4%B8%8A%E7%AF%87%EF%BC%89" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E6%94%BB%E7%95%A5%EF%BD%9C2026%E5%B9%B4%E4%BF%A1%E7%94%A8%E5%8D%A1%E5%B9%B4%E5%BA%A6%E7%94%B3%E5%8D%A1%E6%94%BB%E7%95%A5%EF%BC%88%E4%B8%8A%E7%AF%87%EF%BC%89" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>14</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=2026.02.06%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">2026.02.06：招行喊你薅羊毛🐏🐏🐏</a></td>
+          <td>2026.02.06：招行喊你薅羊毛🐏🐏🐏</td>
           <td>理财进行时</td>
           <td>425</td>
           <td>305</td>
           <td>69</td>
           <td>244</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202026.02.06%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=2026.02.06%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>15</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%88%9A%E5%8F%91%E7%8E%B0%E7%9A%84%E6%BE%B3%E6%B4%B2%E9%93%B6%E8%A1%8C%E7%BE%8A%E6%AF%9B" target="_blank">刚发现的澳洲银行羊毛</a></td>
+          <td>刚发现的澳洲银行羊毛</td>
           <td>Jamie在打袋鼠</td>
           <td>420</td>
           <td>477</td>
           <td>75</td>
           <td>322</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E5%88%9A%E5%8F%91%E7%8E%B0%E7%9A%84%E6%BE%B3%E6%B4%B2%E9%93%B6%E8%A1%8C%E7%BE%8A%E6%AF%9B" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E5%88%9A%E5%8F%91%E7%8E%B0%E7%9A%84%E6%BE%B3%E6%B4%B2%E9%93%B6%E8%A1%8C%E7%BE%8A%E6%AF%9B" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>16</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=3%E6%9C%88%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E5%90%88%E9%9B%86%E6%94%BB%E7%95%A5%E6%9D%A5%E5%95%A6%F0%9F%8E%89%F0%9F%8E%89" target="_blank">3月立减金活动合集攻略来啦🎉🎉</a></td>
+          <td>3月立减金活动合集攻略来啦🎉🎉</td>
           <td>Rose（薅羊毛版）</td>
           <td>408</td>
           <td>514</td>
           <td>41</td>
           <td>107</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%203%E6%9C%88%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E5%90%88%E9%9B%86%E6%94%BB%E7%95%A5%E6%9D%A5%E5%95%A6%F0%9F%8E%89%F0%9F%8E%89" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=3%E6%9C%88%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E5%90%88%E9%9B%86%E6%94%BB%E7%95%A5%E6%9D%A5%E5%95%A6%F0%9F%8E%89%F0%9F%8E%89" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>17</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E4%B8%AD%E9%93%B660%E6%B8%AF%E5%B8%81%E7%BE%8A%E6%AF%9B%E6%88%91%E7%9C%8B%E8%B0%81%E8%BF%98%E6%B2%A1%E9%A2%86" target="_blank">中银60港币羊毛我看谁还没领</a></td>
+          <td>中银60港币羊毛我看谁还没领</td>
           <td>陆先的笔记</td>
           <td>339</td>
           <td>419</td>
           <td>106</td>
           <td>223</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E4%B8%AD%E9%93%B660%E6%B8%AF%E5%B8%81%E7%BE%8A%E6%AF%9B%E6%88%91%E7%9C%8B%E8%B0%81%E8%BF%98%E6%B2%A1%E9%A2%86" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E4%B8%AD%E9%93%B660%E6%B8%AF%E5%B8%81%E7%BE%8A%E6%AF%9B%E6%88%91%E7%9C%8B%E8%B0%81%E8%BF%98%E6%B2%A1%E9%A2%86" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>18</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=2026%E5%B9%B4%EF%BC%8C%E9%87%8D%E7%82%B9%E8%80%83%E8%99%91%E8%BF%99%E5%87%A0%E5%BC%A0%E4%BF%A1%E7%94%A8%E5%8D%A1%E5%B0%B1%E5%A4%9F%E4%BA%86%E2%9D%97" target="_blank">2026年，重点考虑这几张信用卡就够了❗</a></td>
+          <td>2026年，重点考虑这几张信用卡就够了❗</td>
           <td>酒旅情报局</td>
           <td>320</td>
           <td>345</td>
           <td>29</td>
           <td>48</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202026%E5%B9%B4%EF%BC%8C%E9%87%8D%E7%82%B9%E8%80%83%E8%99%91%E8%BF%99%E5%87%A0%E5%BC%A0%E4%BF%A1%E7%94%A8%E5%8D%A1%E5%B0%B1%E5%A4%9F%E4%BA%86%E2%9D%97" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=2026%E5%B9%B4%EF%BC%8C%E9%87%8D%E7%82%B9%E8%80%83%E8%99%91%E8%BF%99%E5%87%A0%E5%BC%A0%E4%BF%A1%E7%94%A8%E5%8D%A1%E5%B0%B1%E5%A4%9F%E4%BA%86%E2%9D%97" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>19</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=2026%E5%B9%B43%E6%9C%88%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%EF%BC%81" target="_blank">2026年3月银行立减金活动汇总！</a></td>
+          <td>2026年3月银行立减金活动汇总！</td>
           <td>爱薅羊毛的卡卡</td>
           <td>301</td>
           <td>470</td>
           <td>10</td>
           <td>108</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202026%E5%B9%B43%E6%9C%88%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%EF%BC%81" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=2026%E5%B9%B43%E6%9C%88%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%EF%BC%81" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>20</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=3%E6%9C%88%E9%93%B6%E8%A1%8C%E6%B4%BB%E5%8A%A8%E5%93%AA%E5%AE%B6%E5%BC%BA%EF%BC%9F%E8%AF%A6%E6%83%85%E5%88%86%E6%9E%90%F0%9F%93%8A%EF%BC%88%E6%9B%B4%E6%96%B0%E4%B8%AD%EF%BC%89" target="_blank">3月银行活动哪家强？详情分析📊（更新中）</a></td>
+          <td>3月银行活动哪家强？详情分析📊（更新中）</td>
           <td>聚沙成塔</td>
           <td>291</td>
           <td>233</td>
           <td>194</td>
           <td>161</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%203%E6%9C%88%E9%93%B6%E8%A1%8C%E6%B4%BB%E5%8A%A8%E5%93%AA%E5%AE%B6%E5%BC%BA%EF%BC%9F%E8%AF%A6%E6%83%85%E5%88%86%E6%9E%90%F0%9F%93%8A%EF%BC%88%E6%9B%B4%E6%96%B0%E4%B8%AD%EF%BC%89" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=3%E6%9C%88%E9%93%B6%E8%A1%8C%E6%B4%BB%E5%8A%A8%E5%93%AA%E5%AE%B6%E5%BC%BA%EF%BC%9F%E8%AF%A6%E6%83%85%E5%88%86%E6%9E%90%F0%9F%93%8A%EF%BC%88%E6%9B%B4%E6%96%B0%E4%B8%AD%EF%BC%89" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>21</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=2026.03.06%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">2026.03.06：招行喊你薅羊毛🐏🐏🐏</a></td>
+          <td>2026.03.06：招行喊你薅羊毛🐏🐏🐏</td>
           <td>理财进行时</td>
           <td>276</td>
           <td>191</td>
           <td>24</td>
           <td>131</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202026.03.06%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=2026.03.06%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>22</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=2026%E4%B8%AD%E7%9F%B3%E5%8C%96%26%E9%93%B6%E8%A1%8C%E6%B4%BB%E5%8A%A8%E9%9B%86%E9%94%A6" target="_blank">2026中石化&amp;银行活动集锦</a></td>
+          <td>2026中石化&amp;银行活动集锦</td>
           <td>蓝白小咪の法务爸爸</td>
           <td>268</td>
           <td>191</td>
           <td>31</td>
           <td>179</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202026%E4%B8%AD%E7%9F%B3%E5%8C%96%26%E9%93%B6%E8%A1%8C%E6%B4%BB%E5%8A%A8%E9%9B%86%E9%94%A6" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=2026%E4%B8%AD%E7%9F%B3%E5%8C%96%26%E9%93%B6%E8%A1%8C%E6%B4%BB%E5%8A%A8%E9%9B%86%E9%94%A6" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>23</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=2026.01.27%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B~%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">2026.01.27：招行喊你薅羊毛~🐏🐏🐏</a></td>
+          <td>2026.01.27：招行喊你薅羊毛~🐏🐏🐏</td>
           <td>理财进行时</td>
           <td>250</td>
           <td>199</td>
           <td>38</td>
           <td>152</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202026.01.27%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B~%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=2026.01.27%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B~%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>24</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E8%B4%A2%E6%B0%94%E6%B4%BE%E9%80%81%E4%B8%AD%EF%BC%81%E5%92%8C%E6%8B%9B%E8%A1%8C%E8%BF%87%E4%B8%AA%E6%8B%9B%E8%B4%A2%E5%B9%B4%F0%9F%A7%A8" target="_blank">财气派送中！和招行过个招财年🧨</a></td>
+          <td>财气派送中！和招行过个招财年🧨</td>
           <td>好好玩情报局</td>
           <td>239</td>
           <td>37</td>
           <td>5</td>
           <td>6</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E8%B4%A2%E6%B0%94%E6%B4%BE%E9%80%81%E4%B8%AD%EF%BC%81%E5%92%8C%E6%8B%9B%E8%A1%8C%E8%BF%87%E4%B8%AA%E6%8B%9B%E8%B4%A2%E5%B9%B4%F0%9F%A7%A8" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E8%B4%A2%E6%B0%94%E6%B4%BE%E9%80%81%E4%B8%AD%EF%BC%81%E5%92%8C%E6%8B%9B%E8%A1%8C%E8%BF%87%E4%B8%AA%E6%8B%9B%E8%B4%A2%E5%B9%B4%F0%9F%A7%A8" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>25</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%F0%9F%8E%81%20%E6%B1%9F%E8%8B%8F%E9%93%B6%E8%A1%8C%E9%80%81%E6%82%A8%E5%8E%BB%E7%9C%8B%E9%99%88%E7%AB%8B%E5%86%9C%E6%BC%94%E5%94%B1%E4%BC%9A%EF%BC%81" target="_blank">🎁 江苏银行送您去看陈立农演唱会！</a></td>
+          <td>🎁 江苏银行送您去看陈立农演唱会！</td>
           <td>江苏银行App</td>
           <td>235</td>
           <td>103</td>
           <td>202</td>
           <td>104</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%F0%9F%8E%81%20%E6%B1%9F%E8%8B%8F%E9%93%B6%E8%A1%8C%E9%80%81%E6%82%A8%E5%8E%BB%E7%9C%8B%E9%99%88%E7%AB%8B%E5%86%9C%E6%BC%94%E5%94%B1%E4%BC%9A%EF%BC%81" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%F0%9F%8E%81%20%E6%B1%9F%E8%8B%8F%E9%93%B6%E8%A1%8C%E9%80%81%E6%82%A8%E5%8E%BB%E7%9C%8B%E9%99%88%E7%AB%8B%E5%86%9C%E6%BC%94%E5%94%B1%E4%BC%9A%EF%BC%81" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>26</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=2026.03.13%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">2026.03.13：招行喊你薅羊毛🐏🐏🐏</a></td>
+          <td>2026.03.13：招行喊你薅羊毛🐏🐏🐏</td>
           <td>理财进行时</td>
           <td>234</td>
           <td>180</td>
           <td>28</td>
           <td>98</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202026.03.13%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=2026.03.13%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>27</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=2026.03.10%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">2026.03.10：招行喊你薅羊毛🐏🐏🐏</a></td>
+          <td>2026.03.10：招行喊你薅羊毛🐏🐏🐏</td>
           <td>理财进行时</td>
           <td>217</td>
           <td>161</td>
           <td>29</td>
           <td>125</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%202026.03.10%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=2026.03.10%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>28</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E4%B8%AD%E8%A1%8C%E8%BF%98%E4%BF%A1%E7%94%A8%E5%8D%A1%E7%BB%99%E6%88%91%E7%AB%8B%E5%87%8F500" target="_blank">中行还信用卡给我立减500</a></td>
+          <td>中行还信用卡给我立减500</td>
           <td>每天都有晚饭吃</td>
           <td>199</td>
           <td>101</td>
           <td>84</td>
           <td>78</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E4%B8%AD%E8%A1%8C%E8%BF%98%E4%BF%A1%E7%94%A8%E5%8D%A1%E7%BB%99%E6%88%91%E7%AB%8B%E5%87%8F500" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E4%B8%AD%E8%A1%8C%E8%BF%98%E4%BF%A1%E7%94%A8%E5%8D%A1%E7%BB%99%E6%88%91%E7%AB%8B%E5%87%8F500" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>29</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%88%B7%E5%88%B0%E7%9A%84%E4%BA%BA%E6%9C%89%E3%80%8C%E7%A6%8F%E3%80%8D%E5%95%A6%F0%9F%92%B0%E8%87%B3%E9%AB%98600%E5%85%83%E6%94%AF%E4%BB%98%E7%AB%8B%E5%87%8F" target="_blank">刷到的人有「福」啦💰至高600元支付立减</a></td>
+          <td>刷到的人有「福」啦💰至高600元支付立减</td>
           <td>中信银行信用卡</td>
           <td>199</td>
           <td>159</td>
           <td>432</td>
           <td>55</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E5%88%B7%E5%88%B0%E7%9A%84%E4%BA%BA%E6%9C%89%E3%80%8C%E7%A6%8F%E3%80%8D%E5%95%A6%F0%9F%92%B0%E8%87%B3%E9%AB%98600%E5%85%83%E6%94%AF%E4%BB%98%E7%AB%8B%E5%87%8F" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E5%88%B7%E5%88%B0%E7%9A%84%E4%BA%BA%E6%9C%89%E3%80%8C%E7%A6%8F%E3%80%8D%E5%95%A6%F0%9F%92%B0%E8%87%B3%E9%AB%98600%E5%85%83%E6%94%AF%E4%BB%98%E7%AB%8B%E5%87%8F" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>30</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%BB%BA%E8%A1%8C10000-50%E5%8F%88%E6%9C%89%E4%BA%86%EF%BC%8C%E6%9C%89%E6%94%AF%E4%BB%98%E9%9C%80%E6%B1%82%E7%9A%84%E5%8E%BB" target="_blank">建行10000-50又有了，有支付需求的去</a></td>
+          <td>建行10000-50又有了，有支付需求的去</td>
           <td>阿嗖的省钱日记</td>
           <td>179</td>
           <td>94</td>
           <td>123</td>
           <td>121</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E5%BB%BA%E8%A1%8C10000-50%E5%8F%88%E6%9C%89%E4%BA%86%EF%BC%8C%E6%9C%89%E6%94%AF%E4%BB%98%E9%9C%80%E6%B1%82%E7%9A%84%E5%8E%BB" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E5%BB%BA%E8%A1%8C10000-50%E5%8F%88%E6%9C%89%E4%BA%86%EF%BC%8C%E6%9C%89%E6%94%AF%E4%BB%98%E9%9C%80%E6%B1%82%E7%9A%84%E5%8E%BB" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>31</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%BB%BA%E8%AE%BE%E9%93%B6%E8%A1%8C%E4%BF%A1%E7%94%A8%E5%8D%A1%EF%BC%8C60%E5%85%83%E5%BE%AE%E4%BF%A1%E7%AB%8B%E5%87%8F%E9%87%91%E3%80%82" target="_blank">建设银行信用卡，60元微信立减金。</a></td>
+          <td>建设银行信用卡，60元微信立减金。</td>
           <td>糖哥带你薅羊毛</td>
           <td>168</td>
           <td>105</td>
           <td>36</td>
           <td>48</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E5%BB%BA%E8%AE%BE%E9%93%B6%E8%A1%8C%E4%BF%A1%E7%94%A8%E5%8D%A1%EF%BC%8C60%E5%85%83%E5%BE%AE%E4%BF%A1%E7%AB%8B%E5%87%8F%E9%87%91%E3%80%82" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E5%BB%BA%E8%AE%BE%E9%93%B6%E8%A1%8C%E4%BF%A1%E7%94%A8%E5%8D%A1%EF%BC%8C60%E5%85%83%E5%BE%AE%E4%BF%A1%E7%AB%8B%E5%87%8F%E9%87%91%E3%80%82" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>32</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E4%BF%A1%E7%94%A8%E5%8D%A1%E6%B6%88%E8%B4%B9%E8%BF%94%E7%8E%B0%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%F0%9F%93%A3" target="_blank">信用卡消费返现活动汇总📣</a></td>
+          <td>信用卡消费返现活动汇总📣</td>
           <td>地煮家的小绵羊</td>
           <td>164</td>
           <td>149</td>
           <td>23</td>
           <td>51</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E4%BF%A1%E7%94%A8%E5%8D%A1%E6%B6%88%E8%B4%B9%E8%BF%94%E7%8E%B0%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%F0%9F%93%A3" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E4%BF%A1%E7%94%A8%E5%8D%A1%E6%B6%88%E8%B4%B9%E8%BF%94%E7%8E%B0%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%F0%9F%93%A3" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>33</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E4%B8%AD%E4%BF%A1%E8%BF%94%E7%8E%B0%E4%BF%A1%E7%94%A8%E5%8D%A1%E6%B5%8B%E8%AF%84%EF%BC%81%E4%B8%80%E5%B9%B4%E7%99%BD%E6%8D%A12400%E5%85%83%E6%94%BB%E7%95%A5%EF%BC%81" target="_blank">中信返现信用卡测评！一年白捡2400元攻略！</a></td>
+          <td>中信返现信用卡测评！一年白捡2400元攻略！</td>
           <td>帅帅说卡</td>
           <td>143</td>
           <td>189</td>
           <td>69</td>
           <td>133</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E4%B8%AD%E4%BF%A1%E8%BF%94%E7%8E%B0%E4%BF%A1%E7%94%A8%E5%8D%A1%E6%B5%8B%E8%AF%84%EF%BC%81%E4%B8%80%E5%B9%B4%E7%99%BD%E6%8D%A12400%E5%85%83%E6%94%BB%E7%95%A5%EF%BC%81" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E4%B8%AD%E4%BF%A1%E8%BF%94%E7%8E%B0%E4%BF%A1%E7%94%A8%E5%8D%A1%E6%B5%8B%E8%AF%84%EF%BC%81%E4%B8%80%E5%B9%B4%E7%99%BD%E6%8D%A12400%E5%85%83%E6%94%BB%E7%95%A5%EF%BC%81" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>34</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E6%94%AF%E4%BB%98%E5%AE%9D%E8%BF%98%E6%AC%BE%E7%AB%8B%E5%87%8F9%EF%BC%81%E7%9C%8B%E5%9B%BE2" target="_blank">支付宝还款立减9！看图2</a></td>
+          <td>支付宝还款立减9！看图2</td>
           <td>爱玩卡爱羊毛</td>
           <td>116</td>
           <td>83</td>
           <td>35</td>
           <td>27</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E6%94%AF%E4%BB%98%E5%AE%9D%E8%BF%98%E6%AC%BE%E7%AB%8B%E5%87%8F9%EF%BC%81%E7%9C%8B%E5%9B%BE2" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E6%94%AF%E4%BB%98%E5%AE%9D%E8%BF%98%E6%AC%BE%E7%AB%8B%E5%87%8F9%EF%BC%81%E7%9C%8B%E5%9B%BE2" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>35</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E6%8B%9B%E8%A1%8C%F0%9F%92%B3%E4%BF%A1%E7%94%A8%E5%8D%A18%E5%85%83%E7%AB%8B%E5%87%8F%E9%87%91%20.%E9%A2%86%E5%8F%96%E6%95%99%E7%A8%8B%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87" target="_blank">招行💳信用卡8元立减金 .领取教程👇👇👇</a></td>
+          <td>招行💳信用卡8元立减金 .领取教程👇👇👇</td>
           <td>薅羊毛少女大王</td>
           <td>110</td>
           <td>84</td>
           <td>97</td>
           <td>204</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E6%8B%9B%E8%A1%8C%F0%9F%92%B3%E4%BF%A1%E7%94%A8%E5%8D%A18%E5%85%83%E7%AB%8B%E5%87%8F%E9%87%91%20.%E9%A2%86%E5%8F%96%E6%95%99%E7%A8%8B%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E6%8B%9B%E8%A1%8C%F0%9F%92%B3%E4%BF%A1%E7%94%A8%E5%8D%A18%E5%85%83%E7%AB%8B%E5%87%8F%E9%87%91%20.%E9%A2%86%E5%8F%96%E6%95%99%E7%A8%8B%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>36</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%85%A8%E5%9B%BD%E5%86%9C%E8%A1%8C10%E5%85%83%E7%AB%8B%E5%87%8F%E9%87%91" target="_blank">全国农行10元立减金</a></td>
+          <td>全国农行10元立减金</td>
           <td>羊毛党小张哥</td>
           <td>109</td>
           <td>72</td>
           <td>20</td>
           <td>49</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E5%85%A8%E5%9B%BD%E5%86%9C%E8%A1%8C10%E5%85%83%E7%AB%8B%E5%87%8F%E9%87%91" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E5%85%A8%E5%9B%BD%E5%86%9C%E8%A1%8C10%E5%85%83%E7%AB%8B%E5%87%8F%E9%87%91" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>37</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%85%89%E5%A4%A7%E4%BF%A1%E7%94%A8%E5%8D%A1yyds%20%EF%BC%81%EF%BC%81%EF%BC%81" target="_blank">光大信用卡yyds ！！！</a></td>
+          <td>光大信用卡yyds ！！！</td>
           <td>charlene</td>
           <td>97</td>
           <td>30</td>
           <td>29</td>
           <td>50</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E5%85%89%E5%A4%A7%E4%BF%A1%E7%94%A8%E5%8D%A1yyds%20%EF%BC%81%EF%BC%81%EF%BC%81" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E5%85%89%E5%A4%A7%E4%BF%A1%E7%94%A8%E5%8D%A1yyds%20%EF%BC%81%EF%BC%81%EF%BC%81" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>38</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E2%9C%A8%E4%BA%A4%E8%A1%8C%E4%BF%A1%E7%94%A8%E5%8D%A1%E8%96%85%E7%BE%8A%E6%AF%9B%E7%BB%88%E6%9E%81%E6%94%BB%E7%95%A5" target="_blank">✨交行信用卡薅羊毛终极攻略</a></td>
+          <td>✨交行信用卡薅羊毛终极攻略</td>
           <td>省钱的阿二</td>
           <td>86</td>
           <td>72</td>
           <td>12</td>
           <td>30</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E2%9C%A8%E4%BA%A4%E8%A1%8C%E4%BF%A1%E7%94%A8%E5%8D%A1%E8%96%85%E7%BE%8A%E6%AF%9B%E7%BB%88%E6%9E%81%E6%94%BB%E7%95%A5" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E2%9C%A8%E4%BA%A4%E8%A1%8C%E4%BF%A1%E7%94%A8%E5%8D%A1%E8%96%85%E7%BE%8A%E6%AF%9B%E7%BB%88%E6%9E%81%E6%94%BB%E7%95%A5" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>39</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%B7%B2%E7%9C%81200%2B%EF%BC%81%E9%93%B6%E8%81%94%E6%94%BE%E5%A4%A7%E6%8B%9B%E5%A5%BD%E5%A4%9A%E6%BB%A1%E5%87%8F%E5%95%8A" target="_blank">已省200+！银联放大招好多满减啊</a></td>
+          <td>已省200+！银联放大招好多满减啊</td>
           <td>草莓熊本熊</td>
           <td>79</td>
           <td>61</td>
           <td>45</td>
           <td>171</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%E5%B7%B2%E7%9C%81200%2B%EF%BC%81%E9%93%B6%E8%81%94%E6%94%BE%E5%A4%A7%E6%8B%9B%E5%A5%BD%E5%A4%9A%E6%BB%A1%E5%87%8F%E5%95%8A" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%E5%B7%B2%E7%9C%81200%2B%EF%BC%81%E9%93%B6%E8%81%94%E6%94%BE%E5%A4%A7%E6%8B%9B%E5%A5%BD%E5%A4%9A%E6%BB%A1%E5%87%8F%E5%95%8A" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>40</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=01.02%EF%BC%8C%E4%B8%AD%E5%9B%BD%E9%93%B6%E8%A1%8C%EF%BC%8C%E6%94%AF%E4%BB%98%E8%B6%85%E7%BB%99%E5%8A%9B%EF%BC%8C%E6%8A%A5%E5%90%8D" target="_blank">01.02，中国银行，支付超给力，报名</a></td>
+          <td>01.02，中国银行，支付超给力，报名</td>
           <td>省钱路上越走越远的枫舞君</td>
           <td>74</td>
           <td>74</td>
           <td>75</td>
           <td>39</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%2001.02%EF%BC%8C%E4%B8%AD%E5%9B%BD%E9%93%B6%E8%A1%8C%EF%BC%8C%E6%94%AF%E4%BB%98%E8%B6%85%E7%BB%99%E5%8A%9B%EF%BC%8C%E6%8A%A5%E5%90%8D" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=01.02%EF%BC%8C%E4%B8%AD%E5%9B%BD%E9%93%B6%E8%A1%8C%EF%BC%8C%E6%94%AF%E4%BB%98%E8%B6%85%E7%BB%99%E5%8A%9B%EF%BC%8C%E6%8A%A5%E5%90%8D" target="_blank">小红书</a></td>
         </tr>
         <tr>
           <td>41</td>
-          <td><a href="https://www.xiaohongshu.com/search_result?keyword=%F0%9F%8E%86%E4%B8%AD%E4%BF%A1%E9%93%B6%E8%A1%8C%E4%BF%A1%E7%94%A8%E5%8D%A1%E2%80%9C9%E5%85%83%E4%BA%AB%E7%9C%8B%E2%80%9D%E8%B4%BA%E5%B2%81%E7%8C%AE%E7%A4%BC%EF%BC%81" target="_blank">🎆中信银行信用卡“9元享看”贺岁献礼！</a></td>
+          <td>🎆中信银行信用卡“9元享看”贺岁献礼！</td>
           <td>中信银行信用卡</td>
           <td>69</td>
           <td>55</td>
           <td>220</td>
           <td>20</td>
+          <td><a href="https://www.baidu.com/s?wd=site%3Axiaohongshu.com%20%F0%9F%8E%86%E4%B8%AD%E4%BF%A1%E9%93%B6%E8%A1%8C%E4%BF%A1%E7%94%A8%E5%8D%A1%E2%80%9C9%E5%85%83%E4%BA%AB%E7%9C%8B%E2%80%9D%E8%B4%BA%E5%B2%81%E7%8C%AE%E7%A4%BC%EF%BC%81" target="_blank" style="margin-right:8px;">百度</a> <a href="https://www.xiaohongshu.com/search_result?keyword=%F0%9F%8E%86%E4%B8%AD%E4%BF%A1%E9%93%B6%E8%A1%8C%E4%BF%A1%E7%94%A8%E5%8D%A1%E2%80%9C9%E5%85%83%E4%BA%AB%E7%9C%8B%E2%80%9D%E8%B4%BA%E5%B2%81%E7%8C%AE%E7%A4%BC%EF%BC%81" target="_blank">小红书</a></td>
         </tr>
       </tbody>
     </table>
@@ -679,7 +817,7 @@
 </div>
 
 <div class="footer">
-  <p>报告由 WorkBuddy 通过小红书 MCP 自动生成 | 数据仅供参考，具体活动以银行官方公告为准 | 点击标题跳转搜索页复核</p>
+  <p>报告由 WorkBuddy 通过小红书 MCP 自动生成 | 数据仅供参考，具体活动以银行官方公告为准 | 百度搜索无需登录，小红书搜索需登录账号</p>
 </div>
 
 </body>
