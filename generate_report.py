@@ -83,8 +83,6 @@ for i in range(1, 5):
             title_raw = nc.get("displayTitle", "").replace("\u200b", "")
             # Build search URL using title as keyword (more accessible than direct note link)
             search_url = "https://www.xiaohongshu.com/search_result?keyword=" + quote(title_raw, safe="")
-            # Build Baidu search URL (no login required, search title + "小红书" for better results)
-            baidu_url = "https://www.baidu.com/s?wd=" + quote(f"{title_raw} 小红书", safe="")
             all_notes[fid] = {
                 "id": fid,
                 "title": title_raw,
@@ -94,7 +92,6 @@ for i in range(1, 5):
                 "comments": to_int(interact.get("commentCount", "0")),
                 "shares": to_int(interact.get("sharedCount", "0")),
                 "url": search_url,
-                "baidu_url": baidu_url,
                 "direct_url": XHS_BASE + fid,
                 "cover": nc.get("cover", {}).get("urlDefault", ""),
                 "type": nc.get("type", "normal"),
@@ -146,10 +143,8 @@ html = """<!DOCTYPE html>
   .section { margin-bottom: 36px; }
   .section-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; padding-left: 12px; border-left: 4px solid #ff2442; }
   .note-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
-  .note-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform .2s, box-shadow .2s; position: relative; }
+  .note-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform .2s, box-shadow .2s; position: relative; }
   .note-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
-  .note-card .cover { width: 100%; height: 180px; object-fit: cover; display: block; }
-  .note-card .card-body { padding: 16px 20px 20px; }
   .note-card .title { font-size: 16px; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
   .note-card .title a { color: #333; text-decoration: none; }
   .note-card .title a:hover { color: #ff2442; text-decoration: underline; }
@@ -157,16 +152,12 @@ html = """<!DOCTYPE html>
   .note-card .stats { display: flex; gap: 16px; flex-wrap: wrap; }
   .note-card .stat { font-size: 12px; color: #999; }
   .note-card .stat span { color: #ff2442; font-weight: 600; font-size: 14px; }
-  .note-card .rank { position: absolute; top: 12px; right: 12px; background: #ff2442; color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; z-index: 2; }
+  .note-card .rank { position: absolute; top: 12px; right: 12px; background: #ff2442; color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
   .note-card .rank.top3 { background: linear-gradient(135deg, #ff2442, #ff6b81); }
   .note-card .rank.top10 { background: #ff8c00; }
   .note-card .rank.normal { background: #ddd; color: #666; }
-  .note-card .link-btns { display: flex; gap: 8px; margin-top: 12px; }
-  .note-card .link-btn { display: inline-block; padding: 5px 14px; border-radius: 20px; font-size: 12px; text-decoration: none; transition: all .2s; }
-  .note-card .link-btn.baidu { background: #4e6ef2; color: #fff; }
-  .note-card .link-btn.baidu:hover { background: #3d5bd9; }
-  .note-card .link-btn.xhs { background: #fff0f2; color: #ff2442; border: 1px solid #ffe0e5; }
-  .note-card .link-btn.xhs:hover { background: #ff2442; color: #fff; }
+  .note-card .link-btn { display: inline-block; margin-top: 12px; padding: 4px 14px; background: #ff2442; color: #fff; border-radius: 20px; font-size: 12px; text-decoration: none; transition: background .2s; }
+  .note-card .link-btn:hover { background: #e0203a; }
   .footer { text-align: center; padding: 24px; color: #999; font-size: 12px; }
   table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
   th { background: #ff2442; color: #fff; padding: 12px 16px; text-align: left; font-size: 13px; }
@@ -184,7 +175,7 @@ html = """<!DOCTYPE html>
 
 <div class="header">
   <h1>小红书 · 银行营销活动搜索报告</h1>
-  <p>搜索时间：""" + f"{TODAY.year}年{TODAY.month}月{TODAY.day}日" + """ | 数据来源：小红书 | 时间范围：""" + f"{min(VALID_MONTHS)[0]}年{min(VALID_MONTHS)[1]}月 - {max(VALID_MONTHS)[0]}年{max(VALID_MONTHS)[1]}月" + """ | 点击「百度搜索」免登录查看原文</p>
+  <p>搜索时间：""" + f"{TODAY.year}年{TODAY.month}月{TODAY.day}日" + """ | 数据来源：小红书 | 时间范围：""" + f"{min(VALID_MONTHS)[0]}年{min(VALID_MONTHS)[1]}月 - {max(VALID_MONTHS)[0]}年{max(VALID_MONTHS)[1]}月" + """ | 点击标题可跳转搜索页查找原文</p>
 </div>
 
 <div class="container">
@@ -214,7 +205,7 @@ html = """<!DOCTYPE html>
       <li>📅 <strong>数据范围</strong>：""" + f"{min(VALID_MONTHS)[0]}年{min(VALID_MONTHS)[1]}月 — {max(VALID_MONTHS)[0]}年{max(VALID_MONTHS)[1]}月" + """，聚焦近3个月银行营销动态</li>
       <li>🏦 <strong>热门银行</strong>：<strong>建设银行、招商银行、工商银行、中信银行</strong>讨论度最高</li>
       <li>🎯 <strong>主流玩法</strong>：<strong>立减金、满减优惠、资产提升返现</strong>为三大主要形式</li>
-      <li>🔗 <strong>使用方式</strong>：点击「百度搜索」免登录查看原文，或点击「小红书搜索」在站内查找</li>
+      <li>🔗 <strong>使用方式</strong>：点击标题跳转小红书搜索页，即可快速找到对应笔记进行复核</li>
     </ul>
   </div>
 
@@ -227,25 +218,18 @@ html = """<!DOCTYPE html>
 top_notes = bank_notes[:15]
 for i, note in enumerate(top_notes, 1):
     rank_class = "top3" if i <= 3 else ("top10" if i <= 10 else "normal")
-    cover_html = f'<img class="cover" src="{esc(note["cover"])}" alt="{esc(note["title"])}" onerror="this.style.display=\'none\'">' if note.get("cover") else ""
     html += f"""
       <div class="note-card">
         <div class="rank {rank_class}">{i}</div>
-        {cover_html}
-        <div class="card-body">
-          <div class="title"><a href="{esc(note['baidu_url'])}" target="_blank">{esc(note['title'])}</a></div>
-          <div class="author">作者：{esc(note['author'])}</div>
-          <div class="stats">
-            <div class="stat">点赞 <span>{fmt_num(note['likes'])}</span></div>
-            <div class="stat">收藏 <span>{fmt_num(note['collects'])}</span></div>
-            <div class="stat">评论 <span>{fmt_num(note['comments'])}</span></div>
-            <div class="stat">分享 <span>{fmt_num(note['shares'])}</span></div>
-          </div>
-          <div class="link-btns">
-            <a class="link-btn baidu" href="{esc(note['baidu_url'])}" target="_blank">🔍 百度搜索</a>
-            <a class="link-btn xhs" href="{esc(note['url'])}" target="_blank">📕 小红书搜索</a>
-          </div>
+        <div class="title"><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a></div>
+        <div class="author">作者：{esc(note['author'])}</div>
+        <div class="stats">
+          <div class="stat">点赞 <span>{fmt_num(note['likes'])}</span></div>
+          <div class="stat">收藏 <span>{fmt_num(note['collects'])}</span></div>
+          <div class="stat">评论 <span>{fmt_num(note['comments'])}</span></div>
+          <div class="stat">分享 <span>{fmt_num(note['shares'])}</span></div>
         </div>
+        <a class="link-btn" href="{esc(note['url'])}" target="_blank">搜索原文 &rarr;</a>
       </div>
 """
 
@@ -255,18 +239,17 @@ html += """
 
   <!-- ==================== 全部笔记列表 ==================== -->
   <div class="section">
-    <h2 class="section-title">全部银行活动笔记列表</h2>
+    <h2 class="section-title">全部银行活动笔记列表（点击标题搜索原文）</h2>
     <table>
       <thead>
         <tr>
           <th style="width:40px">#</th>
-          <th>标题</th>
-          <th style="width:110px">作者</th>
-          <th style="width:60px">点赞</th>
-          <th style="width:60px">收藏</th>
-          <th style="width:60px">评论</th>
-          <th style="width:60px">分享</th>
-          <th style="width:150px">查看原文</th>
+          <th>标题（可点击）</th>
+          <th style="width:130px">作者</th>
+          <th style="width:70px">点赞</th>
+          <th style="width:70px">收藏</th>
+          <th style="width:70px">评论</th>
+          <th style="width:70px">分享</th>
         </tr>
       </thead>
       <tbody>
@@ -275,13 +258,12 @@ html += """
 for i, note in enumerate(bank_notes, 1):
     html += f"""        <tr>
           <td>{i}</td>
-          <td>{esc(note['title'])}</td>
+          <td><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a></td>
           <td>{esc(note['author'])}</td>
           <td>{fmt_num(note['likes'])}</td>
           <td>{fmt_num(note['collects'])}</td>
           <td>{fmt_num(note['comments'])}</td>
           <td>{fmt_num(note['shares'])}</td>
-          <td><a href="{esc(note['baidu_url'])}" target="_blank" style="margin-right:8px;">百度</a> <a href="{esc(note['url'])}" target="_blank">小红书</a></td>
         </tr>
 """
 
@@ -292,7 +274,7 @@ html += """      </tbody>
 </div>
 
 <div class="footer">
-  <p>报告由 WorkBuddy 通过小红书 MCP 自动生成 | 数据仅供参考，具体活动以银行官方公告为准 | 百度搜索无需登录，小红书搜索需登录账号</p>
+  <p>报告由 WorkBuddy 通过小红书 MCP 自动生成 | 数据仅供参考，具体活动以银行官方公告为准 | 点击标题跳转搜索页复核</p>
 </div>
 
 </body>
