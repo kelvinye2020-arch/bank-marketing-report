@@ -83,8 +83,8 @@ for i in range(1, 5):
             title_raw = nc.get("displayTitle", "").replace("\u200b", "")
             # Build search URL using title as keyword (more accessible than direct note link)
             search_url = "https://www.xiaohongshu.com/search_result?keyword=" + quote(title_raw, safe="")
-            # Build Baidu search URL (no login required, accessible to everyone)
-            baidu_url = "https://www.baidu.com/s?wd=" + quote(f"site:xiaohongshu.com {title_raw}", safe="")
+            # Build Baidu search URL (no login required, search title + "小红书" for better results)
+            baidu_url = "https://www.baidu.com/s?wd=" + quote(f"{title_raw} 小红书", safe="")
             all_notes[fid] = {
                 "id": fid,
                 "title": title_raw,
