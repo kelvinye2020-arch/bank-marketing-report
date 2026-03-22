@@ -44,6 +44,10 @@
   .highlight h3 { color: #d48806; margin-bottom: 8px; }
   .bank-tag { display: inline-block; background: #fff0f2; color: #ff2442; padding: 2px 10px; border-radius: 20px; font-size: 12px; margin-right: 6px; margin-bottom: 6px; border: 1px solid #ffe0e5; }
   .bank-tags { margin-bottom: 10px; }
+  .show-more-btn { display: block; width: 100%; padding: 12px; background: #fff; border: 2px dashed #ff2442; border-radius: 8px; color: #ff2442; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; margin-top: 16px; }
+  .show-more-btn:hover { background: #fff0f2; }
+  .show-more-btn:disabled { display: none; }
+  .hidden-row { display: none; }
 </style>
 </head>
 <body>
@@ -393,7 +397,7 @@
           <td>65</td>
           <td>192</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>11</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=1%E6%9C%88%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%E6%9D%A5%E5%95%A6" target="_blank">1月银行立减金活动汇总来啦</a></td>
           <td>薇薇省钱购</td>
@@ -402,7 +406,7 @@
           <td>11</td>
           <td>198</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>12</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%B0%8F%E7%B1%B3SU7%E5%B0%BE%E6%AC%BE%E6%94%AF%E4%BB%98%E4%BC%98%E6%83%A0" target="_blank">小米SU7尾款支付优惠</a></td>
           <td>呜哇小鳄鱼</td>
@@ -411,7 +415,7 @@
           <td>225</td>
           <td>933</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>13</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E6%94%BB%E7%95%A5%EF%BD%9C2026%E5%B9%B4%E4%BF%A1%E7%94%A8%E5%8D%A1%E5%B9%B4%E5%BA%A6%E7%94%B3%E5%8D%A1%E6%94%BB%E7%95%A5%EF%BC%88%E4%B8%8A%E7%AF%87%EF%BC%89" target="_blank">攻略｜2026年信用卡年度申卡攻略（上篇）</a></td>
           <td>落落说卡</td>
@@ -420,7 +424,7 @@
           <td>62</td>
           <td>85</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>14</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=2026.02.06%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">2026.02.06：招行喊你薅羊毛🐏🐏🐏</a></td>
           <td>理财进行时</td>
@@ -429,7 +433,7 @@
           <td>69</td>
           <td>244</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>15</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%88%9A%E5%8F%91%E7%8E%B0%E7%9A%84%E6%BE%B3%E6%B4%B2%E9%93%B6%E8%A1%8C%E7%BE%8A%E6%AF%9B" target="_blank">刚发现的澳洲银行羊毛</a></td>
           <td>Jamie在打袋鼠</td>
@@ -438,7 +442,7 @@
           <td>75</td>
           <td>322</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>16</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=3%E6%9C%88%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E5%90%88%E9%9B%86%E6%94%BB%E7%95%A5%E6%9D%A5%E5%95%A6%F0%9F%8E%89%F0%9F%8E%89" target="_blank">3月立减金活动合集攻略来啦🎉🎉</a></td>
           <td>Rose（薅羊毛版）</td>
@@ -447,7 +451,7 @@
           <td>41</td>
           <td>107</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>17</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E4%B8%AD%E9%93%B660%E6%B8%AF%E5%B8%81%E7%BE%8A%E6%AF%9B%E6%88%91%E7%9C%8B%E8%B0%81%E8%BF%98%E6%B2%A1%E9%A2%86" target="_blank">中银60港币羊毛我看谁还没领</a></td>
           <td>陆先的笔记</td>
@@ -456,7 +460,7 @@
           <td>106</td>
           <td>223</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>18</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=2026%E5%B9%B4%EF%BC%8C%E9%87%8D%E7%82%B9%E8%80%83%E8%99%91%E8%BF%99%E5%87%A0%E5%BC%A0%E4%BF%A1%E7%94%A8%E5%8D%A1%E5%B0%B1%E5%A4%9F%E4%BA%86%E2%9D%97" target="_blank">2026年，重点考虑这几张信用卡就够了❗</a></td>
           <td>酒旅情报局</td>
@@ -465,7 +469,7 @@
           <td>29</td>
           <td>48</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>19</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=2026%E5%B9%B43%E6%9C%88%E9%93%B6%E8%A1%8C%E7%AB%8B%E5%87%8F%E9%87%91%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%EF%BC%81" target="_blank">2026年3月银行立减金活动汇总！</a></td>
           <td>爱薅羊毛的卡卡</td>
@@ -474,7 +478,7 @@
           <td>10</td>
           <td>108</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>20</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=3%E6%9C%88%E9%93%B6%E8%A1%8C%E6%B4%BB%E5%8A%A8%E5%93%AA%E5%AE%B6%E5%BC%BA%EF%BC%9F%E8%AF%A6%E6%83%85%E5%88%86%E6%9E%90%F0%9F%93%8A%EF%BC%88%E6%9B%B4%E6%96%B0%E4%B8%AD%EF%BC%89" target="_blank">3月银行活动哪家强？详情分析📊（更新中）</a></td>
           <td>聚沙成塔</td>
@@ -483,7 +487,7 @@
           <td>194</td>
           <td>161</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>21</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=2026.03.06%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">2026.03.06：招行喊你薅羊毛🐏🐏🐏</a></td>
           <td>理财进行时</td>
@@ -492,7 +496,7 @@
           <td>24</td>
           <td>131</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>22</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=2026%E4%B8%AD%E7%9F%B3%E5%8C%96%26%E9%93%B6%E8%A1%8C%E6%B4%BB%E5%8A%A8%E9%9B%86%E9%94%A6" target="_blank">2026中石化&amp;银行活动集锦</a></td>
           <td>蓝白小咪の法务爸爸</td>
@@ -501,7 +505,7 @@
           <td>31</td>
           <td>179</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>23</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=2026.01.27%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B~%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">2026.01.27：招行喊你薅羊毛~🐏🐏🐏</a></td>
           <td>理财进行时</td>
@@ -510,7 +514,7 @@
           <td>38</td>
           <td>152</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>24</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E8%B4%A2%E6%B0%94%E6%B4%BE%E9%80%81%E4%B8%AD%EF%BC%81%E5%92%8C%E6%8B%9B%E8%A1%8C%E8%BF%87%E4%B8%AA%E6%8B%9B%E8%B4%A2%E5%B9%B4%F0%9F%A7%A8" target="_blank">财气派送中！和招行过个招财年🧨</a></td>
           <td>好好玩情报局</td>
@@ -519,7 +523,7 @@
           <td>5</td>
           <td>6</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>25</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%F0%9F%8E%81%20%E6%B1%9F%E8%8B%8F%E9%93%B6%E8%A1%8C%E9%80%81%E6%82%A8%E5%8E%BB%E7%9C%8B%E9%99%88%E7%AB%8B%E5%86%9C%E6%BC%94%E5%94%B1%E4%BC%9A%EF%BC%81" target="_blank">🎁 江苏银行送您去看陈立农演唱会！</a></td>
           <td>江苏银行App</td>
@@ -528,7 +532,7 @@
           <td>202</td>
           <td>104</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>26</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=2026.03.13%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">2026.03.13：招行喊你薅羊毛🐏🐏🐏</a></td>
           <td>理财进行时</td>
@@ -537,7 +541,7 @@
           <td>28</td>
           <td>98</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>27</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=2026.03.10%EF%BC%9A%E6%8B%9B%E8%A1%8C%E5%96%8A%E4%BD%A0%E8%96%85%E7%BE%8A%E6%AF%9B%F0%9F%90%8F%F0%9F%90%8F%F0%9F%90%8F" target="_blank">2026.03.10：招行喊你薅羊毛🐏🐏🐏</a></td>
           <td>理财进行时</td>
@@ -546,7 +550,7 @@
           <td>29</td>
           <td>125</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>28</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E4%B8%AD%E8%A1%8C%E8%BF%98%E4%BF%A1%E7%94%A8%E5%8D%A1%E7%BB%99%E6%88%91%E7%AB%8B%E5%87%8F500" target="_blank">中行还信用卡给我立减500</a></td>
           <td>每天都有晚饭吃</td>
@@ -555,7 +559,7 @@
           <td>84</td>
           <td>78</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>29</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%88%B7%E5%88%B0%E7%9A%84%E4%BA%BA%E6%9C%89%E3%80%8C%E7%A6%8F%E3%80%8D%E5%95%A6%F0%9F%92%B0%E8%87%B3%E9%AB%98600%E5%85%83%E6%94%AF%E4%BB%98%E7%AB%8B%E5%87%8F" target="_blank">刷到的人有「福」啦💰至高600元支付立减</a></td>
           <td>中信银行信用卡</td>
@@ -564,7 +568,7 @@
           <td>432</td>
           <td>55</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>30</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%BB%BA%E8%A1%8C10000-50%E5%8F%88%E6%9C%89%E4%BA%86%EF%BC%8C%E6%9C%89%E6%94%AF%E4%BB%98%E9%9C%80%E6%B1%82%E7%9A%84%E5%8E%BB" target="_blank">建行10000-50又有了，有支付需求的去</a></td>
           <td>阿嗖的省钱日记</td>
@@ -573,7 +577,7 @@
           <td>123</td>
           <td>121</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>31</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%BB%BA%E8%AE%BE%E9%93%B6%E8%A1%8C%E4%BF%A1%E7%94%A8%E5%8D%A1%EF%BC%8C60%E5%85%83%E5%BE%AE%E4%BF%A1%E7%AB%8B%E5%87%8F%E9%87%91%E3%80%82" target="_blank">建设银行信用卡，60元微信立减金。</a></td>
           <td>糖哥带你薅羊毛</td>
@@ -582,7 +586,7 @@
           <td>36</td>
           <td>48</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>32</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E4%BF%A1%E7%94%A8%E5%8D%A1%E6%B6%88%E8%B4%B9%E8%BF%94%E7%8E%B0%E6%B4%BB%E5%8A%A8%E6%B1%87%E6%80%BB%F0%9F%93%A3" target="_blank">信用卡消费返现活动汇总📣</a></td>
           <td>地煮家的小绵羊</td>
@@ -591,7 +595,7 @@
           <td>23</td>
           <td>51</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>33</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E4%B8%AD%E4%BF%A1%E8%BF%94%E7%8E%B0%E4%BF%A1%E7%94%A8%E5%8D%A1%E6%B5%8B%E8%AF%84%EF%BC%81%E4%B8%80%E5%B9%B4%E7%99%BD%E6%8D%A12400%E5%85%83%E6%94%BB%E7%95%A5%EF%BC%81" target="_blank">中信返现信用卡测评！一年白捡2400元攻略！</a></td>
           <td>帅帅说卡</td>
@@ -600,7 +604,7 @@
           <td>69</td>
           <td>133</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>34</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E6%94%AF%E4%BB%98%E5%AE%9D%E8%BF%98%E6%AC%BE%E7%AB%8B%E5%87%8F9%EF%BC%81%E7%9C%8B%E5%9B%BE2" target="_blank">支付宝还款立减9！看图2</a></td>
           <td>爱玩卡爱羊毛</td>
@@ -609,7 +613,7 @@
           <td>35</td>
           <td>27</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>35</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E6%8B%9B%E8%A1%8C%F0%9F%92%B3%E4%BF%A1%E7%94%A8%E5%8D%A18%E5%85%83%E7%AB%8B%E5%87%8F%E9%87%91%20.%E9%A2%86%E5%8F%96%E6%95%99%E7%A8%8B%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87" target="_blank">招行💳信用卡8元立减金 .领取教程👇👇👇</a></td>
           <td>薅羊毛少女大王</td>
@@ -618,7 +622,7 @@
           <td>97</td>
           <td>204</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>36</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%85%A8%E5%9B%BD%E5%86%9C%E8%A1%8C10%E5%85%83%E7%AB%8B%E5%87%8F%E9%87%91" target="_blank">全国农行10元立减金</a></td>
           <td>羊毛党小张哥</td>
@@ -627,7 +631,7 @@
           <td>20</td>
           <td>49</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>37</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%85%89%E5%A4%A7%E4%BF%A1%E7%94%A8%E5%8D%A1yyds%20%EF%BC%81%EF%BC%81%EF%BC%81" target="_blank">光大信用卡yyds ！！！</a></td>
           <td>charlene</td>
@@ -636,7 +640,7 @@
           <td>29</td>
           <td>50</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>38</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E2%9C%A8%E4%BA%A4%E8%A1%8C%E4%BF%A1%E7%94%A8%E5%8D%A1%E8%96%85%E7%BE%8A%E6%AF%9B%E7%BB%88%E6%9E%81%E6%94%BB%E7%95%A5" target="_blank">✨交行信用卡薅羊毛终极攻略</a></td>
           <td>省钱的阿二</td>
@@ -645,7 +649,7 @@
           <td>12</td>
           <td>30</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>39</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%E5%B7%B2%E7%9C%81200%2B%EF%BC%81%E9%93%B6%E8%81%94%E6%94%BE%E5%A4%A7%E6%8B%9B%E5%A5%BD%E5%A4%9A%E6%BB%A1%E5%87%8F%E5%95%8A" target="_blank">已省200+！银联放大招好多满减啊</a></td>
           <td>草莓熊本熊</td>
@@ -654,7 +658,7 @@
           <td>45</td>
           <td>171</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>40</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=01.02%EF%BC%8C%E4%B8%AD%E5%9B%BD%E9%93%B6%E8%A1%8C%EF%BC%8C%E6%94%AF%E4%BB%98%E8%B6%85%E7%BB%99%E5%8A%9B%EF%BC%8C%E6%8A%A5%E5%90%8D" target="_blank">01.02，中国银行，支付超给力，报名</a></td>
           <td>省钱路上越走越远的枫舞君</td>
@@ -663,7 +667,7 @@
           <td>75</td>
           <td>39</td>
         </tr>
-        <tr>
+        <tr class="hidden-row">
           <td>41</td>
           <td><a href="https://www.xiaohongshu.com/search_result?keyword=%F0%9F%8E%86%E4%B8%AD%E4%BF%A1%E9%93%B6%E8%A1%8C%E4%BF%A1%E7%94%A8%E5%8D%A1%E2%80%9C9%E5%85%83%E4%BA%AB%E7%9C%8B%E2%80%9D%E8%B4%BA%E5%B2%81%E7%8C%AE%E7%A4%BC%EF%BC%81" target="_blank">🎆中信银行信用卡“9元享看”贺岁献礼！</a></td>
           <td>中信银行信用卡</td>
@@ -674,6 +678,7 @@
         </tr>
       </tbody>
     </table>
+    <button class="show-more-btn" id="showMoreBtn" onclick="showAllRows()">展开更多（还有 31 条）</button>
   </div>
 
 </div>
@@ -681,6 +686,14 @@
 <div class="footer">
   <p>报告由 WorkBuddy 通过小红书 MCP 自动生成 | 数据仅供参考，具体活动以银行官方公告为准 | 点击标题跳转搜索页复核</p>
 </div>
+
+<script>
+function showAllRows() {
+    const hiddenRows = document.querySelectorAll('.hidden-row');
+    hiddenRows.forEach(row => row.classList.remove('hidden-row'));
+    document.querySelector('.show-more-btn').style.display = 'none';
+}
+</script>
 
 </body>
 </html>
