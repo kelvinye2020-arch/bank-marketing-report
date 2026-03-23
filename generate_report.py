@@ -169,6 +169,10 @@ html = """<!DOCTYPE html>
   .highlight h3 { color: #d48806; margin-bottom: 8px; }
   .bank-tag { display: inline-block; background: #fff0f2; color: #ff2442; padding: 2px 10px; border-radius: 20px; font-size: 12px; margin-right: 6px; margin-bottom: 6px; border: 1px solid #ffe0e5; }
   .bank-tags { margin-bottom: 10px; }
+  .show-more-btn { display: block; width: 100%; padding: 12px; background: #fff; border: 2px dashed #ff2442; border-radius: 8px; color: #ff2442; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; margin-top: 16px; }
+  .show-more-btn:hover { background: #fff0f2; }
+  .show-more-btn:disabled { display: none; }
+  .hidden-row { display: none; }
 </style>
 </head>
 <body>
@@ -255,8 +259,12 @@ html += """
       <tbody>
 """
 
+VISIBLE_ROWS = 10  # 默认显示前10行，其余折叠
+hidden_count = max(0, len(bank_notes) - VISIBLE_ROWS)
+
 for i, note in enumerate(bank_notes, 1):
-    html += f"""        <tr>
+    row_class = ' class="hidden-row"' if i > VISIBLE_ROWS else ''
+    html += f"""        <tr{row_class}>
           <td>{i}</td>
           <td><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a></td>
           <td>{esc(note['author'])}</td>
@@ -269,13 +277,27 @@ for i, note in enumerate(bank_notes, 1):
 
 html += """      </tbody>
     </table>
-  </div>
+"""
+
+if hidden_count > 0:
+    html += f"""    <button class="show-more-btn" id="showMoreBtn" onclick="showAllRows()">展开更多（还有 {hidden_count} 条）</button>
+"""
+
+html += """  </div>
 
 </div>
 
 <div class="footer">
   <p>报告由 WorkBuddy 通过小红书 MCP 自动生成 | 数据仅供参考，具体活动以银行官方公告为准 | 点击标题跳转搜索页复核</p>
 </div>
+
+<script>
+function showAllRows() {
+    const hiddenRows = document.querySelectorAll('.hidden-row');
+    hiddenRows.forEach(row => row.classList.remove('hidden-row'));
+    document.querySelector('.show-more-btn').style.display = 'none';
+}
+</script>
 
 </body>
 </html>
