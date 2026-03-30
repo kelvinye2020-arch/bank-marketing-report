@@ -1,26 +1,65 @@
 """Generate bank marketing report HTML with clickable xiaohongshu links.
 
-Time filter: only include notes that appear to be from the last 3 months.
+Time filter: strict 3 calendar months based on note publish date (extracted from note ID).
 Date is dynamically set to today's date at runtime.
+
+Features:
+- Publish date extracted from note ID (hex timestamp in first 8 chars)
+- Direct note links (xiaohongshu.com/explore/{id}) instead of search page
+- Quality filter: minimum likes threshold (MIN_LIKES)
+- New note highlight: notes published within rolling 7 days marked with 🆕
+- Focus banks: spotlight notes about key banks (FOCUS_BANKS) with ⭐
 """
 import json
 import os
 import re
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from urllib.parse import quote
 
 BASE_DIR = r"c:\Users\kelvinyye\WorkBuddy\20260313150001"
 XHS_BASE = "https://www.xiaohongshu.com/explore/"
+SEARCH_FILES = 6  # search_result_1.json .. search_result_6.json
 
-# --- Time filter config (dynamic) ---
+# --- Quality filter ---
+MIN_LIKES = 50  # Minimum likes to include a note
+
+# --- Focus banks (highlighted with ⭐) ---
+FOCUS_BANKS = {
+    "中国银行": ["中国银行", "中行", "中银"],
+    "工商银行": ["工商银行", "工行", "宇宙行"],
+}
+
+# --- Time filter config (strict 3 calendar months from note ID timestamp) ---
 TODAY = date.today()
 CURRENT_YEAR = TODAY.year
-VALID_MONTHS = set()
-for i in range(3):
-    d = TODAY.replace(day=1) - timedelta(days=i * 28)  # approximate month back
-    VALID_MONTHS.add((d.year, d.month))
-# Always include current month in case timedelta approximation missed it
-VALID_MONTHS.add((TODAY.year, TODAY.month))
+# Strict range: 1st day of (current_month - 2) to last day of current month
+# e.g. 2026-03-30 → 2026-01-01 ~ 2026-03-31
+_first_of_month = TODAY.replace(day=1)
+DATE_START = (_first_of_month - timedelta(days=59)).replace(day=1)  # ~2 months back, then snap to 1st
+DATE_END = (_first_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)  # last day of current month
+
+
+def note_id_to_date(note_id):
+    """Extract publish date from xiaohongshu note ID (first 8 hex chars = unix timestamp)."""
+    try:
+        ts = int(note_id[:8], 16)
+        return datetime.fromtimestamp(ts).date()
+    except (ValueError, OSError):
+        return None
+
+
+def note_id_to_datestr(note_id):
+    """Return formatted date string like '2026-03-01' from note ID."""
+    d = note_id_to_date(note_id)
+    return d.strftime("%Y-%m-%d") if d else ""
+
+
+def is_recent_by_id(note_id):
+    """Check if note was published within the strict 3-month window."""
+    d = note_id_to_date(note_id)
+    if d is None:
+        return False  # Can't parse → exclude
+    return DATE_START <= d <= DATE_END
 
 def to_int(v):
     try:
@@ -28,50 +67,41 @@ def to_int(v):
     except:
         return 0
 
-def is_recent(title):
-    """Check if a note title refers to a recent time period (last 3 months).
-    
-    Strategy:
-    1. If title has explicit year+month (e.g. "2026年3月", "2026.03"), check against valid range.
-    2. If title has month only (e.g. "3月"), accept months 1-3 (likely current year), reject 4-12.
-    3. If title has "2026" but no month, accept it (current year content).
-    4. If no time info at all, accept it (can't determine, keep for completeness).
-    """
-    # Pattern 1: explicit year + month  e.g. "2026年3月", "2026.03.03", "2026/01"
-    year_month_matches = re.findall(r'(20\d{2})[\.\-/年](\d{1,2})', title)
-    if year_month_matches:
-        for ym, mm in year_month_matches:
-            y, m = int(ym), int(mm)
-            if 1 <= m <= 12 and (y, m) in VALID_MONTHS:
-                return True
-        # Has explicit year+month but none matched valid range
+
+# --- "New" definition: published within rolling 7 days ---
+NEW_WINDOW_DAYS = 7
+NEW_CUTOFF = TODAY - timedelta(days=NEW_WINDOW_DAYS)
+
+def is_new_note(note_id):
+    """Check if note was published within the rolling 7-day window."""
+    d = note_id_to_date(note_id)
+    if d is None:
         return False
-    
-    # Pattern 2: month only  e.g. "3月来了", "8月各银行"
-    month_matches = re.findall(r'(\d{1,2})月', title)
-    if month_matches:
-        for mm in month_matches:
-            m = int(mm)
-            if 1 <= m <= 12:
-                # Only accept months that fall within our 3-month window
-                if any(vm == m for _, vm in VALID_MONTHS):
-                    return True
-        # Has month reference but all outside valid range
-        return False
-    
-    # Pattern 3: has "2026" somewhere -> current year content
-    if "2026" in title:
-        return True
-    
-    # Pattern 4: no time info at all -> keep it (can't determine)
-    return True
+    return NEW_CUTOFF <= d <= TODAY
+
+# --- Determine focus bank for a note ---
+def get_focus_bank(title):
+    """Return focus bank name if title matches, else None."""
+    t = title.lower()
+    for bank_name, aliases in FOCUS_BANKS.items():
+        if any(alias in t for alias in aliases):
+            return bank_name
+    return None
 
 # Load all search results
 all_notes = {}
-for i in range(1, 5):
+for i in range(1, SEARCH_FILES + 1):
     path = os.path.join(BASE_DIR, f"search_result_{i}.json")
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
+    if not os.path.exists(path):
+        continue
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            content = f.read().strip()
+            if not content:
+                continue
+            data = json.loads(content)
+    except (json.JSONDecodeError, IOError):
+        continue
     for feed in data.get("data", {}).get("feeds", []):
         if feed.get("modelType") != "note":
             continue
@@ -81,26 +111,28 @@ for i in range(1, 5):
             user = nc.get("user", {})
             interact = nc.get("interactInfo", {})
             title_raw = nc.get("displayTitle", "").replace("\u200b", "")
-            # Build search URL using title as keyword (more accessible than direct note link)
-            search_url = "https://www.xiaohongshu.com/search_result?keyword=" + quote(title_raw, safe="")
+            likes = to_int(interact.get("likedCount", "0"))
+            publish_date = note_id_to_datestr(fid)
             all_notes[fid] = {
                 "id": fid,
                 "title": title_raw,
                 "author": user.get("nickname", "Unknown"),
-                "likes": to_int(interact.get("likedCount", "0")),
+                "likes": likes,
                 "collects": to_int(interact.get("collectedCount", "0")),
                 "comments": to_int(interact.get("commentCount", "0")),
                 "shares": to_int(interact.get("sharedCount", "0")),
-                "url": search_url,
-                "direct_url": XHS_BASE + fid,
+                "url": XHS_BASE + fid,
                 "cover": nc.get("cover", {}).get("urlDefault", ""),
                 "type": nc.get("type", "normal"),
+                "is_new": is_new_note(fid),
+                "focus_bank": get_focus_bank(title_raw),
+                "publish_date": publish_date,
             }
 
 # Sort by likes descending
 notes = sorted(all_notes.values(), key=lambda x: x["likes"], reverse=True)
 
-# Filter: bank-related AND recent (last 3 months)
+# Filter: bank-related AND recent (last 3 months) AND minimum likes
 def is_bank_related(note):
     title = note["title"].lower()
     keywords = ["银行", "立减", "信用卡", "满减", "支付", "羊毛", "返现", "活动汇总", "月月刷", "充值",
@@ -109,8 +141,17 @@ def is_bank_related(note):
                  "银联", "资产提升", "消费达标", "龙支付", "云闪付"]
     return any(k in title for k in keywords)
 
-bank_notes = [n for n in notes if is_bank_related(n) and is_recent(n["title"])]
-filtered_out = [n for n in notes if is_bank_related(n) and not is_recent(n["title"])]
+bank_notes = [n for n in notes if is_bank_related(n) and is_recent_by_id(n["id"]) and n["likes"] >= MIN_LIKES]
+filtered_low_likes = [n for n in notes if is_bank_related(n) and is_recent_by_id(n["id"]) and n["likes"] < MIN_LIKES]
+filtered_out = [n for n in notes if is_bank_related(n) and not is_recent_by_id(n["id"])]
+
+# Stats
+new_count = sum(1 for n in bank_notes if n["is_new"])
+focus_count = sum(1 for n in bank_notes if n["focus_bank"])
+focus_bank_counts = {}
+for n in bank_notes:
+    if n["focus_bank"]:
+        focus_bank_counts[n["focus_bank"]] = focus_bank_counts.get(n["focus_bank"], 0) + 1
 
 def esc(s):
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
@@ -169,6 +210,22 @@ html = """<!DOCTYPE html>
   .highlight h3 { color: #d48806; margin-bottom: 8px; }
   .bank-tag { display: inline-block; background: #fff0f2; color: #ff2442; padding: 2px 10px; border-radius: 20px; font-size: 12px; margin-right: 6px; margin-bottom: 6px; border: 1px solid #ffe0e5; }
   .bank-tags { margin-bottom: 10px; }
+  .new-badge { display: inline-block; background: #ff2442; color: #fff; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-left: 6px; vertical-align: middle; animation: pulse 2s infinite; }
+  .focus-badge { display: inline-block; background: linear-gradient(135deg, #ffd700, #ffb300); color: #7c5800; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-left: 6px; vertical-align: middle; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+  .focus-section { background: linear-gradient(135deg, #fffbeb 0%, #fff7d6 100%); border: 1px solid #fde68a; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+  .focus-section h3 { color: #92400e; margin-bottom: 12px; font-size: 18px; }
+  .focus-section .note-grid { gap: 12px; }
+  .focus-card { background: #fff; border-radius: 10px; padding: 16px; border-left: 4px solid #f59e0b; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+  .focus-card .title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .focus-card .title a { color: #333; text-decoration: none; }
+  .focus-card .title a:hover { color: #ff2442; }
+  .focus-card .stats { font-size: 12px; color: #999; }
+  .focus-card .stats span { color: #f59e0b; font-weight: 600; }
+  .stat-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .stat-pill { background: #fff; border-radius: 20px; padding: 6px 16px; font-size: 13px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .stat-pill strong { color: #ff2442; }
+  .bank-tags { margin-bottom: 10px; }
   .show-more-btn { display: block; width: 100%; padding: 12px; background: #fff; border: 2px dashed #ff2442; border-radius: 8px; color: #ff2442; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; margin-top: 16px; }
   .show-more-btn:hover { background: #fff0f2; }
   .show-more-btn:disabled { display: none; }
@@ -179,23 +236,23 @@ html = """<!DOCTYPE html>
 
 <div class="header">
   <h1>小红书 · 银行营销活动搜索报告</h1>
-  <p>搜索时间：""" + f"{TODAY.year}年{TODAY.month}月{TODAY.day}日" + """ | 数据来源：小红书 | 时间范围：""" + f"{min(VALID_MONTHS)[0]}年{min(VALID_MONTHS)[1]}月 - {max(VALID_MONTHS)[0]}年{max(VALID_MONTHS)[1]}月" + """ | 点击标题可跳转搜索页查找原文</p>
+  <p>搜索时间：""" + f"{TODAY.year}年{TODAY.month}月{TODAY.day}日" + """ | 数据来源：小红书 | 发帖时间：""" + f"{DATE_START.year}年{DATE_START.month}月{DATE_START.day}日 - {DATE_END.year}年{DATE_END.month}月{DATE_END.day}日" + """ | 点击标题直接跳转笔记原文</p>
 </div>
 
 <div class="container">
 
   <div class="summary">
     <div class="summary-card">
-      <div class="num">""" + str(len(all_notes)) + """</div>
-      <div class="label">搜索到的笔记总数（去重后）</div>
-    </div>
-    <div class="summary-card">
       <div class="num">""" + str(len(bank_notes)) + """</div>
-      <div class="label">近3个月银行活动笔记</div>
+      <div class="label">近3月银行活动（≥""" + str(MIN_LIKES) + """赞）</div>
     </div>
     <div class="summary-card">
-      <div class="num">""" + str(len(filtered_out)) + """</div>
-      <div class="label">已过滤的过期笔记</div>
+      <div class="num" style="color:#52c41a">""" + str(new_count) + """</div>
+      <div class="label">🆕 近一周新发 """ + f"({new_count*100//len(bank_notes) if bank_notes else 0}%)" + """</div>
+    </div>
+    <div class="summary-card">
+      <div class="num" style="color:#f59e0b">""" + str(focus_count) + """</div>
+      <div class="label">⭐ 重点银行 """ + f"({focus_count*100//len(bank_notes) if bank_notes else 0}%)" + """</div>
     </div>
     <div class="summary-card">
       <div class="num">""" + fmt_num(bank_notes[0]["likes"] if bank_notes else 0) + """</div>
@@ -203,16 +260,43 @@ html = """<!DOCTYPE html>
     </div>
   </div>
 
+  <div class="stat-row">
+""" + "".join(f'    <div class="stat-pill">⭐ {bank}: <strong>{cnt}</strong> 条</div>\n' for bank, cnt in sorted(focus_bank_counts.items(), key=lambda x: -x[1])) + """  </div>
+
   <div class="highlight">
     <h3>核心发现</h3>
     <ul style="margin:0; padding-left:20px; line-height:2;">
-      <li>📅 <strong>数据范围</strong>：""" + f"{min(VALID_MONTHS)[0]}年{min(VALID_MONTHS)[1]}月 — {max(VALID_MONTHS)[0]}年{max(VALID_MONTHS)[1]}月" + """，聚焦近3个月银行营销动态</li>
+      <li>📅 <strong>数据范围</strong>：""" + f"{DATE_START.year}年{DATE_START.month}月 — {DATE_END.year}年{DATE_END.month}月" + """，基于笔记实际发帖时间精确筛选（非标题推断）</li>
+      <li>🆕 <strong>近一周新发</strong>：<strong>""" + str(new_count) + """</strong> 条笔记发帖于近7天内（""" + f"{NEW_CUTOFF.month}月{NEW_CUTOFF.day}日 - {TODAY.month}月{TODAY.day}日" + """），标记为 <span class="new-badge">NEW</span></li>
+      <li>⭐ <strong>重点关注</strong>：<strong>中国银行、工商银行</strong>相关笔记已标注 <span class="focus-badge">⭐ 重点</span></li>
+      <li>📊 <strong>质量筛选</strong>：仅展示 ≥""" + str(MIN_LIKES) + """ 赞的笔记，已过滤 """ + str(len(filtered_low_likes)) + """ 条低赞内容</li>
       <li>🏦 <strong>热门银行</strong>：<strong>建设银行、招商银行、工商银行、中信银行</strong>讨论度最高</li>
       <li>🎯 <strong>主流玩法</strong>：<strong>立减金、满减优惠、资产提升返现</strong>为三大主要形式</li>
-      <li>🔗 <strong>使用方式</strong>：点击标题跳转小红书搜索页，即可快速找到对应笔记进行复核</li>
+      <li>🔗 <strong>使用方式</strong>：点击标题直接跳转小红书笔记原文</li>
     </ul>
   </div>
 
+  <!-- ==================== 重点银行专区 ==================== -->
+"""
+
+focus_notes = [n for n in bank_notes if n["focus_bank"]]
+if focus_notes:
+    html += """  <div class="focus-section">
+    <h3>⭐ 重点关注银行专区 — 中国银行 & 工商银行</h3>
+    <div class="note-grid">
+"""
+    for note in focus_notes[:20]:
+        new_tag = ' <span class="new-badge">NEW</span>' if note["is_new"] else ""
+        html += f"""      <div class="focus-card">
+        <div class="title"><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a>{new_tag} <span class="focus-badge">⭐ {note['focus_bank']}</span></div>
+        <div class="stats">👤 {esc(note['author'])} | 📅 {note['publish_date']} | 点赞 <span>{fmt_num(note['likes'])}</span> · 收藏 <span>{fmt_num(note['collects'])}</span> · 评论 <span>{fmt_num(note['comments'])}</span></div>
+      </div>
+"""
+    html += """    </div>
+  </div>
+"""
+
+html += """
   <!-- ==================== TOP 热门笔记 ==================== -->
   <div class="section">
     <h2 class="section-title">TOP 热门笔记（按点赞排序，点击可搜索原文）</h2>
@@ -222,18 +306,20 @@ html = """<!DOCTYPE html>
 top_notes = bank_notes[:15]
 for i, note in enumerate(top_notes, 1):
     rank_class = "top3" if i <= 3 else ("top10" if i <= 10 else "normal")
+    new_tag = ' <span class="new-badge">NEW</span>' if note["is_new"] else ""
+    focus_tag = f' <span class="focus-badge">⭐ {note["focus_bank"]}</span>' if note["focus_bank"] else ""
     html += f"""
       <div class="note-card">
         <div class="rank {rank_class}">{i}</div>
-        <div class="title"><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a></div>
-        <div class="author">作者：{esc(note['author'])}</div>
+        <div class="title"><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a>{new_tag}{focus_tag}</div>
+        <div class="author">作者：{esc(note['author'])} | 📅 {note['publish_date']}</div>
         <div class="stats">
           <div class="stat">点赞 <span>{fmt_num(note['likes'])}</span></div>
           <div class="stat">收藏 <span>{fmt_num(note['collects'])}</span></div>
           <div class="stat">评论 <span>{fmt_num(note['comments'])}</span></div>
           <div class="stat">分享 <span>{fmt_num(note['shares'])}</span></div>
         </div>
-        <a class="link-btn" href="{esc(note['url'])}" target="_blank">搜索原文 &rarr;</a>
+        <a class="link-btn" href="{esc(note['url'])}" target="_blank">查看原文 &rarr;</a>
       </div>
 """
 
@@ -243,30 +329,39 @@ html += """
 
   <!-- ==================== 全部笔记列表 ==================== -->
   <div class="section">
-    <h2 class="section-title">全部银行活动笔记列表（点击标题搜索原文）</h2>
+    <h2 class="section-title">全部银行活动笔记列表（≥""" + str(MIN_LIKES) + """赞，点击标题跳转原文）</h2>
     <table>
       <thead>
         <tr>
           <th style="width:40px">#</th>
-          <th>标题（可点击）</th>
-          <th style="width:130px">作者</th>
-          <th style="width:70px">点赞</th>
-          <th style="width:70px">收藏</th>
-          <th style="width:70px">评论</th>
-          <th style="width:70px">分享</th>
+          <th>标题（可点击跳转）</th>
+          <th style="width:90px">发帖日期</th>
+          <th style="width:100px">标签</th>
+          <th style="width:120px">作者</th>
+          <th style="width:65px">点赞</th>
+          <th style="width:65px">收藏</th>
+          <th style="width:65px">评论</th>
+          <th style="width:65px">分享</th>
         </tr>
       </thead>
       <tbody>
 """
 
-VISIBLE_ROWS = 10  # 默认显示前10行，其余折叠
+VISIBLE_ROWS = 15  # 默认显示前15行，其余折叠
 hidden_count = max(0, len(bank_notes) - VISIBLE_ROWS)
 
 for i, note in enumerate(bank_notes, 1):
     row_class = ' class="hidden-row"' if i > VISIBLE_ROWS else ''
+    tags = ""
+    if note["is_new"]:
+        tags += '<span class="new-badge">NEW</span> '
+    if note["focus_bank"]:
+        tags += f'<span class="focus-badge">⭐ {note["focus_bank"][:2]}</span>'
     html += f"""        <tr{row_class}>
           <td>{i}</td>
           <td><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a></td>
+          <td>{note['publish_date']}</td>
+          <td>{tags}</td>
           <td>{esc(note['author'])}</td>
           <td>{fmt_num(note['likes'])}</td>
           <td>{fmt_num(note['collects'])}</td>
@@ -288,7 +383,7 @@ html += """  </div>
 </div>
 
 <div class="footer">
-  <p>报告由 WorkBuddy 通过小红书 MCP 自动生成 | 数据仅供参考，具体活动以银行官方公告为准 | 点击标题跳转搜索页复核</p>
+  <p>报告由 WorkBuddy 通过小红书 MCP 自动生成 | 数据仅供参考，具体活动以银行官方公告为准 | 点击标题直接跳转笔记原文</p>
 </div>
 
 <script>
@@ -309,7 +404,10 @@ with open(output_path, "w", encoding="utf-8") as f:
 
 print(f"Report generated: {output_path}")
 print(f"Total unique notes: {len(all_notes)}")
-print(f"Bank-related & recent (Jan-Mar 2026): {len(bank_notes)}")
+print(f"Bank-related & recent (>={MIN_LIKES} likes): {len(bank_notes)}")
+print(f"Filtered out (low likes <{MIN_LIKES}): {len(filtered_low_likes)}")
 print(f"Filtered out (older months): {len(filtered_out)}")
+print(f"New notes (published {NEW_CUTOFF} ~ {TODAY}): {new_count}")
+print(f"Focus bank notes: {focus_count} ({', '.join(f'{k}:{v}' for k,v in focus_bank_counts.items())})")
 if bank_notes:
     print(f"Top note likes: {bank_notes[0]['likes']}")
