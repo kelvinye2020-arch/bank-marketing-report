@@ -18,7 +18,7 @@ from urllib.parse import quote
 
 BASE_DIR = r"c:\Users\kelvinyye\WorkBuddy\20260313150001"
 XHS_BASE = "https://www.xiaohongshu.com/explore/"
-SEARCH_FILES = 6  # search_result_1.json .. search_result_6.json
+SEARCH_FILES = 5  # search_result_1.json .. search_result_5.json
 
 # --- Quality filter ---
 MIN_LIKES = 50  # Minimum likes to include a note
@@ -102,7 +102,11 @@ for i in range(1, SEARCH_FILES + 1):
             data = json.loads(content)
     except (json.JSONDecodeError, IOError):
         continue
-    for feed in data.get("data", {}).get("feeds", []):
+    # Support both old format {data: {feeds: [...]}} and new format {feeds: [...]}
+    feeds = data.get("feeds") or data.get("data", {}).get("feeds", [])
+    if isinstance(data, list):
+        feeds = data
+    for feed in feeds:
         if feed.get("modelType") != "note":
             continue
         fid = feed["id"]
