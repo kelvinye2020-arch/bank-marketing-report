@@ -203,6 +203,14 @@ html = """<!DOCTYPE html>
   .note-card .rank.normal { background: #ddd; color: #666; }
   .note-card .link-btn { display: inline-block; margin-top: 12px; padding: 4px 14px; background: #ff2442; color: #fff; border-radius: 20px; font-size: 12px; text-decoration: none; transition: background .2s; }
   .note-card .link-btn:hover { background: #e0203a; }
+  .note-card .copy-btn { display: inline-block; margin-top: 12px; margin-left: 8px; padding: 4px 14px; background: #fff; color: #ff2442; border: 1.5px solid #ff2442; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all .2s; }
+  .note-card .copy-btn:hover { background: #fff0f2; }
+  .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 10px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; opacity: 0; transition: opacity .3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  .xhs-tip { background: #fff3e0; border: 1px solid #ffe0b2; border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; font-size: 13px; color: #e65100; }
+  .xhs-tip strong { color: #bf360c; }
+  .copy-icon { cursor: pointer; font-size: 12px; opacity: 0.4; transition: opacity .2s; vertical-align: middle; }
+  .copy-icon:hover { opacity: 1; }
   .footer { text-align: center; padding: 24px; color: #999; font-size: 12px; }
   table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
   th { background: #ff2442; color: #fff; padding: 12px 16px; text-align: left; font-size: 13px; }
@@ -240,7 +248,7 @@ html = """<!DOCTYPE html>
 
 <div class="header">
   <h1>小红书 · 银行营销活动搜索报告</h1>
-  <p>搜索时间：""" + f"{TODAY.year}年{TODAY.month}月{TODAY.day}日" + """ | 数据来源：小红书 | 发帖时间：""" + f"{DATE_START.year}年{DATE_START.month}月{DATE_START.day}日 - {DATE_END.year}年{DATE_END.month}月{DATE_END.day}日" + """ | 点击标题直接跳转笔记原文</p>
+  <p>搜索时间：""" + f"{TODAY.year}年{TODAY.month}月{TODAY.day}日" + """ | 数据来源：小红书 | 发帖时间：""" + f"{DATE_START.year}年{DATE_START.month}月{DATE_START.day}日 - {DATE_END.year}年{DATE_END.month}月{DATE_END.day}日" + """ | 💡 原文链接需在小红书App或已登录浏览器中打开</p>
 </div>
 
 <div class="container">
@@ -276,8 +284,12 @@ html = """<!DOCTYPE html>
       <li>📊 <strong>质量筛选</strong>：仅展示 ≥""" + str(MIN_LIKES) + """ 赞的笔记，已过滤 """ + str(len(filtered_low_likes)) + """ 条低赞内容</li>
       <li>🏦 <strong>热门银行</strong>：<strong>建设银行、招商银行、工商银行、中信银行</strong>讨论度最高</li>
       <li>🎯 <strong>主流玩法</strong>：<strong>立减金、满减优惠、资产提升返现</strong>为三大主要形式</li>
-      <li>🔗 <strong>使用方式</strong>：点击标题直接跳转小红书笔记原文</li>
+      <li>🔗 <strong>使用方式</strong>：点击标题可跳转小红书原文（需已登录），也可点"复制标题"在 App 中搜索</li>
     </ul>
+  </div>
+
+  <div class="xhs-tip">
+    📱 <strong>温馨提示</strong>：小红书近期加强了 PC 端访问限制，未登录浏览器点击原文链接可能提示"需扫码查看"。<strong>解决办法</strong>：① 先在浏览器登录小红书再点链接；② 点击卡片上的"📋 复制标题"按钮，在小红书 App 中搜索查看。
   </div>
 
   <!-- ==================== 重点银行专区 ==================== -->
@@ -303,7 +315,7 @@ if focus_notes:
 html += """
   <!-- ==================== TOP 热门笔记 ==================== -->
   <div class="section">
-    <h2 class="section-title">TOP 热门笔记（按点赞排序，点击可搜索原文）</h2>
+    <h2 class="section-title">TOP 热门笔记（按点赞排序）</h2>
     <div class="note-grid">
 """
 
@@ -324,6 +336,7 @@ for i, note in enumerate(top_notes, 1):
           <div class="stat">分享 <span>{fmt_num(note['shares'])}</span></div>
         </div>
         <a class="link-btn" href="{esc(note['url'])}" target="_blank">查看原文 &rarr;</a>
+        <button class="copy-btn" data-title="{esc(note['title'])}" onclick="copyTitle(this)">📋 复制标题</button>
       </div>
 """
 
@@ -333,12 +346,12 @@ html += """
 
   <!-- ==================== 全部笔记列表 ==================== -->
   <div class="section">
-    <h2 class="section-title">全部银行活动笔记列表（≥""" + str(MIN_LIKES) + """赞，点击标题跳转原文）</h2>
+    <h2 class="section-title">全部银行活动笔记列表（≥""" + str(MIN_LIKES) + """赞）</h2>
     <table>
       <thead>
         <tr>
           <th style="width:40px">#</th>
-          <th>标题（可点击跳转）</th>
+          <th>标题</th>
           <th style="width:90px">发帖日期</th>
           <th style="width:100px">标签</th>
           <th style="width:120px">作者</th>
@@ -363,7 +376,7 @@ for i, note in enumerate(bank_notes, 1):
         tags += f'<span class="focus-badge">⭐ {note["focus_bank"][:2]}</span>'
     html += f"""        <tr{row_class}>
           <td>{i}</td>
-          <td><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a></td>
+          <td><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a> <span class="copy-icon" data-title="{esc(note['title'])}" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>{note['publish_date']}</td>
           <td>{tags}</td>
           <td>{esc(note['author'])}</td>
@@ -387,14 +400,43 @@ html += """  </div>
 </div>
 
 <div class="footer">
-  <p>报告由 WorkBuddy 通过小红书 MCP 自动生成 | 数据仅供参考，具体活动以银行官方公告为准 | 点击标题直接跳转笔记原文</p>
+  <p>报告由 WorkBuddy 通过小红书 MCP 自动生成 | 数据仅供参考，具体活动以银行官方公告为准 | 原文链接需在已登录浏览器或小红书 App 中查看</p>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
 function showAllRows() {
     const hiddenRows = document.querySelectorAll('.hidden-row');
     hiddenRows.forEach(row => row.classList.remove('hidden-row'));
     document.querySelector('.show-more-btn').style.display = 'none';
+}
+
+function showToast(msg, duration) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), duration || 2000);
+}
+
+function copyTitle(btn) {
+    const title = btn.getAttribute('data-title');
+    navigator.clipboard.writeText(title).then(() => {
+        showToast('✅ 标题已复制，请在小红书 App 搜索查看');
+        btn.textContent = '✅ 已复制';
+        setTimeout(() => { btn.textContent = '📋 复制标题'; }, 2000);
+    }).catch(() => {
+        // fallback
+        const ta = document.createElement('textarea');
+        ta.value = title;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast('✅ 标题已复制，请在小红书 App 搜索查看');
+        btn.textContent = '✅ 已复制';
+        setTimeout(() => { btn.textContent = '📋 复制标题'; }, 2000);
+    });
 }
 </script>
 

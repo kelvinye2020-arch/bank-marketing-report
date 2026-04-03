@@ -33,6 +33,14 @@
   .note-card .rank.normal { background: #ddd; color: #666; }
   .note-card .link-btn { display: inline-block; margin-top: 12px; padding: 4px 14px; background: #ff2442; color: #fff; border-radius: 20px; font-size: 12px; text-decoration: none; transition: background .2s; }
   .note-card .link-btn:hover { background: #e0203a; }
+  .note-card .copy-btn { display: inline-block; margin-top: 12px; margin-left: 8px; padding: 4px 14px; background: #fff; color: #ff2442; border: 1.5px solid #ff2442; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all .2s; }
+  .note-card .copy-btn:hover { background: #fff0f2; }
+  .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 10px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; opacity: 0; transition: opacity .3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  .xhs-tip { background: #fff3e0; border: 1px solid #ffe0b2; border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; font-size: 13px; color: #e65100; }
+  .xhs-tip strong { color: #bf360c; }
+  .copy-icon { cursor: pointer; font-size: 12px; opacity: 0.4; transition: opacity .2s; vertical-align: middle; }
+  .copy-icon:hover { opacity: 1; }
   .footer { text-align: center; padding: 24px; color: #999; font-size: 12px; }
   table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
   th { background: #ff2442; color: #fff; padding: 12px 16px; text-align: left; font-size: 13px; }
@@ -70,7 +78,7 @@
 
 <div class="header">
   <h1>小红书 · 银行营销活动搜索报告</h1>
-  <p>搜索时间：2026年4月3日 | 数据来源：小红书 | 发帖时间：2026年2月1日 - 2026年4月30日 | 点击标题直接跳转笔记原文</p>
+  <p>搜索时间：2026年4月3日 | 数据来源：小红书 | 发帖时间：2026年2月1日 - 2026年4月30日 | 💡 原文链接需在小红书App或已登录浏览器中打开</p>
 </div>
 
 <div class="container">
@@ -108,8 +116,12 @@
       <li>📊 <strong>质量筛选</strong>：仅展示 ≥50 赞的笔记，已过滤 17 条低赞内容</li>
       <li>🏦 <strong>热门银行</strong>：<strong>建设银行、招商银行、工商银行、中信银行</strong>讨论度最高</li>
       <li>🎯 <strong>主流玩法</strong>：<strong>立减金、满减优惠、资产提升返现</strong>为三大主要形式</li>
-      <li>🔗 <strong>使用方式</strong>：点击标题直接跳转小红书笔记原文</li>
+      <li>🔗 <strong>使用方式</strong>：点击标题可跳转小红书原文（需已登录），也可点"复制标题"在 App 中搜索</li>
     </ul>
+  </div>
+
+  <div class="xhs-tip">
+    📱 <strong>温馨提示</strong>：小红书近期加强了 PC 端访问限制，未登录浏览器点击原文链接可能提示"需扫码查看"。<strong>解决办法</strong>：① 先在浏览器登录小红书再点链接；② 点击卡片上的"📋 复制标题"按钮，在小红书 App 中搜索查看。
   </div>
 
   <!-- ==================== 重点银行专区 ==================== -->
@@ -153,7 +165,7 @@
 
   <!-- ==================== TOP 热门笔记 ==================== -->
   <div class="section">
-    <h2 class="section-title">TOP 热门笔记（按点赞排序，点击可搜索原文）</h2>
+    <h2 class="section-title">TOP 热门笔记（按点赞排序）</h2>
     <div class="note-grid">
 
       <div class="note-card">
@@ -167,6 +179,7 @@
           <div class="stat">分享 <span>396</span></div>
         </div>
         <a class="link-btn" href="https://www.xiaohongshu.com/explore/69a3114100000000280235fb" target="_blank">查看原文 &rarr;</a>
+        <button class="copy-btn" data-title="3月立减金攻略合集来啦" onclick="copyTitle(this)">📋 复制标题</button>
       </div>
 
       <div class="note-card">
@@ -180,6 +193,7 @@
           <div class="stat">分享 <span>288</span></div>
         </div>
         <a class="link-btn" href="https://www.xiaohongshu.com/explore/69cbf0cb000000001b020bbf" target="_blank">查看原文 &rarr;</a>
+        <button class="copy-btn" data-title="四月银行🏦活动汇总！！" onclick="copyTitle(this)">📋 复制标题</button>
       </div>
 
       <div class="note-card">
@@ -193,6 +207,7 @@
           <div class="stat">分享 <span>964</span></div>
         </div>
         <a class="link-btn" href="https://www.xiaohongshu.com/explore/6989b661000000001a033710" target="_blank">查看原文 &rarr;</a>
+        <button class="copy-btn" data-title="建设银行一月资产提升，3000立减金" onclick="copyTitle(this)">📋 复制标题</button>
       </div>
 
       <div class="note-card">
@@ -206,6 +221,7 @@
           <div class="stat">分享 <span>737</span></div>
         </div>
         <a class="link-btn" href="https://www.xiaohongshu.com/explore/69bb208800000000210064cd" target="_blank">查看原文 &rarr;</a>
+        <button class="copy-btn" data-title="农行微信立减金怎么使用啊" onclick="copyTitle(this)">📋 复制标题</button>
       </div>
 
       <div class="note-card">
@@ -219,6 +235,7 @@
           <div class="stat">分享 <span>252</span></div>
         </div>
         <a class="link-btn" href="https://www.xiaohongshu.com/explore/69bc0951000000001a020598" target="_blank">查看原文 &rarr;</a>
+        <button class="copy-btn" data-title="我好像发现了中行转账的bug" onclick="copyTitle(this)">📋 复制标题</button>
       </div>
 
       <div class="note-card">
@@ -232,6 +249,7 @@
           <div class="stat">分享 <span>288</span></div>
         </div>
         <a class="link-btn" href="https://www.xiaohongshu.com/explore/69c47bf10000000023006385" target="_blank">查看原文 &rarr;</a>
+        <button class="copy-btn" data-title="中行30-10话费的攻略教程" onclick="copyTitle(this)">📋 复制标题</button>
       </div>
 
       <div class="note-card">
@@ -245,6 +263,7 @@
           <div class="stat">分享 <span>101</span></div>
         </div>
         <a class="link-btn" href="https://www.xiaohongshu.com/explore/69cbefd40000000023015a6f" target="_blank">查看原文 &rarr;</a>
+        <button class="copy-btn" data-title="4月各行立减金攻略合集来啦" onclick="copyTitle(this)">📋 复制标题</button>
       </div>
 
       <div class="note-card">
@@ -258,6 +277,7 @@
           <div class="stat">分享 <span>123</span></div>
         </div>
         <a class="link-btn" href="https://www.xiaohongshu.com/explore/69b37b15000000000c0160fb" target="_blank">查看原文 &rarr;</a>
+        <button class="copy-btn" data-title="中行抽18.8立减金攻略，别忘记啦" onclick="copyTitle(this)">📋 复制标题</button>
       </div>
 
       <div class="note-card">
@@ -271,6 +291,7 @@
           <div class="stat">分享 <span>78</span></div>
         </div>
         <a class="link-btn" href="https://www.xiaohongshu.com/explore/69cc5a130000000023021d0b" target="_blank">查看原文 &rarr;</a>
+        <button class="copy-btn" data-title="🔥各大银行薅羊毛攻略" onclick="copyTitle(this)">📋 复制标题</button>
       </div>
 
       <div class="note-card">
@@ -284,6 +305,7 @@
           <div class="stat">分享 <span>65</span></div>
         </div>
         <a class="link-btn" href="https://www.xiaohongshu.com/explore/69c67fcd000000001a02f17d" target="_blank">查看原文 &rarr;</a>
+        <button class="copy-btn" data-title="3月羊毛总结，薅了5312元！请左滑看表👀" onclick="copyTitle(this)">📋 复制标题</button>
       </div>
 
       <div class="note-card">
@@ -297,6 +319,7 @@
           <div class="stat">分享 <span>165</span></div>
         </div>
         <a class="link-btn" href="https://www.xiaohongshu.com/explore/69aba1e8000000001a0292f5" target="_blank">查看原文 &rarr;</a>
+        <button class="copy-btn" data-title="3月建行羊毛继续，50个一晚给150立减金" onclick="copyTitle(this)">📋 复制标题</button>
       </div>
 
       <div class="note-card">
@@ -310,6 +333,7 @@
           <div class="stat">分享 <span>46</span></div>
         </div>
         <a class="link-btn" href="https://www.xiaohongshu.com/explore/69cbb657000000001a034c96" target="_blank">查看原文 &rarr;</a>
+        <button class="copy-btn" data-title="4月银行活动哪家强？详情分析📊（更新中）" onclick="copyTitle(this)">📋 复制标题</button>
       </div>
 
       <div class="note-card">
@@ -323,6 +347,7 @@
           <div class="stat">分享 <span>33</span></div>
         </div>
         <a class="link-btn" href="https://www.xiaohongshu.com/explore/69cceb26000000001b003f31" target="_blank">查看原文 &rarr;</a>
+        <button class="copy-btn" data-title="报‼️4月各银行立减金活动合集来了🔥" onclick="copyTitle(this)">📋 复制标题</button>
       </div>
 
       <div class="note-card">
@@ -336,6 +361,7 @@
           <div class="stat">分享 <span>7</span></div>
         </div>
         <a class="link-btn" href="https://www.xiaohongshu.com/explore/69a974e10000000022023f15" target="_blank">查看原文 &rarr;</a>
+        <button class="copy-btn" data-title="💰钱存银行，别忘了薅羊毛" onclick="copyTitle(this)">📋 复制标题</button>
       </div>
 
       <div class="note-card">
@@ -349,6 +375,7 @@
           <div class="stat">分享 <span>12</span></div>
         </div>
         <a class="link-btn" href="https://www.xiaohongshu.com/explore/69b94cc9000000002202a79a" target="_blank">查看原文 &rarr;</a>
+        <button class="copy-btn" data-title="中行也算大方一回了" onclick="copyTitle(this)">📋 复制标题</button>
       </div>
 
     </div>
@@ -356,12 +383,12 @@
 
   <!-- ==================== 全部笔记列表 ==================== -->
   <div class="section">
-    <h2 class="section-title">全部银行活动笔记列表（≥50赞，点击标题跳转原文）</h2>
+    <h2 class="section-title">全部银行活动笔记列表（≥50赞）</h2>
     <table>
       <thead>
         <tr>
           <th style="width:40px">#</th>
-          <th>标题（可点击跳转）</th>
+          <th>标题</th>
           <th style="width:90px">发帖日期</th>
           <th style="width:100px">标签</th>
           <th style="width:120px">作者</th>
@@ -374,7 +401,7 @@
       <tbody>
         <tr>
           <td>1</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69a3114100000000280235fb" target="_blank">3月立减金攻略合集来啦</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69a3114100000000280235fb" target="_blank">3月立减金攻略合集来啦</a> <span class="copy-icon" data-title="3月立减金攻略合集来啦" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-03-01</td>
           <td></td>
           <td>Holly</td>
@@ -385,7 +412,7 @@
         </tr>
         <tr>
           <td>2</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69cbf0cb000000001b020bbf" target="_blank">四月银行🏦活动汇总！！</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69cbf0cb000000001b020bbf" target="_blank">四月银行🏦活动汇总！！</a> <span class="copy-icon" data-title="四月银行🏦活动汇总！！" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-04-01</td>
           <td><span class="new-badge">NEW</span> </td>
           <td>羊毛小罗</td>
@@ -396,7 +423,7 @@
         </tr>
         <tr>
           <td>3</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6989b661000000001a033710" target="_blank">建设银行一月资产提升，3000立减金</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/6989b661000000001a033710" target="_blank">建设银行一月资产提升，3000立减金</a> <span class="copy-icon" data-title="建设银行一月资产提升，3000立减金" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-02-09</td>
           <td></td>
           <td>天天上上签🐟✨</td>
@@ -407,7 +434,7 @@
         </tr>
         <tr>
           <td>4</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69bb208800000000210064cd" target="_blank">农行微信立减金怎么使用啊</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69bb208800000000210064cd" target="_blank">农行微信立减金怎么使用啊</a> <span class="copy-icon" data-title="农行微信立减金怎么使用啊" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-03-19</td>
           <td></td>
           <td>你的momo</td>
@@ -418,7 +445,7 @@
         </tr>
         <tr>
           <td>5</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69bc0951000000001a020598" target="_blank">我好像发现了中行转账的bug</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69bc0951000000001a020598" target="_blank">我好像发现了中行转账的bug</a> <span class="copy-icon" data-title="我好像发现了中行转账的bug" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-03-19</td>
           <td><span class="focus-badge">⭐ 中国</span></td>
           <td>cgr</td>
@@ -429,7 +456,7 @@
         </tr>
         <tr>
           <td>6</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69c47bf10000000023006385" target="_blank">中行30-10话费的攻略教程</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69c47bf10000000023006385" target="_blank">中行30-10话费的攻略教程</a> <span class="copy-icon" data-title="中行30-10话费的攻略教程" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-03-26</td>
           <td><span class="focus-badge">⭐ 中国</span></td>
           <td>Holly</td>
@@ -440,7 +467,7 @@
         </tr>
         <tr>
           <td>7</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69cbefd40000000023015a6f" target="_blank">4月各行立减金攻略合集来啦</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69cbefd40000000023015a6f" target="_blank">4月各行立减金攻略合集来啦</a> <span class="copy-icon" data-title="4月各行立减金攻略合集来啦" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-04-01</td>
           <td><span class="new-badge">NEW</span> </td>
           <td>Holly</td>
@@ -451,7 +478,7 @@
         </tr>
         <tr>
           <td>8</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69b37b15000000000c0160fb" target="_blank">中行抽18.8立减金攻略，别忘记啦</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69b37b15000000000c0160fb" target="_blank">中行抽18.8立减金攻略，别忘记啦</a> <span class="copy-icon" data-title="中行抽18.8立减金攻略，别忘记啦" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-03-13</td>
           <td><span class="focus-badge">⭐ 中国</span></td>
           <td>Holly</td>
@@ -462,7 +489,7 @@
         </tr>
         <tr>
           <td>9</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69cc5a130000000023021d0b" target="_blank">🔥各大银行薅羊毛攻略</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69cc5a130000000023021d0b" target="_blank">🔥各大银行薅羊毛攻略</a> <span class="copy-icon" data-title="🔥各大银行薅羊毛攻略" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-04-01</td>
           <td><span class="new-badge">NEW</span> </td>
           <td>soulc6</td>
@@ -473,7 +500,7 @@
         </tr>
         <tr>
           <td>10</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69c67fcd000000001a02f17d" target="_blank">3月羊毛总结，薅了5312元！请左滑看表👀</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69c67fcd000000001a02f17d" target="_blank">3月羊毛总结，薅了5312元！请左滑看表👀</a> <span class="copy-icon" data-title="3月羊毛总结，薅了5312元！请左滑看表👀" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-03-27</td>
           <td><span class="new-badge">NEW</span> </td>
           <td>退休少女思韵</td>
@@ -484,7 +511,7 @@
         </tr>
         <tr>
           <td>11</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69aba1e8000000001a0292f5" target="_blank">3月建行羊毛继续，50个一晚给150立减金</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69aba1e8000000001a0292f5" target="_blank">3月建行羊毛继续，50个一晚给150立减金</a> <span class="copy-icon" data-title="3月建行羊毛继续，50个一晚给150立减金" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-03-07</td>
           <td></td>
           <td>pilipulu 霹雳噗噜</td>
@@ -495,7 +522,7 @@
         </tr>
         <tr>
           <td>12</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69cbb657000000001a034c96" target="_blank">4月银行活动哪家强？详情分析📊（更新中）</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69cbb657000000001a034c96" target="_blank">4月银行活动哪家强？详情分析📊（更新中）</a> <span class="copy-icon" data-title="4月银行活动哪家强？详情分析📊（更新中）" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-03-31</td>
           <td><span class="new-badge">NEW</span> </td>
           <td>聚沙成塔</td>
@@ -506,7 +533,7 @@
         </tr>
         <tr>
           <td>13</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69cceb26000000001b003f31" target="_blank">报‼️4月各银行立减金活动合集来了🔥</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69cceb26000000001b003f31" target="_blank">报‼️4月各银行立减金活动合集来了🔥</a> <span class="copy-icon" data-title="报‼️4月各银行立减金活动合集来了🔥" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-04-01</td>
           <td><span class="new-badge">NEW</span> </td>
           <td>花花省钱攻略</td>
@@ -517,7 +544,7 @@
         </tr>
         <tr>
           <td>14</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69a974e10000000022023f15" target="_blank">💰钱存银行，别忘了薅羊毛</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69a974e10000000022023f15" target="_blank">💰钱存银行，别忘了薅羊毛</a> <span class="copy-icon" data-title="💰钱存银行，别忘了薅羊毛" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-03-05</td>
           <td></td>
           <td>叫我MissRen迷死人</td>
@@ -528,7 +555,7 @@
         </tr>
         <tr>
           <td>15</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69b94cc9000000002202a79a" target="_blank">中行也算大方一回了</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69b94cc9000000002202a79a" target="_blank">中行也算大方一回了</a> <span class="copy-icon" data-title="中行也算大方一回了" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-03-17</td>
           <td><span class="focus-badge">⭐ 中国</span></td>
           <td>shuai</td>
@@ -539,7 +566,7 @@
         </tr>
         <tr class="hidden-row">
           <td>16</td>
-          <td><a href="https://www.xiaohongshu.com/explore/697ffd09000000002203a638" target="_blank">工行月月花抽奖</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/697ffd09000000002203a638" target="_blank">工行月月花抽奖</a> <span class="copy-icon" data-title="工行月月花抽奖" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-02-02</td>
           <td><span class="focus-badge">⭐ 工商</span></td>
           <td>linvic</td>
@@ -550,7 +577,7 @@
         </tr>
         <tr class="hidden-row">
           <td>17</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69cf26850000000022003033" target="_blank">中行又领10r❗️</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69cf26850000000022003033" target="_blank">中行又领10r❗️</a> <span class="copy-icon" data-title="中行又领10r❗️" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-04-03</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">⭐ 中国</span></td>
           <td>小贱</td>
@@ -561,7 +588,7 @@
         </tr>
         <tr class="hidden-row">
           <td>18</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69b11f43000000001b01de06" target="_blank">#邮储银行～支付达标享好礼</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69b11f43000000001b01de06" target="_blank">#邮储银行～支付达标享好礼</a> <span class="copy-icon" data-title="#邮储银行～支付达标享好礼" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-03-11</td>
           <td></td>
           <td>南风</td>
@@ -572,7 +599,7 @@
         </tr>
         <tr class="hidden-row">
           <td>19</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69ba2044000000001e00d84f" target="_blank">银行股做T，稳到离谱！😭</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69ba2044000000001e00d84f" target="_blank">银行股做T，稳到离谱！😭</a> <span class="copy-icon" data-title="银行股做T，稳到离谱！😭" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-03-18</td>
           <td></td>
           <td>盈盈财经</td>
@@ -583,7 +610,7 @@
         </tr>
         <tr class="hidden-row">
           <td>20</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69a8eaff000000001d027efe" target="_blank">工行新春升金礼活动达标近 30w 毛线都没有</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69a8eaff000000001d027efe" target="_blank">工行新春升金礼活动达标近 30w 毛线都没有</a> <span class="copy-icon" data-title="工行新春升金礼活动达标近 30w 毛线都没有" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-03-05</td>
           <td><span class="focus-badge">⭐ 工商</span></td>
           <td>Hey karl</td>
@@ -594,7 +621,7 @@
         </tr>
         <tr class="hidden-row">
           <td>21</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69c918f10000000028009c4e" target="_blank">求4月资产提升银行活动</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69c918f10000000028009c4e" target="_blank">求4月资产提升银行活动</a> <span class="copy-icon" data-title="求4月资产提升银行活动" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-03-29</td>
           <td><span class="new-badge">NEW</span> </td>
           <td>月月红年年有余😘</td>
@@ -605,7 +632,7 @@
         </tr>
         <tr class="hidden-row">
           <td>22</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69a8ef31000000001600a93f" target="_blank">中行3月资产提升出了</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69a8ef31000000001600a93f" target="_blank">中行3月资产提升出了</a> <span class="copy-icon" data-title="中行3月资产提升出了" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-03-05</td>
           <td><span class="focus-badge">⭐ 中国</span></td>
           <td>momo</td>
@@ -616,7 +643,7 @@
         </tr>
         <tr class="hidden-row">
           <td>23</td>
-          <td><a href="https://www.xiaohongshu.com/explore/69c23e4d000000001e00d33c" target="_blank">4月选哪家银行的资产提升活动</a></td>
+          <td><a href="https://www.xiaohongshu.com/explore/69c23e4d000000001e00d33c" target="_blank">4月选哪家银行的资产提升活动</a> <span class="copy-icon" data-title="4月选哪家银行的资产提升活动" onclick="copyTitle(this)" title="复制标题">📋</span></td>
           <td>2026-03-24</td>
           <td></td>
           <td>Crystal</td>
@@ -633,14 +660,43 @@
 </div>
 
 <div class="footer">
-  <p>报告由 WorkBuddy 通过小红书 MCP 自动生成 | 数据仅供参考，具体活动以银行官方公告为准 | 点击标题直接跳转笔记原文</p>
+  <p>报告由 WorkBuddy 通过小红书 MCP 自动生成 | 数据仅供参考，具体活动以银行官方公告为准 | 原文链接需在已登录浏览器或小红书 App 中查看</p>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
 function showAllRows() {
     const hiddenRows = document.querySelectorAll('.hidden-row');
     hiddenRows.forEach(row => row.classList.remove('hidden-row'));
     document.querySelector('.show-more-btn').style.display = 'none';
+}
+
+function showToast(msg, duration) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), duration || 2000);
+}
+
+function copyTitle(btn) {
+    const title = btn.getAttribute('data-title');
+    navigator.clipboard.writeText(title).then(() => {
+        showToast('✅ 标题已复制，请在小红书 App 搜索查看');
+        btn.textContent = '✅ 已复制';
+        setTimeout(() => { btn.textContent = '📋 复制标题'; }, 2000);
+    }).catch(() => {
+        // fallback
+        const ta = document.createElement('textarea');
+        ta.value = title;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast('✅ 标题已复制，请在小红书 App 搜索查看');
+        btn.textContent = '✅ 已复制';
+        setTimeout(() => { btn.textContent = '📋 复制标题'; }, 2000);
+    });
 }
 </script>
 
