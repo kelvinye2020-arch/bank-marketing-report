@@ -122,6 +122,25 @@ ACTIVITY_TYPES = [
     ("支付优惠", ["支付"]),
 ]
 
+BANK_SHORT_NAMES = {
+    "建设银行": "建行",
+    "招商银行": "招行",
+    "工商银行": "工行",
+    "中国银行": "中行",
+    "农业银行": "农行",
+    "交通银行": "交行",
+    "中信银行": "中信",
+    "浦发银行": "浦发",
+    "光大银行": "光大",
+    "民生银行": "民生",
+    "兴业银行": "兴业",
+    "平安银行": "平安",
+    "华夏银行": "华夏",
+    "邮储银行": "邮储",
+    "浙商银行": "浙商",
+    "广发银行": "广发",
+}
+
 def extract_tags(title):
     """Extract bank names and activity types from note title."""
     t = title.lower()
@@ -320,24 +339,16 @@ html = """<!DOCTYPE html>
       <div class="label">🆕 近一周新发 """ + f"({new_count*100//len(bank_notes) if bank_notes else 0}%)" + """</div>
     </div>
     <div class="summary-card">
-      <div class="num" style="color:#f59e0b">""" + str(focus_count) + """</div>
-      <div class="label">⭐ 重点银行 """ + f"({focus_count*100//len(bank_notes) if bank_notes else 0}%)" + """</div>
-    </div>
-    <div class="summary-card">
       <div class="num">""" + fmt_num(bank_notes[0]["likes"] if bank_notes else 0) + """</div>
       <div class="label">单篇最高点赞</div>
     </div>
   </div>
-
-  <div class="stat-row">
-""" + "".join(f'    <div class="stat-pill">⭐ {bank}: <strong>{cnt}</strong> 条</div>\n' for bank, cnt in sorted(focus_bank_counts.items(), key=lambda x: -x[1])) + """  </div>
 
   <div class="highlight">
     <h3>核心发现</h3>
     <ul style="margin:0; padding-left:20px; line-height:2;">
       <li>📅 <strong>数据范围</strong>：""" + f"{DATE_START.year}年{DATE_START.month}月 — {DATE_END.year}年{DATE_END.month}月" + """，基于笔记实际发帖时间精确筛选（非标题推断）</li>
       <li>🆕 <strong>近一周新发</strong>：<strong>""" + str(new_count) + """</strong> 条笔记发帖于近7天内（""" + f"{NEW_CUTOFF.month}月{NEW_CUTOFF.day}日 - {TODAY.month}月{TODAY.day}日" + """），标记为 <span class="new-badge">NEW</span></li>
-      <li>⭐ <strong>重点关注</strong>：<strong>中国银行、工商银行</strong>相关笔记已标注 <span class="focus-badge">⭐ 重点</span></li>
       <li>📊 <strong>质量筛选</strong>：仅展示 ≥""" + str(MIN_LIKES) + """ 赞的笔记，已过滤 """ + str(len(filtered_low_likes)) + """ 条低赞内容</li>
       <li>🏦 <strong>热门银行</strong>：<strong>建设银行、招商银行、工商银行、中信银行</strong>讨论度最高</li>
       <li>🎯 <strong>主流玩法</strong>：<strong>立减金、满减优惠、资产提升返现</strong>为三大主要形式</li>
@@ -349,27 +360,6 @@ html = """<!DOCTYPE html>
     📱 <strong>温馨提示</strong>：小红书 PC 端未登录浏览器点击原文链接可能提示"需扫码查看"。<strong>解决办法</strong>：先在浏览器登录小红书（xiaohongshu.com）再点链接即可正常查看。卡片已展示封面和关键标签，大部分情况无需跳转。
   </div>
 
-  <!-- ==================== 重点银行专区 ==================== -->
-"""
-
-focus_notes = [n for n in bank_notes if n["focus_bank"]]
-if focus_notes:
-    html += """  <div class="focus-section">
-    <h3>⭐ 重点关注银行专区 — 中国银行 & 工商银行</h3>
-    <div class="note-grid">
-"""
-    for note in focus_notes[:20]:
-        new_tag = ' <span class="new-badge">NEW</span>' if note["is_new"] else ""
-        html += f"""      <div class="focus-card">
-        <div class="title"><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a>{new_tag} <span class="focus-badge">⭐ {note['focus_bank']}</span></div>
-        <div class="stats">👤 {esc(note['author'])} | 📅 {note['publish_date']} | 点赞 <span>{fmt_num(note['likes'])}</span> · 收藏 <span>{fmt_num(note['collects'])}</span> · 评论 <span>{fmt_num(note['comments'])}</span></div>
-      </div>
-"""
-    html += """    </div>
-  </div>
-"""
-
-html += """
   <!-- ==================== TOP 热门笔记 ==================== -->
   <div class="section">
     <h2 class="section-title">TOP 热门笔记（按点赞排序）</h2>
@@ -380,7 +370,10 @@ top_notes = bank_notes[:15]
 for i, note in enumerate(top_notes, 1):
     rank_class = "top3" if i <= 3 else ("top10" if i <= 10 else "normal")
     new_tag = ' <span class="new-badge">NEW</span>' if note["is_new"] else ""
-    focus_tag = f' <span class="focus-badge">⭐ {note["focus_bank"]}</span>' if note["focus_bank"] else ""
+    focus_tag = ""
+    if note["focus_bank"]:
+        short = BANK_SHORT_NAMES.get(note["focus_bank"], note["focus_bank"])
+        focus_tag = f' <span class="focus-badge">🏦 {short}</span>'
     # Cover image
     cover_html = ""
     if note.get("cover"):
@@ -449,8 +442,11 @@ for i, note in enumerate(bank_notes, 1):
     tags = ""
     if note["is_new"]:
         tags += '<span class="new-badge">NEW</span> '
-    if note["focus_bank"]:
-        tags += f'<span class="focus-badge">⭐ {note["focus_bank"][:2]}</span>'
+    # Show bank short names as tags
+    note_banks = note["tags"][0]  # banks list from extract_tags
+    for bk in note_banks[:2]:
+        short = BANK_SHORT_NAMES.get(bk, bk)
+        tags += f'<span class="focus-badge">🏦 {short}</span> '
     html += f"""        <tr{row_class}>
           <td>{i}</td>
           <td><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a></td>
