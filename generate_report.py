@@ -18,10 +18,10 @@ from urllib.parse import quote
 
 BASE_DIR = r"c:\Users\kelvinyye\WorkBuddy\20260313150001"
 XHS_BASE = "https://www.xiaohongshu.com/explore/"
-SEARCH_FILES = 5  # search_result_1.json .. search_result_5.json
+SEARCH_FILES = 6  # search_result_1.json .. search_result_6.json (also reads search_result_new_*)
 
 # --- Quality filter ---
-MIN_LIKES = 50  # Minimum likes to include a note
+MIN_LIKES = 30  # Minimum likes to include a note
 
 # --- Focus banks (highlighted with ⭐) ---
 FOCUS_BANKS = {
@@ -88,10 +88,62 @@ def get_focus_bank(title):
             return bank_name
     return None
 
-# Load all search results
+# --- Extract content tags from title ---
+BANK_NAMES = [
+    ("建设银行", ["建设银行", "建行", "龙支付"]),
+    ("招商银行", ["招商银行", "招行", "招商"]),
+    ("工商银行", ["工商银行", "工行", "宇宙行"]),
+    ("中国银行", ["中国银行", "中行", "中银"]),
+    ("农业银行", ["农业银行", "农行"]),
+    ("交通银行", ["交通银行", "交行"]),
+    ("中信银行", ["中信银行", "中信"]),
+    ("浦发银行", ["浦发银行", "浦发"]),
+    ("光大银行", ["光大银行", "光大"]),
+    ("民生银行", ["民生银行", "民生"]),
+    ("兴业银行", ["兴业银行", "兴业"]),
+    ("平安银行", ["平安银行", "平安"]),
+    ("华夏银行", ["华夏银行", "华夏"]),
+    ("邮储银行", ["邮储银行", "邮储", "邮政储蓄"]),
+    ("浙商银行", ["浙商银行", "浙商"]),
+    ("广发银行", ["广发银行", "广发"]),
+]
+ACTIVITY_TYPES = [
+    ("立减金", ["立减金", "立减"]),
+    ("满减", ["满减"]),
+    ("返现", ["返现"]),
+    ("月月刷", ["月月刷"]),
+    ("开卡礼", ["开卡"]),
+    ("达标奖励", ["达标", "消费达标", "资产提升"]),
+    ("信用卡", ["信用卡"]),
+    ("充值优惠", ["充值"]),
+    ("还款", ["还款"]),
+    ("云闪付", ["云闪付"]),
+    ("银联", ["银联"]),
+    ("支付优惠", ["支付"]),
+]
+
+def extract_tags(title):
+    """Extract bank names and activity types from note title."""
+    t = title.lower()
+    banks = []
+    for name, aliases in BANK_NAMES:
+        if any(a in t for a in aliases):
+            banks.append(name)
+    activities = []
+    for name, aliases in ACTIVITY_TYPES:
+        if any(a in t for a in aliases):
+            activities.append(name)
+    # Extract amounts (e.g., "10元", "66元", "188元")
+    amounts = re.findall(r'(\d+(?:\.\d+)?)\s*元', title)
+    return banks, activities, amounts
+
+# Load all search results (both old and new format files)
 all_notes = {}
-for i in range(1, SEARCH_FILES + 1):
-    path = os.path.join(BASE_DIR, f"search_result_{i}.json")
+_search_files = [f"search_result_{i}.json" for i in range(1, SEARCH_FILES + 1)]
+_search_files += [f"search_result_new_{i}.json" for i in range(1, SEARCH_FILES + 1)]
+
+for _sf in _search_files:
+    path = os.path.join(BASE_DIR, _sf)
     if not os.path.exists(path):
         continue
     try:
@@ -126,11 +178,12 @@ for i in range(1, SEARCH_FILES + 1):
                 "comments": to_int(interact.get("commentCount", "0")),
                 "shares": to_int(interact.get("sharedCount", "0")),
                 "url": XHS_BASE + fid,
-                "cover": nc.get("cover", {}).get("urlDefault", ""),
+                "cover": nc.get("cover", {}).get("urlDefault", "") or nc.get("cover", {}).get("urlPre", ""),
                 "type": nc.get("type", "normal"),
                 "is_new": is_new_note(fid),
                 "focus_bank": get_focus_bank(title_raw),
                 "publish_date": publish_date,
+                "tags": extract_tags(title_raw),
             }
 
 # Sort by likes descending
@@ -173,6 +226,7 @@ html = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
 <title>小红书 · 银行营销活动搜索报告</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -203,14 +257,17 @@ html = """<!DOCTYPE html>
   .note-card .rank.normal { background: #ddd; color: #666; }
   .note-card .link-btn { display: inline-block; margin-top: 12px; padding: 4px 14px; background: #ff2442; color: #fff; border-radius: 20px; font-size: 12px; text-decoration: none; transition: background .2s; }
   .note-card .link-btn:hover { background: #e0203a; }
-  .note-card .copy-btn { display: inline-block; margin-top: 12px; margin-left: 8px; padding: 4px 14px; background: #fff; color: #ff2442; border: 1.5px solid #ff2442; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all .2s; }
-  .note-card .copy-btn:hover { background: #fff0f2; }
+  .card-cover { margin: -20px -20px 12px -20px; border-radius: 12px 12px 0 0; overflow: hidden; max-height: 160px; }
+  .card-cover img { width: 100%; height: 160px; object-fit: cover; display: block; }
+  .content-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .content-tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 500; }
+  .content-tag.bank { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
+  .content-tag.activity { background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
+  .content-tag.amount { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
   .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 10px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; opacity: 0; transition: opacity .3s; pointer-events: none; }
   .toast.show { opacity: 1; }
   .xhs-tip { background: #fff3e0; border: 1px solid #ffe0b2; border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; font-size: 13px; color: #e65100; }
   .xhs-tip strong { color: #bf360c; }
-  .copy-icon { cursor: pointer; font-size: 12px; opacity: 0.4; transition: opacity .2s; vertical-align: middle; }
-  .copy-icon:hover { opacity: 1; }
   .footer { text-align: center; padding: 24px; color: #999; font-size: 12px; }
   table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
   th { background: #ff2442; color: #fff; padding: 12px 16px; text-align: left; font-size: 13px; }
@@ -248,7 +305,7 @@ html = """<!DOCTYPE html>
 
 <div class="header">
   <h1>小红书 · 银行营销活动搜索报告</h1>
-  <p>搜索时间：""" + f"{TODAY.year}年{TODAY.month}月{TODAY.day}日" + """ | 数据来源：小红书 | 发帖时间：""" + f"{DATE_START.year}年{DATE_START.month}月{DATE_START.day}日 - {DATE_END.year}年{DATE_END.month}月{DATE_END.day}日" + """ | 💡 原文链接需在小红书App或已登录浏览器中打开</p>
+  <p>搜索时间：""" + f"{TODAY.year}年{TODAY.month}月{TODAY.day}日" + """ | 数据来源：小红书 | 发帖时间：""" + f"{DATE_START.year}年{DATE_START.month}月{DATE_START.day}日 - {TODAY.year}年{TODAY.month}月{TODAY.day}日" + """ | 💡 原文链接需在小红书App或已登录浏览器中打开</p>
 </div>
 
 <div class="container">
@@ -284,12 +341,12 @@ html = """<!DOCTYPE html>
       <li>📊 <strong>质量筛选</strong>：仅展示 ≥""" + str(MIN_LIKES) + """ 赞的笔记，已过滤 """ + str(len(filtered_low_likes)) + """ 条低赞内容</li>
       <li>🏦 <strong>热门银行</strong>：<strong>建设银行、招商银行、工商银行、中信银行</strong>讨论度最高</li>
       <li>🎯 <strong>主流玩法</strong>：<strong>立减金、满减优惠、资产提升返现</strong>为三大主要形式</li>
-      <li>🔗 <strong>使用方式</strong>：点击标题可跳转小红书原文（需已登录），也可点"复制标题"在 App 中搜索</li>
+      <li>🔗 <strong>使用方式</strong>：卡片展示封面、标签和互动数据，点击标题可跳转原文（需已登录小红书）</li>
     </ul>
   </div>
 
   <div class="xhs-tip">
-    📱 <strong>温馨提示</strong>：小红书近期加强了 PC 端访问限制，未登录浏览器点击原文链接可能提示"需扫码查看"。<strong>解决办法</strong>：① 先在浏览器登录小红书再点链接；② 点击卡片上的"📋 复制标题"按钮，在小红书 App 中搜索查看。
+    📱 <strong>温馨提示</strong>：小红书 PC 端未登录浏览器点击原文链接可能提示"需扫码查看"。<strong>解决办法</strong>：先在浏览器登录小红书（xiaohongshu.com）再点链接即可正常查看。卡片已展示封面和关键标签，大部分情况无需跳转。
   </div>
 
   <!-- ==================== 重点银行专区 ==================== -->
@@ -324,11 +381,32 @@ for i, note in enumerate(top_notes, 1):
     rank_class = "top3" if i <= 3 else ("top10" if i <= 10 else "normal")
     new_tag = ' <span class="new-badge">NEW</span>' if note["is_new"] else ""
     focus_tag = f' <span class="focus-badge">⭐ {note["focus_bank"]}</span>' if note["focus_bank"] else ""
+    # Cover image
+    cover_html = ""
+    if note.get("cover"):
+        cover_url = note["cover"]
+        if cover_url.startswith("http://"):
+            cover_url = "https://" + cover_url[7:]
+        cover_html = f'<div class="card-cover"><img src="{esc(cover_url)}" alt="" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></div>'
+    # Content tags
+    banks, activities, amounts = note["tags"]
+    tag_html = ""
+    tag_items = []
+    for b in banks[:2]:
+        tag_items.append(f'<span class="content-tag bank">{esc(b)}</span>')
+    for a in activities[:2]:
+        tag_items.append(f'<span class="content-tag activity">{esc(a)}</span>')
+    for amt in amounts[:2]:
+        tag_items.append(f'<span class="content-tag amount">{esc(amt)}元</span>')
+    if tag_items:
+        tag_html = f'<div class="content-tags">{"".join(tag_items)}</div>'
     html += f"""
       <div class="note-card">
         <div class="rank {rank_class}">{i}</div>
+        {cover_html}
         <div class="title"><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a>{new_tag}{focus_tag}</div>
         <div class="author">作者：{esc(note['author'])} | 📅 {note['publish_date']}</div>
+        {tag_html}
         <div class="stats">
           <div class="stat">点赞 <span>{fmt_num(note['likes'])}</span></div>
           <div class="stat">收藏 <span>{fmt_num(note['collects'])}</span></div>
@@ -336,7 +414,6 @@ for i, note in enumerate(top_notes, 1):
           <div class="stat">分享 <span>{fmt_num(note['shares'])}</span></div>
         </div>
         <a class="link-btn" href="{esc(note['url'])}" target="_blank">查看原文 &rarr;</a>
-        <button class="copy-btn" data-title="{esc(note['title'])}" onclick="copyTitle(this)">📋 复制标题</button>
       </div>
 """
 
@@ -376,7 +453,7 @@ for i, note in enumerate(bank_notes, 1):
         tags += f'<span class="focus-badge">⭐ {note["focus_bank"][:2]}</span>'
     html += f"""        <tr{row_class}>
           <td>{i}</td>
-          <td><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a> <span class="copy-icon" data-title="{esc(note['title'])}" onclick="copyTitle(this)" title="复制标题">📋</span></td>
+          <td><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a></td>
           <td>{note['publish_date']}</td>
           <td>{tags}</td>
           <td>{esc(note['author'])}</td>
@@ -400,43 +477,14 @@ html += """  </div>
 </div>
 
 <div class="footer">
-  <p>报告由 WorkBuddy 通过小红书 MCP 自动生成 | 数据仅供参考，具体活动以银行官方公告为准 | 原文链接需在已登录浏览器或小红书 App 中查看</p>
+  <p>报告由 WorkBuddy 通过小红书 MCP 自动生成 | 数据仅供参考，具体活动以银行官方公告为准</p>
 </div>
-
-<div class="toast" id="toast"></div>
 
 <script>
 function showAllRows() {
     const hiddenRows = document.querySelectorAll('.hidden-row');
     hiddenRows.forEach(row => row.classList.remove('hidden-row'));
     document.querySelector('.show-more-btn').style.display = 'none';
-}
-
-function showToast(msg, duration) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), duration || 2000);
-}
-
-function copyTitle(btn) {
-    const title = btn.getAttribute('data-title');
-    navigator.clipboard.writeText(title).then(() => {
-        showToast('✅ 标题已复制，请在小红书 App 搜索查看');
-        btn.textContent = '✅ 已复制';
-        setTimeout(() => { btn.textContent = '📋 复制标题'; }, 2000);
-    }).catch(() => {
-        // fallback
-        const ta = document.createElement('textarea');
-        ta.value = title;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        showToast('✅ 标题已复制，请在小红书 App 搜索查看');
-        btn.textContent = '✅ 已复制';
-        setTimeout(() => { btn.textContent = '📋 复制标题'; }, 2000);
-    });
 }
 </script>
 
