@@ -352,12 +352,12 @@ html = """<!DOCTYPE html>
       <li>📊 <strong>质量筛选</strong>：仅展示 ≥""" + str(MIN_LIKES) + """ 赞的笔记，已过滤 """ + str(len(filtered_low_likes)) + """ 条低赞内容</li>
       <li>🏦 <strong>热门银行</strong>：<strong>建设银行、招商银行、工商银行、中信银行</strong>讨论度最高</li>
       <li>🎯 <strong>主流玩法</strong>：<strong>立减金、满减优惠、资产提升返现</strong>为三大主要形式</li>
-      <li>🔗 <strong>使用方式</strong>：卡片展示封面、标签和互动数据，点击标题可跳转原文（需已登录小红书）</li>
+      <li>🔗 <strong>使用方式</strong>：卡片展示封面、标签和互动数据，点击标题可跳转原文（跳转后需用手机APP扫码可查看原文）</li>
     </ul>
   </div>
 
   <div class="xhs-tip">
-    📱 <strong>温馨提示</strong>：小红书近期收紧了PC端访问限制，跳转后需用手机APP扫码查看可查看原文
+    📱 <strong>温馨提示</strong>：小红书近期收紧了PC端访问限制，跳转后需用手机APP扫码可查看原文
   </div>
 
   <!-- ==================== TOP 热门笔记 ==================== -->
