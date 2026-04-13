@@ -9,12 +9,18 @@ Features:
 - Quality filter: minimum likes threshold (MIN_LIKES)
 - New note highlight: notes published within rolling 7 days marked with 🆕
 - Focus banks: spotlight notes about key banks (FOCUS_BANKS) with ⭐
+- Note summary: REMOVED (xiaohongshu anti-scraping blocks get_feed_detail, 2026-04-12 decision)
 """
 import json
 import os
 import re
+import sys
 from datetime import date, datetime, timedelta
-from urllib.parse import quote
+
+# Fix Windows console encoding for emoji/CJK
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 BASE_DIR = r"c:\Users\kelvinyye\WorkBuddy\20260313150001"
 XHS_BASE = "https://www.xiaohongshu.com/explore/"
@@ -33,10 +39,9 @@ FOCUS_BANKS = {
 TODAY = date.today()
 CURRENT_YEAR = TODAY.year
 # Strict range: 1st day of (current_month - 2) to last day of current month
-# e.g. 2026-03-30 → 2026-01-01 ~ 2026-03-31
 _first_of_month = TODAY.replace(day=1)
-DATE_START = (_first_of_month - timedelta(days=59)).replace(day=1)  # ~2 months back, then snap to 1st
-DATE_END = (_first_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)  # last day of current month
+DATE_START = (_first_of_month - timedelta(days=59)).replace(day=1)
+DATE_END = (_first_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
 
 
 def note_id_to_date(note_id):
@@ -58,7 +63,7 @@ def is_recent_by_id(note_id):
     """Check if note was published within the strict 3-month window."""
     d = note_id_to_date(note_id)
     if d is None:
-        return False  # Can't parse → exclude
+        return False
     return DATE_START <= d <= DATE_END
 
 def to_int(v):
@@ -152,11 +157,13 @@ def extract_tags(title):
     for name, aliases in ACTIVITY_TYPES:
         if any(a in t for a in aliases):
             activities.append(name)
-    # Extract amounts (e.g., "10元", "66元", "188元")
     amounts = re.findall(r'(\d+(?:\.\d+)?)\s*元', title)
     return banks, activities, amounts
 
-# Load all search results (both old and new format files)
+
+# =====================================================
+# Load all search results
+# =====================================================
 all_notes = {}
 _search_files = [f"search_result_{i}.json" for i in range(1, SEARCH_FILES + 1)]
 _search_files += [f"search_result_new_{i}.json" for i in range(1, SEARCH_FILES + 1)]
@@ -173,7 +180,6 @@ for _sf in _search_files:
             data = json.loads(content)
     except (json.JSONDecodeError, IOError):
         continue
-    # Support both old format {data: {feeds: [...]}} and new format {feeds: [...]}
     feeds = data.get("feeds") or data.get("data", {}).get("feeds", [])
     if isinstance(data, list):
         feeds = data
@@ -197,7 +203,6 @@ for _sf in _search_files:
                 "comments": to_int(interact.get("commentCount", "0")),
                 "shares": to_int(interact.get("sharedCount", "0")),
                 "url": XHS_BASE + fid,
-                "cover": nc.get("cover", {}).get("urlDefault", "") or nc.get("cover", {}).get("urlPre", ""),
                 "type": nc.get("type", "normal"),
                 "is_new": is_new_note(fid),
                 "focus_bank": get_focus_bank(title_raw),
@@ -220,6 +225,9 @@ def is_bank_related(note):
 bank_notes = [n for n in notes if is_bank_related(n) and is_recent_by_id(n["id"]) and n["likes"] >= MIN_LIKES]
 filtered_low_likes = [n for n in notes if is_bank_related(n) and is_recent_by_id(n["id"]) and n["likes"] < MIN_LIKES]
 filtered_out = [n for n in notes if is_bank_related(n) and not is_recent_by_id(n["id"])]
+
+
+
 
 # Stats
 new_count = sum(1 for n in bank_notes if n["is_new"])
@@ -254,7 +262,7 @@ html = """<!DOCTYPE html>
   .header h1 { font-size: 28px; margin-bottom: 8px; }
   .header p { opacity: 0.9; font-size: 14px; }
   .container { max-width: 1200px; margin: 0 auto; padding: 24px 16px; }
-  .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px; }
   .summary-card { background: #fff; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
   .summary-card .num { font-size: 36px; font-weight: 700; color: #ff2442; }
   .summary-card .label { font-size: 13px; color: #999; margin-top: 4px; }
@@ -266,7 +274,7 @@ html = """<!DOCTYPE html>
   .note-card .title { font-size: 16px; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
   .note-card .title a { color: #333; text-decoration: none; }
   .note-card .title a:hover { color: #ff2442; text-decoration: underline; }
-  .note-card .author { font-size: 13px; color: #666; margin-bottom: 12px; }
+  .note-card .author { font-size: 13px; color: #666; margin-bottom: 8px; }
   .note-card .stats { display: flex; gap: 16px; flex-wrap: wrap; }
   .note-card .stat { font-size: 12px; color: #999; }
   .note-card .stat span { color: #ff2442; font-weight: 600; font-size: 14px; }
@@ -276,8 +284,6 @@ html = """<!DOCTYPE html>
   .note-card .rank.normal { background: #ddd; color: #666; }
   .note-card .link-btn { display: inline-block; margin-top: 12px; padding: 4px 14px; background: #ff2442; color: #fff; border-radius: 20px; font-size: 12px; text-decoration: none; transition: background .2s; }
   .note-card .link-btn:hover { background: #e0203a; }
-  .card-cover { margin: -20px -20px 12px -20px; border-radius: 12px 12px 0 0; overflow: hidden; max-height: 160px; }
-  .card-cover img { width: 100%; height: 160px; object-fit: cover; display: block; }
   .content-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
   .content-tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 500; }
   .content-tag.bank { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
@@ -318,6 +324,7 @@ html = """<!DOCTYPE html>
   .show-more-btn:hover { background: #fff0f2; }
   .show-more-btn:disabled { display: none; }
   .hidden-row { display: none; }
+  .td-summary { font-size: 12px; color: #888; margin-top: 4px; line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -352,7 +359,7 @@ html = """<!DOCTYPE html>
       <li>📊 <strong>质量筛选</strong>：仅展示 ≥""" + str(MIN_LIKES) + """ 赞的笔记，已过滤 """ + str(len(filtered_low_likes)) + """ 条低赞内容</li>
       <li>🏦 <strong>热门银行</strong>：<strong>建设银行、招商银行、工商银行、中信银行</strong>讨论度最高</li>
       <li>🎯 <strong>主流玩法</strong>：<strong>立减金、满减优惠、资产提升返现</strong>为三大主要形式</li>
-      <li>🔗 <strong>使用方式</strong>：卡片展示封面、标签和互动数据，点击标题可跳转原文（跳转后需用手机APP扫码可查看原文）</li>
+      <li>🔗 <strong>使用方式</strong>：卡片展示封面和互动数据，点击标题可跳转原文</li>
     </ul>
   </div>
 
@@ -374,13 +381,6 @@ for i, note in enumerate(top_notes, 1):
     if note["focus_bank"]:
         short = BANK_SHORT_NAMES.get(note["focus_bank"], note["focus_bank"])
         focus_tag = f' <span class="focus-badge">🏦 {short}</span>'
-    # Cover image
-    cover_html = ""
-    if note.get("cover"):
-        cover_url = note["cover"]
-        if cover_url.startswith("http://"):
-            cover_url = "https://" + cover_url[7:]
-        cover_html = f'<div class="card-cover"><img src="{esc(cover_url)}" alt="" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></div>'
     # Content tags
     banks, activities, amounts = note["tags"]
     tag_html = ""
@@ -396,7 +396,6 @@ for i, note in enumerate(top_notes, 1):
     html += f"""
       <div class="note-card">
         <div class="rank {rank_class}">{i}</div>
-        {cover_html}
         <div class="title"><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a>{new_tag}{focus_tag}</div>
         <div class="author">作者：{esc(note['author'])} | 📅 {note['publish_date']}</div>
         {tag_html}
@@ -434,7 +433,7 @@ html += """
       <tbody>
 """
 
-VISIBLE_ROWS = 15  # 默认显示前15行，其余折叠
+VISIBLE_ROWS = 15
 hidden_count = max(0, len(bank_notes) - VISIBLE_ROWS)
 
 for i, note in enumerate(bank_notes, 1):
@@ -442,14 +441,15 @@ for i, note in enumerate(bank_notes, 1):
     tags = ""
     if note["is_new"]:
         tags += '<span class="new-badge">NEW</span> '
-    # Show bank short names as tags
-    note_banks = note["tags"][0]  # banks list from extract_tags
+    note_banks = note["tags"][0]
     for bk in note_banks[:2]:
         short = BANK_SHORT_NAMES.get(bk, bk)
         tags += f'<span class="focus-badge">🏦 {short}</span> '
+    # Title in table
+    title_cell = f'<a href="{esc(note["url"])}" target="_blank">{esc(note["title"])}</a>'
     html += f"""        <tr{row_class}>
           <td>{i}</td>
-          <td><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a></td>
+          <td>{title_cell}</td>
           <td>{note['publish_date']}</td>
           <td>{tags}</td>
           <td>{esc(note['author'])}</td>
@@ -492,7 +492,7 @@ output_path = os.path.join(BASE_DIR, "bank_marketing_report.html")
 with open(output_path, "w", encoding="utf-8") as f:
     f.write(html)
 
-print(f"Report generated: {output_path}")
+print(f"\nReport generated: {output_path}")
 print(f"Total unique notes: {len(all_notes)}")
 print(f"Bank-related & recent (>={MIN_LIKES} likes): {len(bank_notes)}")
 print(f"Filtered out (low likes <{MIN_LIKES}): {len(filtered_low_likes)}")
