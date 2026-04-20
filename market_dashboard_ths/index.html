@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全球指数看板 | Global Index Dashboard (THS)</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2235;
+            --bg-card-hover: #1f2a40;
+            --border: #2a3654;
+            --text-primary: #e5e7eb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --green: #10b981;
+            --green-bg: rgba(16, 185, 129, 0.1);
+            --red: #ef4444;
+            --red-bg: rgba(239, 68, 68, 0.1);
+            --yellow: #f59e0b;
+            --orange: #f97316;
+            --purple: #8b5cf6;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow-x: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-bottom: 1px solid var(--border); padding: 14px 32px;
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px);
+        }
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .logo {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-size: 20px; font-weight: bold;
+        }
+        .header h1 { font-size: 22px; font-weight: 700; background: linear-gradient(90deg, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .status-badge {
+            display: flex; align-items: center; gap: 8px; padding: 5px 12px;
+            background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 20px; font-size: 12px; color: var(--accent-blue);
+        }
+        .data-source-tag {
+            padding: 4px 10px; background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 6px;
+            font-size: 11px; color: var(--yellow); font-weight: 600;
+        }
+        .update-time { font-size: 12px; color: var(--text-muted); }
+        .main { max-width: 1800px; margin: 0 auto; padding: 20px 32px; }
+        .index-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+        .index-card {
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+            padding: 16px 18px; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden;
+        }
+        .index-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .index-card:hover { background: var(--bg-card-hover); border-color: var(--accent-blue); transform: translateY(-2px); box-shadow: var(--shadow); }
+        .index-card:hover::before, .index-card.active::before { opacity: 1; }
+        .index-card.active { border-color: var(--accent-blue); background: var(--bg-card-hover); }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .card-name { font-size: 14px; font-weight: 600; }
+        .card-code { font-size: 11px; color: var(--text-muted); background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; }
+        .card-price { font-size: 26px; font-weight: 700; margin-bottom: 6px; font-feature-settings: 'tnum'; letter-spacing: -0.5px; }
+        .card-change { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; }
+        .card-change span { display: flex; align-items: center; gap: 3px; }
+        .up { color: var(--red); }
+        .down { color: var(--green); }
+        .flat { color: var(--text-muted); }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+        .ytd-badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .ytd-badge.positive { background: var(--red-bg); color: var(--red); }
+        .ytd-badge.negative { background: var(--green-bg); color: var(--green); }
+        .card-market { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+        .card-sparkline { margin-top: 8px; height: 36px; }
+        .stats-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 18px; }
+        .stat-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; text-align: center; }
+        .stat-label { font-size: 11px; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-value { font-size: 18px; font-weight: 700; font-feature-settings: 'tnum'; }
+        .stat-sub { font-size: 11px; margin-top: 3px; }
+        .charts-section { display: grid; grid-template-columns: 1fr; gap: 18px; }
+        .chart-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .chart-title { font-size: 16px; font-weight: 700; }
+        .chart-area { width: 100%; height: 420px; }
+        .chart-area-compare { width: 100%; height: 400px; }
+        .footer {
+            text-align: center; padding: 20px; font-size: 11px; color: var(--text-muted);
+            border-top: 1px solid var(--border); margin-top: 24px;
+        }
+        .footer a { color: var(--accent-blue); text-decoration: none; }
+        .market-flag { font-size: 14px; margin-right: 2px; }
+        @media (max-width: 1400px) { .index-cards { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 1100px) { .index-cards { grid-template-columns: repeat(3, 1fr); } .stats-row { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 768px) {
+            .header { padding: 12px 16px; flex-wrap: wrap; gap: 10px; }
+            .main { padding: 14px 16px; }
+            .index-cards { grid-template-columns: repeat(2, 1fr); }
+            .card-price { font-size: 20px; }
+            .chart-area { height: 340px; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+            <div><h1>全球指数看板 <span style="font-size:13px;font-weight:400;color:var(--text-muted);margin-left:4px;">Global Index Dashboard</span></h1></div>
+        </div>
+        <div class="header-right">
+            <div class="data-source-tag">📊 同花顺 iFinD</div>
+            <div class="status-badge">
+                <span>📈 8 Indices</span>
+            </div>
+            <div class="update-time" id="updateTime">数据截至: 2026-03-27</div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="index-cards" id="indexCards"></div>
+        <div class="stats-row" id="statsRow"></div>
+        <div class="charts-section">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <span class="chart-title" id="chartTitle">上证指数 - 走势</span>
+                </div>
+                <div class="chart-area" id="mainChart"></div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-header">
+                    <span class="chart-title" id="compareTitle">今年以来涨跌幅对比（归一化）</span>
+                </div>
+                <div class="chart-area-compare" id="compareChart"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        数据来源：<a href="https://www.51ifind.com/" target="_blank">同花顺 iFinD EDB</a> &nbsp;|&nbsp; 仅供参考，不构成投资建议 &nbsp;|&nbsp; 内部测试版 v3.0-ths &nbsp;|&nbsp; 8 大全球指数
+    </footer>
+
+    <script>
+    // ====================================================================
+    //  全球指数看板 v3.0 - 同花顺 iFinD EDB 数据源
+    //  数据预嵌入方式，支持8个全球主要指数
+    // ====================================================================
+
+    // ======== 同花顺 EDB 数据（预嵌入） ========
+    const RAW_DATA = {
+        "sh_composite": {
+            name: "上证指数", short: "SSE", color: "#3b82f6", market: "🇨🇳 A股",
+            data: [["2026-01-05",4023.42],["2026-01-06",4083.67],["2026-01-07",4085.77],["2026-01-08",4082.98],["2026-01-09",4120.43],["2026-01-12",4165.29],["2026-01-13",4138.76],["2026-01-14",4126.09],["2026-01-15",4112.60],["2026-01-16",4101.91],["2026-01-19",4114.00],["2026-01-20",4113.65],["2026-01-21",4116.94],["2026-01-22",4122.58],["2026-01-23",4136.16],["2026-01-26",4132.61],["2026-01-27",4139.90],["2026-01-28",4151.24],["2026-01-29",4157.98],["2026-01-30",4117.95],["2026-02-02",4015.75],["2026-02-03",4067.74],["2026-02-04",4102.20],["2026-02-05",4075.92],["2026-02-06",4065.58],["2026-02-09",4123.09],["2026-02-10",4128.37],["2026-02-11",4131.98],["2026-02-12",4134.02],["2026-02-13",4082.07],["2026-02-24",4117.41],["2026-02-25",4147.23],["2026-02-26",4146.63],["2026-02-27",4162.88],["2026-03-02",4182.59],["2026-03-03",4122.68],["2026-03-04",4082.47],["2026-03-05",4108.57],["2026-03-06",4124.19],["2026-03-09",4096.60],["2026-03-10",4123.14],["2026-03-11",4133.43],["2026-03-12",4129.10],["2026-03-13",4095.45],["2026-03-16",4084.79],["2026-03-17",4049.91],["2026-03-18",4062.98],["2026-03-19",4006.55],["2026-03-20",3957.05],["2026-03-23",3813.28],["2026-03-24",3881.28],["2026-03-25",3931.84],["2026-03-26",3889.08],["2026-03-27",3913.72]]
+        },
+        "cyb": {
+            name: "创业板指", short: "CYB", color: "#a855f7", market: "🇨🇳 A股",
+            data: [["2026-01-05",3294.55],["2026-01-06",3319.29],["2026-01-07",3329.69],["2026-01-08",3302.31],["2026-01-09",3327.81],["2026-01-12",3388.34],["2026-01-13",3321.89],["2026-01-14",3349.14],["2026-01-15",3367.92],["2026-01-16",3361.02],["2026-01-19",3337.61],["2026-01-20",3277.98],["2026-01-21",3295.52],["2026-01-22",3328.65],["2026-01-23",3349.50],["2026-01-26",3319.15],["2026-01-27",3342.60],["2026-01-28",3323.56],["2026-01-29",3304.51],["2026-01-30",3346.36],["2026-02-02",3264.11],["2026-02-03",3324.89],["2026-02-04",3311.51],["2026-02-05",3260.28],["2026-02-06",3236.46],["2026-02-09",3332.77],["2026-02-10",3320.54],["2026-02-11",3284.74],["2026-02-12",3328.06],["2026-02-13",3275.96],["2026-02-24",3308.26],["2026-02-25",3354.82],["2026-02-26",3344.98],["2026-02-27",3310.30],["2026-03-02",3294.16],["2026-03-03",3209.48],["2026-03-04",3164.37],["2026-03-05",3216.94],["2026-03-06",3229.30],["2026-03-09",3208.58],["2026-03-10",3306.14],["2026-03-11",3349.53],["2026-03-12",3317.52],["2026-03-13",3310.28],["2026-03-16",3357.02],["2026-03-17",3280.06],["2026-03-18",3346.37],["2026-03-19",3309.10],["2026-03-20",3352.10],["2026-03-23",3235.22],["2026-03-24",3251.55],["2026-03-25",3316.97],["2026-03-26",3272.49],["2026-03-27",3295.88]]
+        },
+        "hsi": {
+            name: "恒生指数", short: "HSI", color: "#ea580c", market: "🇭🇰 港股",
+            data: [["2026-01-02",26338.47],["2026-01-05",26347.24],["2026-01-06",26710.45],["2026-01-07",26458.95],["2026-01-08",26149.31],["2026-01-09",26231.79],["2026-01-12",26608.48],["2026-01-13",26848.47],["2026-01-14",26999.81],["2026-01-15",26923.62],["2026-01-16",26844.96],["2026-01-19",26563.90],["2026-01-20",26487.51],["2026-01-21",26585.06],["2026-01-22",26629.96],["2026-01-23",26749.51],["2026-01-26",26765.52],["2026-01-27",27126.95],["2026-01-28",27826.91],["2026-01-29",27968.09],["2026-01-30",27387.11],["2026-02-02",26775.57],["2026-02-03",26834.77],["2026-02-04",26847.32],["2026-02-05",26885.24],["2026-02-06",26559.95],["2026-02-09",27027.16],["2026-02-10",27183.15],["2026-02-11",27266.38],["2026-02-12",27032.54],["2026-02-13",26567.12],["2026-02-16",26705.94],["2026-02-20",26413.35],["2026-02-23",27081.91],["2026-02-24",26590.32],["2026-02-25",26765.72],["2026-02-26",26381.02],["2026-02-27",26630.54],["2026-03-02",26059.85],["2026-03-03",25768.08],["2026-03-04",25249.48],["2026-03-05",25321.34],["2026-03-06",25757.29],["2026-03-09",25408.46],["2026-03-10",25959.90],["2026-03-11",25898.76],["2026-03-12",25716.76],["2026-03-13",25465.60],["2026-03-16",25834.02],["2026-03-17",25868.54],["2026-03-18",26025.42],["2026-03-19",25500.58],["2026-03-20",25277.32],["2026-03-23",24382.47],["2026-03-24",25063.71],["2026-03-25",25335.95],["2026-03-26",24856.43],["2026-03-27",24951.88]]
+        },
+        "hstech": {
+            name: "恒生科技指数", short: "HSTECH", color: "#fb923c", market: "🇭🇰 港股",
+            data: [["2026-01-02",5736.44],["2026-01-05",5741.63],["2026-01-06",5825.26],["2026-01-07",5738.52],["2026-01-08",5678.34],["2026-01-09",5687.14],["2026-01-12",5863.20],["2026-01-13",5869.79],["2026-01-14",5908.26],["2026-01-15",5828.35],["2026-01-16",5822.18],["2026-01-19",5749.98],["2026-01-20",5683.44],["2026-01-21",5746.30],["2026-01-22",5762.44],["2026-01-23",5798.01],["2026-01-26",5725.99],["2026-01-27",5754.72],["2026-01-28",5900.16],["2026-01-29",5841.10],["2026-01-30",5718.18],["2026-02-02",5526.31],["2026-02-03",5467.26],["2026-02-04",5366.44],["2026-02-05",5406.13],["2026-02-06",5346.20],["2026-02-09",5417.60],["2026-02-10",5451.03],["2026-02-11",5499.99],["2026-02-12",5408.98],["2026-02-13",5360.42],["2026-02-16",5367.52],["2026-02-20",5211.50],["2026-02-23",5385.35],["2026-02-24",5270.70],["2026-02-25",5260.50],["2026-02-26",5109.33],["2026-02-27",5137.84],["2026-03-02",4989.37],["2026-03-03",4876.53],["2026-03-04",4829.50],["2026-03-05",4796.33],["2026-03-06",4947.50],["2026-03-09",4941.73],["2026-03-10",5060.53],["2026-03-11",5054.85],["2026-03-12",5027.64],["2026-03-13",4978.08],["2026-03-16",5111.78],["2026-03-17",5107.64],["2026-03-18",5108.30],["2026-03-19",4996.28],["2026-03-20",4872.38],["2026-03-23",4712.48],["2026-03-24",4830.89],["2026-03-25",4922.94],["2026-03-26",4761.54],["2026-03-27",4778.01]]
+        },
+        "nikkei": {
+            name: "日经225", short: "N225", color: "#f472b6", market: "🇯🇵 日股",
+            data: [["2026-01-05",51832.80],["2026-01-06",52518.08],["2026-01-07",51961.98],["2026-01-08",51117.26],["2026-01-09",51939.89],["2026-01-13",53549.16],["2026-01-14",54341.23],["2026-01-15",54110.50],["2026-01-16",53936.17],["2026-01-19",53583.57],["2026-01-20",52991.10],["2026-01-21",52774.64],["2026-01-22",53688.89],["2026-01-23",53846.87],["2026-01-26",52885.25],["2026-01-27",53333.54],["2026-01-28",53358.71],["2026-01-29",53375.60],["2026-01-30",53322.85],["2026-02-02",52655.18],["2026-02-03",54720.66],["2026-02-04",54293.36],["2026-02-05",53818.04],["2026-02-06",54253.68],["2026-02-09",56363.94],["2026-02-10",57650.54],["2026-02-12",57639.84],["2026-02-13",56941.97],["2026-02-16",56806.41],["2026-02-17",56566.49],["2026-02-18",57143.84],["2026-02-19",57467.83],["2026-02-20",56825.70],["2026-02-24",57321.09],["2026-02-25",58583.12],["2026-02-26",58753.39],["2026-02-27",58850.27],["2026-03-02",58057.24],["2026-03-03",56279.05],["2026-03-04",54245.54],["2026-03-05",55278.06],["2026-03-06",55620.84],["2026-03-09",52728.72],["2026-03-10",54248.39],["2026-03-11",55025.37],["2026-03-12",54452.96],["2026-03-13",53819.61],["2026-03-16",53751.15],["2026-03-17",53700.39],["2026-03-18",55239.40],["2026-03-19",53372.53],["2026-03-23",51515.49],["2026-03-24",52252.28],["2026-03-25",53749.62],["2026-03-26",53603.65],["2026-03-27",53373.07]]
+        },
+        "kospi": {
+            name: "韩国KOSPI", short: "KOSPI", color: "#94a3b8", market: "🇰🇷 韩股",
+            data: [["2026-01-02",4309.63],["2026-01-05",4457.52],["2026-01-06",4525.48],["2026-01-07",4551.06],["2026-01-08",4552.37],["2026-01-09",4586.32],["2026-01-12",4624.79],["2026-01-13",4692.64],["2026-01-14",4723.10],["2026-01-15",4797.55],["2026-01-16",4840.74],["2026-01-19",4904.66],["2026-01-20",4885.75],["2026-01-21",4909.93],["2026-01-22",4952.53],["2026-01-23",4990.07],["2026-01-26",4949.59],["2026-01-27",5084.85],["2026-01-28",5170.81],["2026-01-29",5221.25],["2026-01-30",5224.36],["2026-02-02",4949.67],["2026-02-03",5288.08],["2026-02-04",5371.10],["2026-02-05",5163.57],["2026-02-06",5089.14],["2026-02-09",5298.04],["2026-02-10",5301.69],["2026-02-11",5354.49],["2026-02-12",5522.27],["2026-02-13",5507.01],["2026-02-19",5677.25],["2026-02-20",5808.53],["2026-02-23",5846.09],["2026-02-24",5969.64],["2026-02-25",6083.86],["2026-02-26",6307.27],["2026-02-27",6244.13],["2026-03-03",5791.91],["2026-03-04",5093.54],["2026-03-05",5583.90],["2026-03-06",5584.87],["2026-03-09",5251.87],["2026-03-10",5532.59],["2026-03-11",5609.95],["2026-03-12",5583.25],["2026-03-13",5487.24],["2026-03-16",5549.85],["2026-03-17",5640.48],["2026-03-18",5925.03],["2026-03-19",5763.22],["2026-03-20",5781.20],["2026-03-23",5405.75],["2026-03-24",5553.92],["2026-03-25",5642.21],["2026-03-26",5460.46],["2026-03-27",5438.87]]
+        },
+        "nasdaq": {
+            name: "纳斯达克综合", short: "IXIC", color: "#16a34a", market: "🇺🇸 美股",
+            data: [["2026-01-02",23235.63],["2026-01-05",23395.82],["2026-01-06",23547.17],["2026-01-07",23584.27],["2026-01-08",23480.02],["2026-01-09",23671.35],["2026-01-12",23733.90],["2026-01-13",23709.87],["2026-01-14",23471.75],["2026-01-15",23530.02],["2026-01-16",23515.39],["2026-01-20",22954.32],["2026-01-21",23224.82],["2026-01-22",23436.02],["2026-01-23",23501.24],["2026-01-26",23601.36],["2026-01-27",23817.10],["2026-01-28",23857.45],["2026-01-29",23685.12],["2026-01-30",23461.82],["2026-02-02",23592.11],["2026-02-03",23255.19],["2026-02-04",22904.58],["2026-02-05",22540.59],["2026-02-06",23031.21],["2026-02-09",23238.67],["2026-02-10",23102.47],["2026-02-11",23066.47],["2026-02-12",22597.15],["2026-02-13",22546.67],["2026-02-17",22578.38],["2026-02-18",22753.63],["2026-02-19",22682.73],["2026-02-20",22886.07],["2026-02-23",22627.27],["2026-02-24",22863.68],["2026-02-25",23152.08],["2026-02-26",22878.38],["2026-02-27",22668.21],["2026-03-02",22748.86],["2026-03-03",22516.69],["2026-03-04",22807.48],["2026-03-05",22748.99],["2026-03-06",22387.68],["2026-03-09",22695.95],["2026-03-10",22697.10],["2026-03-11",22716.13],["2026-03-12",22311.98],["2026-03-13",22105.36],["2026-03-16",22374.18],["2026-03-17",22479.53],["2026-03-18",22152.42],["2026-03-19",22090.69],["2026-03-20",21647.61],["2026-03-23",21946.76],["2026-03-24",21761.89],["2026-03-25",21929.83],["2026-03-26",21408.08],["2026-03-27",20948.36]]
+        },
+        "sp500": {
+            name: "标普500", short: "SPX", color: "#4ade80", market: "🇺🇸 美股",
+            data: [["2026-01-02",6858.47],["2026-01-05",6902.05],["2026-01-06",6944.82],["2026-01-07",6920.93],["2026-01-08",6921.46],["2026-01-09",6966.28],["2026-01-12",6977.27],["2026-01-13",6963.74],["2026-01-14",6926.60],["2026-01-15",6944.47],["2026-01-16",6940.01],["2026-01-20",6796.86],["2026-01-21",6875.62],["2026-01-22",6913.35],["2026-01-23",6915.61],["2026-01-26",6950.23],["2026-01-27",6978.60],["2026-01-28",6978.03],["2026-01-29",6969.01],["2026-01-30",6939.03],["2026-02-02",6976.44],["2026-02-03",6917.81],["2026-02-04",6882.72],["2026-02-05",6798.40],["2026-02-06",6932.30],["2026-02-09",6964.82],["2026-02-10",6941.81],["2026-02-11",6941.47],["2026-02-12",6832.76],["2026-02-13",6836.17],["2026-02-17",6843.22],["2026-02-18",6881.31],["2026-02-19",6861.89],["2026-02-20",6909.51],["2026-02-23",6837.75],["2026-02-24",6890.07],["2026-02-25",6946.13],["2026-02-26",6908.86],["2026-02-27",6878.88],["2026-03-02",6881.62],["2026-03-03",6816.63],["2026-03-04",6869.50],["2026-03-05",6830.71],["2026-03-06",6740.02],["2026-03-09",6795.99],["2026-03-10",6781.48],["2026-03-11",6775.80],["2026-03-12",6672.62],["2026-03-13",6632.19],["2026-03-16",6699.38],["2026-03-17",6716.09],["2026-03-18",6624.70],["2026-03-19",6606.49],["2026-03-20",6506.48],["2026-03-23",6581.00],["2026-03-24",6556.37],["2026-03-25",6591.90],["2026-03-26",6477.16],["2026-03-27",6368.85]]
+        }
+    };
+
+    const INDEX_ORDER = ["sh_composite", "cyb", "hsi", "hstech", "nikkei", "kospi", "nasdaq", "sp500"];
+    let activeIndex = "sh_composite";
+    let mainChartInstance = null;
+    let compareChartInstance = null;
+
+    // ======== 初始化 ========
+    document.addEventListener("DOMContentLoaded", () => {
+        mainChartInstance = echarts.init(document.getElementById("mainChart"));
+        compareChartInstance = echarts.init(document.getElementById("compareChart"));
+        window.addEventListener("resize", () => {
+            mainChartInstance && mainChartInstance.resize();
+            compareChartInstance && compareChartInstance.resize();
+        });
+        renderAll();
+    });
+
+    function renderAll() {
+        renderCards();
+        renderStats();
+        renderMainChart();
+        renderCompareChart();
+    }
+
+    // ======== 卡片渲染 ========
+    function renderCards() {
+        const container = document.getElementById("indexCards");
+        container.innerHTML = "";
+
+        INDEX_ORDER.forEach(key => {
+            const meta = RAW_DATA[key];
+            const closes = meta.data.map(d => d[1]);
+            const dates = meta.data.map(d => d[0]);
+            const lastPrice = closes[closes.length - 1];
+            const prevPrice = closes.length > 1 ? closes[closes.length - 2] : lastPrice;
+            const firstPrice = closes[0];
+
+            const dayChange = lastPrice - prevPrice;
+            const dayChangePct = prevPrice > 0 ? ((lastPrice - prevPrice) / prevPrice * 100) : 0;
+            const ytdPct = firstPrice > 0 ? ((lastPrice - firstPrice) / firstPrice * 100) : 0;
+
+            const colorClass = dayChangePct > 0 ? "up" : dayChangePct < 0 ? "down" : "flat";
+            const isUp = dayChangePct >= 0;
+
+            const card = document.createElement("div");
+            card.className = `index-card ${key === activeIndex ? "active" : ""}`;
+            card.onclick = () => selectIndex(key);
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <span class="card-name"><span class="market-flag">${meta.market.split(' ')[0]}</span> ${meta.name}</span>
+                    <span class="card-code">${meta.short}</span>
+                </div>
+                <div class="card-price ${colorClass}">${fmtNum(lastPrice)}</div>
+                <div class="card-change">
+                    <span class="${colorClass}">
+                        ${isUp ? "&#9650;" : dayChangePct < 0 ? "&#9660;" : "&#9644;"}
+                        ${fmtNum(Math.abs(dayChange))}
+                    </span>
+                    <span class="${colorClass}">
+                        ${isUp ? "+" : ""}${dayChangePct.toFixed(2)}%
+                    </span>
+                </div>
+                <div class="card-footer">
+                    <div class="ytd-badge ${ytdPct >= 0 ? "positive" : "negative"}">YTD ${ytdPct >= 0 ? "+" : ""}${ytdPct.toFixed(2)}%</div>
+                    <div class="card-market">${meta.market}</div>
+                </div>
+                <div class="card-sparkline" id="spark-${key}"></div>
+            `;
+
+            container.appendChild(card);
+            setTimeout(() => renderSparkline(`spark-${key}`, closes, meta.color), 50);
+        });
+    }
+
+    function renderSparkline(containerId, data, color) {
+        const el = document.getElementById(containerId);
+        if (!el || data.length === 0) return;
+        const chart = echarts.init(el);
+        chart.setOption({
+            grid: { top: 2, bottom: 2, left: 0, right: 0 },
+            xAxis: { show: false, type: "category", data: data.map((_, i) => i) },
+            yAxis: { show: false, type: "value", min: "dataMin", max: "dataMax" },
+            series: [{
+                type: "line", data: data, showSymbol: false,
+                lineStyle: { width: 1.5, color: color },
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: color + "40" },
+                        { offset: 1, color: color + "05" },
+                    ])
+                },
+            }]
+        });
+        window.addEventListener("resize", () => chart.resize());
+    }
+
+    // ======== 统计栏 ========
+    function renderStats() {
+        const container = document.getElementById("statsRow");
+        const meta = RAW_DATA[activeIndex];
+        const closes = meta.data.map(d => d[1]);
+        const dates = meta.data.map(d => d[0]);
+
+        if (closes.length === 0) { container.innerHTML = ""; return; }
+
+        const firstClose = closes[0], lastClose = closes[closes.length - 1];
+        const maxHigh = Math.max(...closes), minLow = Math.min(...closes);
+        const ytdReturn = ((lastClose - firstClose) / firstClose * 100);
+
+        let dailyReturns = [];
+        for (let i = 1; i < closes.length; i++) {
+            dailyReturns.push((closes[i] - closes[i-1]) / closes[i-1]);
+        }
+        const avgReturn = dailyReturns.length > 0 ? dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length : 0;
+        const variance = dailyReturns.length > 0 ? dailyReturns.reduce((a, b) => a + Math.pow(b - avgReturn, 2), 0) / dailyReturns.length : 0;
+        const volatility = Math.sqrt(variance) * Math.sqrt(252) * 100;
+
+        const ytdClass = ytdReturn >= 0 ? "up" : "down";
+
+        container.innerHTML = `
+            <div class="stat-item">
+                <div class="stat-label">起始点位</div>
+                <div class="stat-value">${fmtNum(firstClose)}</div>
+                <div class="stat-sub" style="color:var(--text-muted)">${dates[0]}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">最新点位</div>
+                <div class="stat-value">${fmtNum(lastClose)}</div>
+                <div class="stat-sub" style="color:var(--text-muted)">${dates[dates.length - 1]}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">区间最高</div>
+                <div class="stat-value" style="color:var(--red)">${fmtNum(maxHigh)}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">区间最低</div>
+                <div class="stat-value" style="color:var(--green)">${fmtNum(minLow)}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">区间涨跌</div>
+                <div class="stat-value ${ytdClass}">${ytdReturn >= 0 ? "+" : ""}${ytdReturn.toFixed(2)}%</div>
+                <div class="stat-sub" style="color:var(--text-muted)">波动率 ${volatility.toFixed(1)}%</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">交易日数</div>
+                <div class="stat-value" style="color:var(--accent-cyan)">${closes.length}</div>
+                <div class="stat-sub" style="color:var(--text-muted)">2026 YTD</div>
+            </div>
+        `;
+    }
+
+    // ======== 主图表 ========
+    function renderMainChart() {
+        const meta = RAW_DATA[activeIndex];
+        const closes = meta.data.map(d => d[1]);
+        const dates = meta.data.map(d => d[0]);
+
+        document.getElementById("chartTitle").textContent = `${meta.name} - 日线走势`;
+
+        const option = {
+            backgroundColor: "transparent",
+            tooltip: {
+                trigger: "axis",
+                axisPointer: { type: "cross", crossStyle: { color: "#6b7280" } },
+                backgroundColor: "rgba(15, 23, 42, 0.95)",
+                borderColor: "rgba(59, 130, 246, 0.3)",
+                textStyle: { color: "#e5e7eb", fontSize: 13 },
+                formatter: function(params) {
+                    const idx = params[0].dataIndex;
+                    const close = closes[idx];
+                    const prevClose = idx > 0 ? closes[idx - 1] : close;
+                    const chg = prevClose > 0 ? ((close - prevClose) / prevClose * 100) : 0;
+                    const chgColor = chg >= 0 ? "#ef4444" : "#10b981";
+                    const ytd = ((close - closes[0]) / closes[0] * 100);
+                    const ytdColor = ytd >= 0 ? "#ef4444" : "#10b981";
+                    return `
+                        <div style="font-weight:600;margin-bottom:6px">${dates[idx]}</div>
+                        <div>收盘: <b>${fmtNum(close)}</b></div>
+                        <div style="color:${chgColor};font-weight:600;margin-top:4px">日涨跌: ${chg >= 0 ? "+" : ""}${chg.toFixed(2)}%</div>
+                        <div style="color:${ytdColor};margin-top:2px">YTD: ${ytd >= 0 ? "+" : ""}${ytd.toFixed(2)}%</div>
+                    `;
+                }
+            },
+            grid: { top: 40, bottom: 60, left: 70, right: 40 },
+            xAxis: {
+                type: "category", data: dates,
+                axisLine: { lineStyle: { color: "#2a3654" } },
+                axisTick: { show: false },
+                axisLabel: { color: "#6b7280", fontSize: 11 },
+                splitLine: { show: false },
+            },
+            yAxis: {
+                type: "value", min: "dataMin", max: "dataMax",
+                axisLine: { show: false }, axisTick: { show: false },
+                axisLabel: { color: "#6b7280", fontSize: 11 },
+                splitLine: { lineStyle: { color: "#1e293b", type: "dashed" } },
+            },
+            dataZoom: [
+                { type: "inside", start: 0, end: 100 },
+                { type: "slider", start: 0, end: 100, height: 20, bottom: 6,
+                  borderColor: "transparent", backgroundColor: "rgba(255,255,255,0.03)",
+                  fillerColor: "rgba(59,130,246,0.15)",
+                  handleStyle: { color: "#3b82f6", borderColor: "#3b82f6" },
+                  textStyle: { color: "#6b7280" } }
+            ],
+            series: [{
+                name: meta.name, type: "line", data: closes,
+                showSymbol: false, smooth: 0.3,
+                lineStyle: { width: 2, color: meta.color },
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: meta.color + "50" },
+                        { offset: 0.5, color: meta.color + "20" },
+                        { offset: 1, color: meta.color + "02" },
+                    ])
+                },
+                markLine: {
+                    silent: true, symbol: "none",
+                    data: [{
+                        yAxis: closes[0],
+                        label: { formatter: `年初 ${fmtNum(closes[0])}`, color: "#f59e0b", fontSize: 11 },
+                        lineStyle: { color: "#f59e0b", type: "dashed", width: 1 }
+                    }]
+                }
+            }],
+        };
+
+        mainChartInstance.setOption(option, true);
+    }
+
+    // ======== 对比图表 ========
+    function renderCompareChart() {
+        const series = [];
+        const legendData = [];
+
+        // 合并所有日期
+        const allDatesSet = new Set();
+        INDEX_ORDER.forEach(key => {
+            RAW_DATA[key].data.forEach(d => allDatesSet.add(d[0]));
+        });
+        const mergedDates = Array.from(allDatesSet).sort();
+
+        INDEX_ORDER.forEach(key => {
+            const meta = RAW_DATA[key];
+            const dateMap = {};
+            meta.data.forEach(d => { dateMap[d[0]] = d[1]; });
+
+            const base = meta.data[0][1];
+            const aligned = mergedDates.map(d => {
+                if (dateMap[d] !== undefined) {
+                    return +((dateMap[d] - base) / base * 100).toFixed(4);
+                }
+                return null;
+            });
+
+            legendData.push(meta.name);
+            series.push({
+                name: meta.name, type: "line", data: aligned,
+                showSymbol: false, smooth: 0.2, connectNulls: true,
+                itemStyle: { color: meta.color },
+                lineStyle: { width: 2, color: meta.color },
+                emphasis: { lineStyle: { width: 3 } },
+            });
+        });
+
+        const option = {
+            backgroundColor: "transparent",
+            tooltip: {
+                trigger: "axis",
+                backgroundColor: "rgba(15, 23, 42, 0.95)",
+                borderColor: "rgba(59, 130, 246, 0.3)",
+                textStyle: { color: "#e5e7eb", fontSize: 13 },
+                formatter: function(params) {
+                    let html = `<div style="font-weight:600;margin-bottom:6px">${params[0].axisValue}</div>`;
+                    params.sort((a, b) => (b.value || 0) - (a.value || 0));
+                    params.forEach(p => {
+                        if (p.value == null) return;
+                        const color = p.value >= 0 ? "#ef4444" : "#10b981";
+                        html += `<div style="display:flex;justify-content:space-between;gap:16px">
+                            <span>${p.marker} ${p.seriesName}</span>
+                            <span style="color:${color};font-weight:600">${p.value >= 0 ? "+" : ""}${p.value.toFixed(2)}%</span>
+                        </div>`;
+                    });
+                    return html;
+                }
+            },
+            legend: {
+                data: legendData, top: 0,
+                textStyle: { color: "#9ca3af", fontSize: 12 },
+                icon: "roundRect", itemWidth: 16, itemHeight: 3,
+            },
+            grid: { top: 40, bottom: 50, left: 60, right: 40 },
+            xAxis: {
+                type: "category", data: mergedDates,
+                axisLine: { lineStyle: { color: "#2a3654" } },
+                axisTick: { show: false },
+                axisLabel: { color: "#6b7280", fontSize: 11 },
+                splitLine: { show: false },
+            },
+            yAxis: {
+                type: "value",
+                axisLine: { show: false }, axisTick: { show: false },
+                axisLabel: { color: "#6b7280", fontSize: 11, formatter: "{value}%" },
+                splitLine: { lineStyle: { color: "#1e293b", type: "dashed" } },
+            },
+            dataZoom: [{ type: "inside", start: 0, end: 100 }],
+            series: series,
+        };
+
+        compareChartInstance.setOption(option, true);
+    }
+
+    // ======== 交互 ========
+    function selectIndex(key) {
+        activeIndex = key;
+        document.querySelectorAll(".index-card").forEach((card, i) => {
+            card.classList.toggle("active", INDEX_ORDER[i] === key);
+        });
+        renderStats();
+        renderMainChart();
+    }
+
+    // ======== 工具函数 ========
+    function fmtNum(num) {
+        if (num === undefined || num === null || isNaN(num)) return "--";
+        return num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    </script>
+</body>
+</html>

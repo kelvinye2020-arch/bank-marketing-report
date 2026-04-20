@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Test EM Realtime</title></head>
+<body>
+<h2>东方财富实时行情测试</h2>
+<pre id="result">加载中...</pre>
+<script>
+// 测试东方财富 JSONP 实时行情
+const secids = [
+    { id: "100.N225", name: "日经225" },
+    { id: "100.KS11", name: "韩国KOSPI" }
+];
+
+let counter = 0;
+const results = [];
+
+secids.forEach(sec => {
+    const cbName = `__emrt_${counter++}`;
+    window[cbName] = function(data) {
+        const d = data?.data;
+        const info = `${sec.name} (${sec.id}):\n  f43(最新价)=${d?.f43}, f44(涨跌)=${d?.f44}, f170(涨跌幅)=${d?.f170}\n  f46(今开)=${d?.f46}, f60(昨收)=${d?.f60}, f47(成交量)=${d?.f47}, f48(成交额)=${d?.f48}\n  f58(名称)=${d?.f58}, f57(代码)=${d?.f57}\n  raw: ${JSON.stringify(d).slice(0, 500)}`;
+        results.push(info);
+        document.getElementById("result").textContent = results.join("\n\n");
+        delete window[cbName];
+    };
+    const script = document.createElement("script");
+    script.src = `https://push2.eastmoney.com/api/qt/stock/get?secid=${sec.id}&fields=f43,f44,f45,f46,f47,f48,f50,f57,f58,f60,f169,f170&ut=fa5fd1943c7b386f172d6893dbfba10b&fltt=2&invt=2&cb=${cbName}`;
+    script.onerror = () => {
+        results.push(`${sec.name}: SCRIPT ERROR`);
+        document.getElementById("result").textContent = results.join("\n\n");
+    };
+    document.head.appendChild(script);
+});
+
+setTimeout(() => {
+    if (results.length < secids.length) {
+        document.getElementById("result").textContent += "\n\n--- 超时，部分数据未返回 ---";
+    }
+}, 10000);
+</script>
+</body>
+</html>

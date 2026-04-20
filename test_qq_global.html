@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>腾讯行情接口 - 全球指数代码测试</title>
+<style>
+body { font-family: system-ui; padding: 20px; background: #1a1a2e; color: #eee; max-width: 1200px; margin: 0 auto; }
+h1 { color: #4fc3f7; }
+h2 { color: #ffd54f; margin-top: 30px; }
+.test-item { margin: 8px 0; padding: 10px; background: #16213e; border-radius: 6px; display: flex; align-items: flex-start; gap: 10px; }
+.code { font-family: monospace; background: #0d1b2a; padding: 2px 8px; border-radius: 3px; white-space: nowrap; min-width: 200px; }
+.data { font-size: 12px; color: #aaa; word-break: break-all; flex: 1; }
+.success { background: #1b5e20 !important; }
+.success .data { color: #a5d6a7; }
+.fail { opacity: 0.5; }
+.status { font-weight: bold; min-width: 70px; }
+.status.ok { color: #66bb6a; }
+.status.no { color: #ef5350; }
+.status.wait { color: #ffb74d; }
+button { padding: 12px 24px; font-size: 16px; background: #4fc3f7; color: #000; border: none; border-radius: 6px; cursor: pointer; margin: 10px 5px; font-weight: bold; }
+button:hover { background: #81d4fa; }
+#progress { margin: 15px 0; font-size: 14px; color: #ffb74d; }
+.summary { background: #1b3a5e; padding: 15px; border-radius: 8px; margin: 15px 0; }
+.summary h3 { color: #4fc3f7; margin-top: 0; }
+</style>
+</head>
+<body>
+<h1>🔍 腾讯行情接口 - 全球指数代码全面测试</h1>
+<p>自动测试所有可能的代码格式，找出能获取日经225和韩国KOSPI数据的正确代码。</p>
+<button onclick="runAllTests()">▶ 开始全部测试</button>
+<button onclick="runQuickTest()">⚡ 仅测试高概率代码</button>
+<div id="progress"></div>
+<div id="summary" style="display:none"></div>
+<div id="results"></div>
+
+<script>
+// ========== 所有可能的代码格式 ==========
+
+const quickCodes = [
+    // 最可能的 - int_ 系列（新浪格式，腾讯可能兼容）
+    "int_nikkei", "int_kospi",
+    "int_hangseng", // 对照
+    // 直接代码
+    "N225", "KS11", "NKY", "KOSPI",
+    // hk 前缀系列
+    "hkN225", "hkKS11", "hkNKY", "hkKOSPI",
+    // us 前缀系列
+    "usN225", "usKS11",
+    // 已知有效（对照组）
+    "hkHSI", "hkHSTECH", "us.IXIC", "sh000001",
+];
+
+const allCodes = [
+    // ===== 最可能的格式 =====
+    "int_nikkei", "int_kospi", "int_hangseng",
+    "int_.N225", "int_.KS11",
+    "int_N225", "int_KS11",
+    "int_NKY", "int_KOSPI",
+    "int_nky225",
+
+    // ===== s_ 简要格式 =====
+    "s_int_nikkei", "s_int_kospi",
+
+    // ===== hk 系列 =====
+    "hkN225", "hkKS11", "hkNKY", "hkKOSPI",
+    "hkNIKKEI", "hk.N225", "hk.KS11",
+
+    // ===== us 系列 =====
+    "usN225", "usKS11", "us.N225", "us.KS11",
+
+    // ===== jp / kr 国别前缀 =====
+    "jpN225", "jpNKY", "jpNIKKEI", "jp.N225",
+    "jph_N225", "jph_NKY", "jph_NKY225",
+    "krKS11", "krKOSPI", "kr.KS11",
+
+    // ===== 直接代码 =====
+    "N225", "KS11", "NKY", "KOSPI", "NKY225",
+    ".N225", ".KS11",
+
+    // ===== gi_ / gidx_ 全球指数 =====
+    "gi_N225", "gi_KS11", "gi_NKY", "gi_KOSPI",
+    "gidx_N225", "gidx_KS11",
+
+    // ===== oq_ 系列 =====
+    "oq_N225", "oq_KS11",
+    "oqhN225", "oqhKS11",
+
+    // ===== r_ / rt_ 系列 =====
+    "r_N225", "r_KS11", "rt_NKY", "rt_KS11",
+    "r_hkN225", "r_hkKS11",
+
+    // ===== i_ 系列 =====
+    "i_N225", "i_KS11",
+
+    // ===== fx_ 系列 =====
+    "fx_N225", "fx_KS11",
+
+    // ===== b_ 系列（新浪格式） =====
+    "b_NKY", "b_KOSPI", "b_N225", "b_KS11",
+
+    // ===== idx_ 系列 =====
+    "idx_N225", "idx_KS11",
+
+    // ===== 数字代码 =====
+    "100.N225", "100.KS11",
+
+    // ===== 已知有效代码（对照组） =====
+    "hkHSI", "hkHSTECH", "us.IXIC", "us.INX", "sh000001", "sz399006",
+];
+
+function testCode(code) {
+    return new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = `https://qt.gtimg.cn/q=${code}&_=${Date.now()}${Math.random()}`;
+        script.charset = "utf-8";
+
+        const timeout = setTimeout(() => {
+            cleanup();
+            resolve({ code, status: "timeout", data: null });
+        }, 6000);
+
+        function cleanup() {
+            clearTimeout(timeout);
+            if (script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        script.onload = function() {
+            cleanup();
+            // 检查各种可能的变量名
+            const possibleVars = [
+                "v_" + code,
+                "v_" + code.replace(".", "_"),
+                "v_" + code.replace("/", "_"),
+            ];
+
+            let found = null;
+            for (const varName of possibleVars) {
+                try {
+                    const val = window[varName];
+                    if (val && val !== "" && val !== "1" && val.length > 5) {
+                        found = { varName, val };
+                        break;
+                    }
+                } catch(e) {}
+            }
+
+            if (found) {
+                resolve({ code, status: "success", data: found.val, varName: found.varName });
+            } else {
+                // 暴力扫描 window 变量
+                let foundAny = null;
+                for (const key of Object.keys(window)) {
+                    if (key.startsWith("v_") && key.includes(code.split("_").pop().substring(0, 3).toLowerCase())) {
+                        const val = window[key];
+                        if (val && typeof val === "string" && val.length > 10) {
+                            foundAny = { varName: key, val };
+                            break;
+                        }
+                    }
+                }
+                if (foundAny) {
+                    resolve({ code, status: "success", data: foundAny.val, varName: foundAny.varName });
+                } else {
+                    resolve({ code, status: "empty", data: null });
+                }
+            }
+        };
+
+        script.onerror = function() {
+            cleanup();
+            resolve({ code, status: "error", data: null });
+        };
+
+        document.head.appendChild(script);
+    });
+}
+
+async function runTests(codes, label) {
+    const container = document.getElementById("results");
+    const progress = document.getElementById("progress");
+    const summaryDiv = document.getElementById("summary");
+    container.innerHTML = "";
+    summaryDiv.style.display = "none";
+
+    const successes = [];
+    let html = "";
+
+    for (let i = 0; i < codes.length; i++) {
+        progress.textContent = `测试中... ${i+1}/${codes.length} — ${codes[i]}`;
+        const result = await testCode(codes[i]);
+        const isSuccess = result.status === "success";
+
+        if (isSuccess) {
+            successes.push(result);
+        }
+
+        const cls = isSuccess ? "success" : "fail";
+        const statusCls = isSuccess ? "ok" : "no";
+        const statusText = isSuccess ? "✅ 有数据" : (result.status === "timeout" ? "⏱ 超时" : "❌ 无数据");
+
+        html += `<div class="test-item ${cls}">
+            <span class="code">${result.code}</span>
+            <span class="status ${statusCls}">${statusText}</span>
+            <span class="data">${isSuccess ? `[${result.varName}] ${result.data.substring(0, 200)}...` : ""}</span>
+        </div>`;
+
+        // 每10条更新一次DOM
+        if (i % 10 === 9 || i === codes.length - 1) {
+            container.innerHTML = html;
+        }
+    }
+
+    progress.textContent = `测试完成！共 ${codes.length} 项，成功 ${successes.length} 项`;
+
+    // 显示汇总
+    if (successes.length > 0) {
+        let summaryHtml = `<div class="summary"><h3>✅ 成功获取数据的代码</h3>`;
+        for (const s of successes) {
+            const fields = s.data.split("~");
+            const name = fields[1] || "";
+            const price = fields[3] || "";
+            const change = fields[31] || "";
+            const changePct = fields[32] || "";
+            summaryHtml += `<p><strong>${s.code}</strong> → ${name} | 价格: ${price} | 涨跌: ${change} (${changePct}%)</p>`;
+            summaryHtml += `<pre style="font-size:11px; max-height:100px; overflow:auto;">${s.data}</pre>`;
+        }
+        summaryHtml += `</div>`;
+        summaryDiv.innerHTML = summaryHtml;
+        summaryDiv.style.display = "block";
+    }
+
+    container.innerHTML = html;
+}
+
+function runAllTests() {
+    runTests(allCodes, "全部");
+}
+
+function runQuickTest() {
+    runTests(quickCodes, "高概率");
+}
+
+// 同时测试 web.sqt.gtimg.cn 域名
+async function testAlternativeDomain() {
+    const codes = ["int_nikkei", "int_kospi", "hkHSI"];
+    const container = document.getElementById("results");
+    let html = "<h2>web.sqt.gtimg.cn 域名测试</h2>";
+
+    for (const code of codes) {
+        const result = await new Promise((resolve) => {
+            const script = document.createElement("script");
+            script.src = `https://web.sqt.gtimg.cn/q=${code}&_=${Date.now()}`;
+            script.charset = "utf-8";
+            const timeout = setTimeout(() => {
+                if (script.parentNode) script.parentNode.removeChild(script);
+                resolve({ code, domain: "web.sqt", status: "timeout" });
+            }, 6000);
+            script.onload = () => {
+                clearTimeout(timeout);
+                if (script.parentNode) script.parentNode.removeChild(script);
+                const val = window["v_" + code];
+                resolve({ code, domain: "web.sqt", status: val && val.length > 5 ? "success" : "empty", data: val });
+            };
+            script.onerror = () => {
+                clearTimeout(timeout);
+                if (script.parentNode) script.parentNode.removeChild(script);
+                resolve({ code, domain: "web.sqt", status: "error" });
+            };
+            document.head.appendChild(script);
+        });
+
+        const isOk = result.status === "success";
+        html += `<div class="test-item ${isOk ? 'success' : 'fail'}">
+            <span class="code">web.sqt: ${code}</span>
+            <span class="status ${isOk ? 'ok' : 'no'}">${isOk ? '✅' : '❌'} ${result.status}</span>
+            <span class="data">${isOk ? result.data.substring(0, 150) : ''}</span>
+        </div>`;
+    }
+    container.innerHTML += html;
+}
+</script>
+</body>
+</html>

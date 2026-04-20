@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
+<title>小红书 · 银行营销活动搜索报告</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
+  .header { background: linear-gradient(135deg, #ff2442 0%, #ff6b81 100%); color: #fff; padding: 40px 20px; text-align: center; }
+  .header h1 { font-size: 28px; margin-bottom: 8px; }
+  .header p { opacity: 0.9; font-size: 14px; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px 16px; }
+  .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .summary-card { background: #fff; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .summary-card .num { font-size: 36px; font-weight: 700; color: #ff2442; }
+  .summary-card .label { font-size: 13px; color: #999; margin-top: 4px; }
+  .section { margin-bottom: 36px; }
+  .section-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; padding-left: 12px; border-left: 4px solid #ff2442; }
+  .note-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+  .note-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform .2s, box-shadow .2s; position: relative; }
+  .note-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+  .note-card .title { font-size: 16px; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+  .note-card .title a { color: #333; text-decoration: none; }
+  .note-card .title a:hover { color: #ff2442; text-decoration: underline; }
+  .note-card .author { font-size: 13px; color: #666; margin-bottom: 12px; }
+  .note-card .stats { display: flex; gap: 16px; flex-wrap: wrap; }
+  .note-card .stat { font-size: 12px; color: #999; }
+  .note-card .stat span { color: #ff2442; font-weight: 600; font-size: 14px; }
+  .note-card .rank { position: absolute; top: 12px; right: 12px; background: #ff2442; color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+  .note-card .rank.top3 { background: linear-gradient(135deg, #ff2442, #ff6b81); }
+  .note-card .rank.top10 { background: #ff8c00; }
+  .note-card .rank.normal { background: #ddd; color: #666; }
+  .note-card .link-btn { display: inline-block; margin-top: 12px; padding: 4px 14px; background: #ff2442; color: #fff; border-radius: 20px; font-size: 12px; text-decoration: none; transition: background .2s; }
+  .note-card .link-btn:hover { background: #e0203a; }
+  .card-cover { margin: -20px -20px 12px -20px; border-radius: 12px 12px 0 0; overflow: hidden; max-height: 160px; }
+  .card-cover img { width: 100%; height: 160px; object-fit: cover; display: block; }
+  .content-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .content-tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 500; }
+  .content-tag.bank { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
+  .content-tag.activity { background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
+  .content-tag.amount { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+  .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 10px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; opacity: 0; transition: opacity .3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  .xhs-tip { background: #fff3e0; border: 1px solid #ffe0b2; border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; font-size: 13px; color: #e65100; }
+  .xhs-tip strong { color: #bf360c; }
+  .footer { text-align: center; padding: 24px; color: #999; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  th { background: #ff2442; color: #fff; padding: 12px 16px; text-align: left; font-size: 13px; }
+  td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+  tr:hover td { background: #fff8f9; }
+  td a { color: #ff2442; text-decoration: none; }
+  td a:hover { text-decoration: underline; }
+  .highlight { background: #fff9e6; border: 1px solid #ffe58f; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+  .highlight h3 { color: #d48806; margin-bottom: 8px; }
+  .bank-tag { display: inline-block; background: #fff0f2; color: #ff2442; padding: 2px 10px; border-radius: 20px; font-size: 12px; margin-right: 6px; margin-bottom: 6px; border: 1px solid #ffe0e5; }
+  .bank-tags { margin-bottom: 10px; }
+  .new-badge { display: inline-block; background: #ff2442; color: #fff; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-left: 6px; vertical-align: middle; animation: pulse 2s infinite; }
+  .focus-badge { display: inline-block; background: linear-gradient(135deg, #ffd700, #ffb300); color: #7c5800; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-left: 6px; vertical-align: middle; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+  .focus-section { background: linear-gradient(135deg, #fffbeb 0%, #fff7d6 100%); border: 1px solid #fde68a; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+  .focus-section h3 { color: #92400e; margin-bottom: 12px; font-size: 18px; }
+  .focus-section .note-grid { gap: 12px; }
+  .focus-card { background: #fff; border-radius: 10px; padding: 16px; border-left: 4px solid #f59e0b; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+  .focus-card .title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .focus-card .title a { color: #333; text-decoration: none; }
+  .focus-card .title a:hover { color: #ff2442; }
+  .focus-card .stats { font-size: 12px; color: #999; }
+  .focus-card .stats span { color: #f59e0b; font-weight: 600; }
+  .stat-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .stat-pill { background: #fff; border-radius: 20px; padding: 6px 16px; font-size: 13px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .stat-pill strong { color: #ff2442; }
+  .bank-tags { margin-bottom: 10px; }
+  .show-more-btn { display: block; width: 100%; padding: 12px; background: #fff; border: 2px dashed #ff2442; border-radius: 8px; color: #ff2442; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; margin-top: 16px; }
+  .show-more-btn:hover { background: #fff0f2; }
+  .show-more-btn:disabled { display: none; }
+  .hidden-row { display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>小红书 · 银行营销活动搜索报告</h1>
+  <p>搜索时间：2026年4月9日 | 数据来源：小红书 | 发帖时间：2026年2月1日 - 2026年4月9日 | 💡 原文链接需在小红书App或已登录浏览器中打开</p>
+</div>
+
+<div class="container">
+
+  <div class="summary">
+    <div class="summary-card">
+      <div class="num">24</div>
+      <div class="label">近3月银行活动（≥30赞）</div>
+    </div>
+    <div class="summary-card">
+      <div class="num" style="color:#52c41a">1</div>
+      <div class="label">🆕 近一周新发 (4%)</div>
+    </div>
+    <div class="summary-card">
+      <div class="num">1,366</div>
+      <div class="label">单篇最高点赞</div>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <h3>核心发现</h3>
+    <ul style="margin:0; padding-left:20px; line-height:2;">
+      <li>📅 <strong>数据范围</strong>：2026年2月 — 2026年4月，基于笔记实际发帖时间精确筛选（非标题推断）</li>
+      <li>🆕 <strong>近一周新发</strong>：<strong>1</strong> 条笔记发帖于近7天内（4月2日 - 4月9日），标记为 <span class="new-badge">NEW</span></li>
+      <li>📊 <strong>质量筛选</strong>：仅展示 ≥30 赞的笔记，已过滤 16 条低赞内容</li>
+      <li>🏦 <strong>热门银行</strong>：<strong>建设银行、招商银行、工商银行、中信银行</strong>讨论度最高</li>
+      <li>🎯 <strong>主流玩法</strong>：<strong>立减金、满减优惠、资产提升返现</strong>为三大主要形式</li>
+      <li>🔗 <strong>使用方式</strong>：卡片展示封面、标签和互动数据，点击标题可跳转原文（跳转后需用手机APP扫码可查看原文）</li>
+    </ul>
+  </div>
+
+  <div class="xhs-tip">
+    📱 <strong>温馨提示</strong>：小红书近期收紧了PC端访问限制，跳转后需用手机APP扫码可查看原文
+  </div>
+
+  <!-- ==================== TOP 热门笔记 ==================== -->
+  <div class="section">
+    <h2 class="section-title">TOP 热门笔记（按点赞排序）</h2>
+    <div class="note-grid">
+
+      <div class="note-card">
+        <div class="rank top3">1</div>
+        <div class="card-cover"><img src="https://sns-webpic-qc.xhscdn.com/202604031523/cee16bc9854a37a9e6e6ee61dea1be7c/notes_pre_post/1040g3k031t4ki5i4m2305n10nsi1br4lg33ni9o!nc_n_webp_mw_1" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>
+        <div class="title"><a href="https://www.xiaohongshu.com/explore/69a3114100000000280235fb" target="_blank">3月立减金攻略合集来啦</a></div>
+        <div class="author">作者：Holly | 📅 2026-03-01</div>
+        <div class="content-tags"><span class="content-tag activity">立减金</span></div>
+        <div class="stats">
+          <div class="stat">点赞 <span>1,366</span></div>
+          <div class="stat">收藏 <span>1,422</span></div>
+          <div class="stat">评论 <span>38</span></div>
+          <div class="stat">分享 <span>396</span></div>
+        </div>
+        <a class="link-btn" href="https://www.xiaohongshu.com/explore/69a3114100000000280235fb" target="_blank">查看原文 &rarr;</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top3">2</div>
+        <div class="card-cover"><img src="https://sns-webpic-qc.xhscdn.com/202604031523/f923472b3b1e53f2cfa29c30ed4e5df0/1040g00831ucranl92i005p875pflsae9med82h0!nc_n_webp_mw_1" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>
+        <div class="title"><a href="https://www.xiaohongshu.com/explore/69cbf0cb000000001b020bbf" target="_blank">四月银行🏦活动汇总！！</a></div>
+        <div class="author">作者：羊毛小罗 | 📅 2026-04-01</div>
+        
+        <div class="stats">
+          <div class="stat">点赞 <span>973</span></div>
+          <div class="stat">收藏 <span>1,149</span></div>
+          <div class="stat">评论 <span>34</span></div>
+          <div class="stat">分享 <span>288</span></div>
+        </div>
+        <a class="link-btn" href="https://www.xiaohongshu.com/explore/69cbf0cb000000001b020bbf" target="_blank">查看原文 &rarr;</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top3">3</div>
+        <div class="card-cover"><img src="https://sns-webpic-qc.xhscdn.com/202604031524/26acea194ad5305200f04c8d5ba30224/notes_pre_post/1040g3k031sc5napv5m9g4a6sg04mj7n8tqra8r8!nc_n_webp_mw_1" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>
+        <div class="title"><a href="https://www.xiaohongshu.com/explore/6989b661000000001a033710" target="_blank">建设银行一月资产提升，3000立减金</a></div>
+        <div class="author">作者：天天上上签🐟✨ | 📅 2026-02-09</div>
+        <div class="content-tags"><span class="content-tag bank">建设银行</span><span class="content-tag activity">立减金</span><span class="content-tag activity">达标奖励</span></div>
+        <div class="stats">
+          <div class="stat">点赞 <span>950</span></div>
+          <div class="stat">收藏 <span>602</span></div>
+          <div class="stat">评论 <span>407</span></div>
+          <div class="stat">分享 <span>964</span></div>
+        </div>
+        <a class="link-btn" href="https://www.xiaohongshu.com/explore/6989b661000000001a033710" target="_blank">查看原文 &rarr;</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top10">4</div>
+        <div class="card-cover"><img src="https://sns-webpic-qc.xhscdn.com/202604031523/762870399186702dc4d4fb5128fc2b2c/notes_pre_post/1040g3k031tsdrujfgg005ogomioocjfbg7kfu08!nc_n_webp_mw_1" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>
+        <div class="title"><a href="https://www.xiaohongshu.com/explore/69bb208800000000210064cd" target="_blank">农行微信立减金怎么使用啊</a></div>
+        <div class="author">作者：你的momo | 📅 2026-03-19</div>
+        <div class="content-tags"><span class="content-tag bank">农业银行</span><span class="content-tag activity">立减金</span></div>
+        <div class="stats">
+          <div class="stat">点赞 <span>490</span></div>
+          <div class="stat">收藏 <span>124</span></div>
+          <div class="stat">评论 <span>615</span></div>
+          <div class="stat">分享 <span>737</span></div>
+        </div>
+        <a class="link-btn" href="https://www.xiaohongshu.com/explore/69bb208800000000210064cd" target="_blank">查看原文 &rarr;</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top10">5</div>
+        <div class="card-cover"><img src="https://sns-webpic-qc.xhscdn.com/202604031523/47f081c0f6f662605875c896093f531b/1040g2sg31tt9uienn2eg5of5amd8c5clccafsr8!nc_n_webp_mw_1" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>
+        <div class="title"><a href="https://www.xiaohongshu.com/explore/69bc0951000000001a020598" target="_blank">我好像发现了中行转账的bug</a> <span class="focus-badge">🏦 中行</span></div>
+        <div class="author">作者：cgr | 📅 2026-03-19</div>
+        <div class="content-tags"><span class="content-tag bank">中国银行</span></div>
+        <div class="stats">
+          <div class="stat">点赞 <span>487</span></div>
+          <div class="stat">收藏 <span>316</span></div>
+          <div class="stat">评论 <span>182</span></div>
+          <div class="stat">分享 <span>252</span></div>
+        </div>
+        <a class="link-btn" href="https://www.xiaohongshu.com/explore/69bc0951000000001a020598" target="_blank">查看原文 &rarr;</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top10">6</div>
+        <div class="card-cover"><img src="https://sns-webpic-qc.xhscdn.com/202604031524/9a51bc4c6cc652040c3a80014e73310d/notes_pre_post/1040g3k031u54im8biglg5n10nsi1br4l7iakrs0!nc_n_webp_mw_1" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>
+        <div class="title"><a href="https://www.xiaohongshu.com/explore/69c47bf10000000023006385" target="_blank">中行30-10话费的攻略教程</a> <span class="focus-badge">🏦 中行</span></div>
+        <div class="author">作者：Holly | 📅 2026-03-26</div>
+        <div class="content-tags"><span class="content-tag bank">中国银行</span></div>
+        <div class="stats">
+          <div class="stat">点赞 <span>431</span></div>
+          <div class="stat">收藏 <span>389</span></div>
+          <div class="stat">评论 <span>86</span></div>
+          <div class="stat">分享 <span>288</span></div>
+        </div>
+        <a class="link-btn" href="https://www.xiaohongshu.com/explore/69c47bf10000000023006385" target="_blank">查看原文 &rarr;</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top10">7</div>
+        <div class="card-cover"><img src="https://sns-webpic-qc.xhscdn.com/202604031523/14e033c59b5611652032cce48b8760e4/notes_pre_post/1040g3k031uchcuf52g005n10nsi1br4lamcun2g!nc_n_webp_mw_1" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>
+        <div class="title"><a href="https://www.xiaohongshu.com/explore/69cbefd40000000023015a6f" target="_blank">4月各行立减金攻略合集来啦</a></div>
+        <div class="author">作者：Holly | 📅 2026-04-01</div>
+        <div class="content-tags"><span class="content-tag activity">立减金</span></div>
+        <div class="stats">
+          <div class="stat">点赞 <span>427</span></div>
+          <div class="stat">收藏 <span>447</span></div>
+          <div class="stat">评论 <span>8</span></div>
+          <div class="stat">分享 <span>101</span></div>
+        </div>
+        <a class="link-btn" href="https://www.xiaohongshu.com/explore/69cbefd40000000023015a6f" target="_blank">查看原文 &rarr;</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top10">8</div>
+        <div class="card-cover"><img src="https://sns-webpic-qc.xhscdn.com/202604031523/2d5865e469e8903bed802ccd3e1cb503/notes_pre_post/1040g3k831tk2k12e78705n10nsi1br4l8r6s1j0!nc_n_webp_mw_1" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>
+        <div class="title"><a href="https://www.xiaohongshu.com/explore/69b37b15000000000c0160fb" target="_blank">中行抽18.8立减金攻略，别忘记啦</a> <span class="focus-badge">🏦 中行</span></div>
+        <div class="author">作者：Holly | 📅 2026-03-13</div>
+        <div class="content-tags"><span class="content-tag bank">中国银行</span><span class="content-tag activity">立减金</span></div>
+        <div class="stats">
+          <div class="stat">点赞 <span>404</span></div>
+          <div class="stat">收藏 <span>356</span></div>
+          <div class="stat">评论 <span>14</span></div>
+          <div class="stat">分享 <span>123</span></div>
+        </div>
+        <a class="link-btn" href="https://www.xiaohongshu.com/explore/69b37b15000000000c0160fb" target="_blank">查看原文 &rarr;</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top10">9</div>
+        <div class="card-cover"><img src="https://sns-webpic-qc.xhscdn.com/202604031524/4da3c04fcb6d31fba2228b7521b2d991/1040g2sg31ud873qd1m6g4aurrmg2jdu1heb13d8!nc_n_webp_mw_1" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>
+        <div class="title"><a href="https://www.xiaohongshu.com/explore/69cc5a130000000023021d0b" target="_blank">🔥各大银行薅羊毛攻略</a></div>
+        <div class="author">作者：soulc6 | 📅 2026-04-01</div>
+        
+        <div class="stats">
+          <div class="stat">点赞 <span>349</span></div>
+          <div class="stat">收藏 <span>462</span></div>
+          <div class="stat">评论 <span>9</span></div>
+          <div class="stat">分享 <span>78</span></div>
+        </div>
+        <a class="link-btn" href="https://www.xiaohongshu.com/explore/69cc5a130000000023021d0b" target="_blank">查看原文 &rarr;</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top10">10</div>
+        <div class="card-cover"><img src="https://sns-webpic-qc.xhscdn.com/202604031524/5ca322fb8996941b7c4b627024d3d9dc/1040g00831u7g4im0io0g5o268gag80rg0apqb18!nc_n_webp_mw_1" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>
+        <div class="title"><a href="https://www.xiaohongshu.com/explore/69c67fcd000000001a02f17d" target="_blank">3月羊毛总结，薅了5312元！请左滑看表👀</a></div>
+        <div class="author">作者：退休少女思韵 | 📅 2026-03-27</div>
+        <div class="content-tags"><span class="content-tag amount">5312元</span></div>
+        <div class="stats">
+          <div class="stat">点赞 <span>340</span></div>
+          <div class="stat">收藏 <span>273</span></div>
+          <div class="stat">评论 <span>124</span></div>
+          <div class="stat">分享 <span>65</span></div>
+        </div>
+        <a class="link-btn" href="https://www.xiaohongshu.com/explore/69c67fcd000000001a02f17d" target="_blank">查看原文 &rarr;</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank normal">11</div>
+        <div class="card-cover"><img src="https://sns-webpic-qc.xhscdn.com/202604031523/7aec7f3fcba104499807699bb59db092/1040g2sg31td9komm5mfg5o8nojp0ah2o280kdv0!nc_n_webp_mw_1" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>
+        <div class="title"><a href="https://www.xiaohongshu.com/explore/69aba1e8000000001a0292f5" target="_blank">3月建行羊毛继续，50个一晚给150立减金</a></div>
+        <div class="author">作者：pilipulu 霹雳噗噜 | 📅 2026-03-07</div>
+        <div class="content-tags"><span class="content-tag bank">建设银行</span><span class="content-tag activity">立减金</span></div>
+        <div class="stats">
+          <div class="stat">点赞 <span>302</span></div>
+          <div class="stat">收藏 <span>324</span></div>
+          <div class="stat">评论 <span>216</span></div>
+          <div class="stat">分享 <span>165</span></div>
+        </div>
+        <a class="link-btn" href="https://www.xiaohongshu.com/explore/69aba1e8000000001a0292f5" target="_blank">查看原文 &rarr;</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank normal">12</div>
+        <div class="card-cover"><img src="https://sns-webpic-qc.xhscdn.com/202604031524/7fbaadb1f77e7d5f1b75bbb68c0315b8/notes_pre_post/1040g3k031uck04ocii105pnnj69ne64i8ij692g!nc_n_webp_mw_1" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>
+        <div class="title"><a href="https://www.xiaohongshu.com/explore/69cbb657000000001a034c96" target="_blank">4月银行活动哪家强？详情分析📊（更新中）</a></div>
+        <div class="author">作者：聚沙成塔 | 📅 2026-03-31</div>
+        
+        <div class="stats">
+          <div class="stat">点赞 <span>125</span></div>
+          <div class="stat">收藏 <span>111</span></div>
+          <div class="stat">评论 <span>120</span></div>
+          <div class="stat">分享 <span>46</span></div>
+        </div>
+        <a class="link-btn" href="https://www.xiaohongshu.com/explore/69cbb657000000001a034c96" target="_blank">查看原文 &rarr;</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank normal">13</div>
+        <div class="card-cover"><img src="https://sns-webpic-qc.xhscdn.com/202604031523/701995bde7ea1b027af98a86099b2195/1040g2sg31udpsmepiseg5pmj335neckfba35gog!nc_n_webp_mw_1" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>
+        <div class="title"><a href="https://www.xiaohongshu.com/explore/69cceb26000000001b003f31" target="_blank">报‼️4月各银行立减金活动合集来了🔥</a></div>
+        <div class="author">作者：花花省钱攻略 | 📅 2026-04-01</div>
+        <div class="content-tags"><span class="content-tag activity">立减金</span></div>
+        <div class="stats">
+          <div class="stat">点赞 <span>94</span></div>
+          <div class="stat">收藏 <span>136</span></div>
+          <div class="stat">评论 <span>10</span></div>
+          <div class="stat">分享 <span>33</span></div>
+        </div>
+        <a class="link-btn" href="https://www.xiaohongshu.com/explore/69cceb26000000001b003f31" target="_blank">查看原文 &rarr;</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank normal">14</div>
+        <div class="card-cover"><img src="https://sns-webpic-qc.xhscdn.com/202604031524/33f0b9483de428f4f10f10cca1cd2a00/notes_pre_post/1040g3k031tb5h1lul80g5nbe0jbgb76u0r0jhfo!nc_n_webp_mw_1" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>
+        <div class="title"><a href="https://www.xiaohongshu.com/explore/69a974e10000000022023f15" target="_blank">💰钱存银行，别忘了薅羊毛</a></div>
+        <div class="author">作者：叫我MissRen迷死人 | 📅 2026-03-05</div>
+        
+        <div class="stats">
+          <div class="stat">点赞 <span>89</span></div>
+          <div class="stat">收藏 <span>59</span></div>
+          <div class="stat">评论 <span>17</span></div>
+          <div class="stat">分享 <span>7</span></div>
+        </div>
+        <a class="link-btn" href="https://www.xiaohongshu.com/explore/69a974e10000000022023f15" target="_blank">查看原文 &rarr;</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank normal">15</div>
+        <div class="card-cover"><img src="https://sns-webpic-qc.xhscdn.com/202604031523/815129f5b15bc1d122824ea88a2b7e2d/notes_pre_post/1040g3k831tqkre0gne705pbl3mjmacs4gde9v2o!nc_n_webp_mw_1" alt="" loading="lazy" onerror="this.parentNode.style.display='none'"></div>
+        <div class="title"><a href="https://www.xiaohongshu.com/explore/69b94cc9000000002202a79a" target="_blank">中行也算大方一回了</a> <span class="focus-badge">🏦 中行</span></div>
+        <div class="author">作者：shuai | 📅 2026-03-17</div>
+        <div class="content-tags"><span class="content-tag bank">中国银行</span></div>
+        <div class="stats">
+          <div class="stat">点赞 <span>78</span></div>
+          <div class="stat">收藏 <span>32</span></div>
+          <div class="stat">评论 <span>59</span></div>
+          <div class="stat">分享 <span>12</span></div>
+        </div>
+        <a class="link-btn" href="https://www.xiaohongshu.com/explore/69b94cc9000000002202a79a" target="_blank">查看原文 &rarr;</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== 全部笔记列表 ==================== -->
+  <div class="section">
+    <h2 class="section-title">全部银行活动笔记列表（≥30赞）</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th>标题</th>
+          <th style="width:90px">发帖日期</th>
+          <th style="width:100px">标签</th>
+          <th style="width:120px">作者</th>
+          <th style="width:65px">点赞</th>
+          <th style="width:65px">收藏</th>
+          <th style="width:65px">评论</th>
+          <th style="width:65px">分享</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69a3114100000000280235fb" target="_blank">3月立减金攻略合集来啦</a></td>
+          <td>2026-03-01</td>
+          <td></td>
+          <td>Holly</td>
+          <td>1,366</td>
+          <td>1,422</td>
+          <td>38</td>
+          <td>396</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69cbf0cb000000001b020bbf" target="_blank">四月银行🏦活动汇总！！</a></td>
+          <td>2026-04-01</td>
+          <td></td>
+          <td>羊毛小罗</td>
+          <td>973</td>
+          <td>1,149</td>
+          <td>34</td>
+          <td>288</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><a href="https://www.xiaohongshu.com/explore/6989b661000000001a033710" target="_blank">建设银行一月资产提升，3000立减金</a></td>
+          <td>2026-02-09</td>
+          <td><span class="focus-badge">🏦 建行</span> </td>
+          <td>天天上上签🐟✨</td>
+          <td>950</td>
+          <td>602</td>
+          <td>407</td>
+          <td>964</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69bb208800000000210064cd" target="_blank">农行微信立减金怎么使用啊</a></td>
+          <td>2026-03-19</td>
+          <td><span class="focus-badge">🏦 农行</span> </td>
+          <td>你的momo</td>
+          <td>490</td>
+          <td>124</td>
+          <td>615</td>
+          <td>737</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69bc0951000000001a020598" target="_blank">我好像发现了中行转账的bug</a></td>
+          <td>2026-03-19</td>
+          <td><span class="focus-badge">🏦 中行</span> </td>
+          <td>cgr</td>
+          <td>487</td>
+          <td>316</td>
+          <td>182</td>
+          <td>252</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69c47bf10000000023006385" target="_blank">中行30-10话费的攻略教程</a></td>
+          <td>2026-03-26</td>
+          <td><span class="focus-badge">🏦 中行</span> </td>
+          <td>Holly</td>
+          <td>431</td>
+          <td>389</td>
+          <td>86</td>
+          <td>288</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69cbefd40000000023015a6f" target="_blank">4月各行立减金攻略合集来啦</a></td>
+          <td>2026-04-01</td>
+          <td></td>
+          <td>Holly</td>
+          <td>427</td>
+          <td>447</td>
+          <td>8</td>
+          <td>101</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69b37b15000000000c0160fb" target="_blank">中行抽18.8立减金攻略，别忘记啦</a></td>
+          <td>2026-03-13</td>
+          <td><span class="focus-badge">🏦 中行</span> </td>
+          <td>Holly</td>
+          <td>404</td>
+          <td>356</td>
+          <td>14</td>
+          <td>123</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69cc5a130000000023021d0b" target="_blank">🔥各大银行薅羊毛攻略</a></td>
+          <td>2026-04-01</td>
+          <td></td>
+          <td>soulc6</td>
+          <td>349</td>
+          <td>462</td>
+          <td>9</td>
+          <td>78</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69c67fcd000000001a02f17d" target="_blank">3月羊毛总结，薅了5312元！请左滑看表👀</a></td>
+          <td>2026-03-27</td>
+          <td></td>
+          <td>退休少女思韵</td>
+          <td>340</td>
+          <td>273</td>
+          <td>124</td>
+          <td>65</td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69aba1e8000000001a0292f5" target="_blank">3月建行羊毛继续，50个一晚给150立减金</a></td>
+          <td>2026-03-07</td>
+          <td><span class="focus-badge">🏦 建行</span> </td>
+          <td>pilipulu 霹雳噗噜</td>
+          <td>302</td>
+          <td>324</td>
+          <td>216</td>
+          <td>165</td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69cbb657000000001a034c96" target="_blank">4月银行活动哪家强？详情分析📊（更新中）</a></td>
+          <td>2026-03-31</td>
+          <td></td>
+          <td>聚沙成塔</td>
+          <td>125</td>
+          <td>111</td>
+          <td>120</td>
+          <td>46</td>
+        </tr>
+        <tr>
+          <td>13</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69cceb26000000001b003f31" target="_blank">报‼️4月各银行立减金活动合集来了🔥</a></td>
+          <td>2026-04-01</td>
+          <td></td>
+          <td>花花省钱攻略</td>
+          <td>94</td>
+          <td>136</td>
+          <td>10</td>
+          <td>33</td>
+        </tr>
+        <tr>
+          <td>14</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69a974e10000000022023f15" target="_blank">💰钱存银行，别忘了薅羊毛</a></td>
+          <td>2026-03-05</td>
+          <td></td>
+          <td>叫我MissRen迷死人</td>
+          <td>89</td>
+          <td>59</td>
+          <td>17</td>
+          <td>7</td>
+        </tr>
+        <tr>
+          <td>15</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69b94cc9000000002202a79a" target="_blank">中行也算大方一回了</a></td>
+          <td>2026-03-17</td>
+          <td><span class="focus-badge">🏦 中行</span> </td>
+          <td>shuai</td>
+          <td>78</td>
+          <td>32</td>
+          <td>59</td>
+          <td>12</td>
+        </tr>
+        <tr class="hidden-row">
+          <td>16</td>
+          <td><a href="https://www.xiaohongshu.com/explore/697ffd09000000002203a638" target="_blank">工行月月花抽奖</a></td>
+          <td>2026-02-02</td>
+          <td><span class="focus-badge">🏦 工行</span> </td>
+          <td>linvic</td>
+          <td>76</td>
+          <td>25</td>
+          <td>204</td>
+          <td>49</td>
+        </tr>
+        <tr class="hidden-row">
+          <td>17</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69cf26850000000022003033" target="_blank">中行又领10r❗️</a></td>
+          <td>2026-04-03</td>
+          <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 中行</span> </td>
+          <td>小贱</td>
+          <td>72</td>
+          <td>40</td>
+          <td>125</td>
+          <td>58</td>
+        </tr>
+        <tr class="hidden-row">
+          <td>18</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69b11f43000000001b01de06" target="_blank">#邮储银行～支付达标享好礼</a></td>
+          <td>2026-03-11</td>
+          <td><span class="focus-badge">🏦 邮储</span> </td>
+          <td>南风</td>
+          <td>69</td>
+          <td>62</td>
+          <td>22</td>
+          <td>18</td>
+        </tr>
+        <tr class="hidden-row">
+          <td>19</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69ba2044000000001e00d84f" target="_blank">银行股做T，稳到离谱！😭</a></td>
+          <td>2026-03-18</td>
+          <td></td>
+          <td>盈盈财经</td>
+          <td>65</td>
+          <td>134</td>
+          <td>2</td>
+          <td>23</td>
+        </tr>
+        <tr class="hidden-row">
+          <td>20</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69a8eaff000000001d027efe" target="_blank">工行新春升金礼活动达标近 30w 毛线都没有</a></td>
+          <td>2026-03-05</td>
+          <td><span class="focus-badge">🏦 工行</span> </td>
+          <td>Hey karl</td>
+          <td>58</td>
+          <td>45</td>
+          <td>279</td>
+          <td>66</td>
+        </tr>
+        <tr class="hidden-row">
+          <td>21</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69c918f10000000028009c4e" target="_blank">求4月资产提升银行活动</a></td>
+          <td>2026-03-29</td>
+          <td></td>
+          <td>月月红年年有余😘</td>
+          <td>52</td>
+          <td>33</td>
+          <td>65</td>
+          <td>2</td>
+        </tr>
+        <tr class="hidden-row">
+          <td>22</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69a8ef31000000001600a93f" target="_blank">中行3月资产提升出了</a></td>
+          <td>2026-03-05</td>
+          <td><span class="focus-badge">🏦 中行</span> </td>
+          <td>momo</td>
+          <td>50</td>
+          <td>56</td>
+          <td>77</td>
+          <td>30</td>
+        </tr>
+        <tr class="hidden-row">
+          <td>23</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69c23e4d000000001e00d33c" target="_blank">4月选哪家银行的资产提升活动</a></td>
+          <td>2026-03-24</td>
+          <td></td>
+          <td>Crystal</td>
+          <td>50</td>
+          <td>58</td>
+          <td>130</td>
+          <td>7</td>
+        </tr>
+        <tr class="hidden-row">
+          <td>24</td>
+          <td><a href="https://www.xiaohongshu.com/explore/69820984000000002800a68c" target="_blank">工行月月花是不是疯了？！</a></td>
+          <td>2026-02-03</td>
+          <td><span class="focus-badge">🏦 工行</span> </td>
+          <td>Echo</td>
+          <td>33</td>
+          <td>28</td>
+          <td>61</td>
+          <td>38</td>
+        </tr>
+      </tbody>
+    </table>
+    <button class="show-more-btn" id="showMoreBtn" onclick="showAllRows()">展开更多（还有 9 条）</button>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>报告由 WorkBuddy 通过小红书 MCP 自动生成 | 数据仅供参考，具体活动以银行官方公告为准</p>
+</div>
+
+<script>
+function showAllRows() {
+    const hiddenRows = document.querySelectorAll('.hidden-row');
+    hiddenRows.forEach(row => row.classList.remove('hidden-row'));
+    document.querySelector('.show-more-btn').style.display = 'none';
+}
+</script>
+
+</body>
+</html>

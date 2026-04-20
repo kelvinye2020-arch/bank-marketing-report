@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>腾讯财经 API 代码测试</title>
+<style>
+body { font-family: monospace; padding: 20px; background: #1a1a2e; color: #eee; }
+h2 { color: #4fc3f7; }
+.result { margin: 4px 0; padding: 6px 10px; border-radius: 4px; }
+.success { background: #1b5e20; color: #a5d6a7; }
+.fail { background: #333; color: #777; }
+.testing { background: #333; color: #ffd54f; }
+#status { color: #ffd54f; font-size: 16px; margin-bottom: 15px; }
+</style>
+</head>
+<body>
+<h2>腾讯财经 API 代码暴力测试</h2>
+<div id="status">正在测试...</div>
+
+<h3>1. qt.gtimg.cn 实时行情测试</h3>
+<div id="realtime-results"></div>
+
+<h3>2. web.ifzq.gtimg.cn K线数据测试</h3>
+<div id="kline-results"></div>
+
+<h3>3. 其他接口测试</h3>
+<div id="other-results"></div>
+
+<script>
+// 所有可能的日经225代码
+const nikkeiCodes = [
+    "jpN225", "jp.N225", "jpNI225", "jpNIKKEI", "jzN225",
+    "N225", "NI225", "NIKKEI225", "usN225", "us.N225",
+    "s_jpN225", "s_jpNI225", "s_N225",
+    "nkN225", "nk.N225", "toN225", "jp225",
+    "idx_N225", "idx_jpN225",
+    "zss_N225", "zss_jpN225",
+    "giN225", "gi_N225", "gidx_N225",
+    "oN225", "oNI225",
+    "r_jpN225", "r_N225",
+];
+
+// 所有可能的韩国KOSPI代码
+const kospiCodes = [
+    "krKS11", "kr.KS11", "krKOSPI", "kr.KOSPI",
+    "KS11", "KOSPI", "usKS11", "us.KS11",
+    "s_krKS11", "s_krKOSPI", "s_KS11", "s_KOSPI",
+    "seKS11", "se.KS11", "koKS11",
+    "idx_KS11", "idx_krKS11", "idx_KOSPI",
+    "zss_KS11", "zss_krKS11",
+    "giKS11", "gi_KS11", "gidx_KS11",
+    "oKS11", "oKOSPI",
+    "r_krKS11", "r_KS11",
+];
+
+const realtimeDiv = document.getElementById("realtime-results");
+const klineDiv = document.getElementById("kline-results");
+const otherDiv = document.getElementById("other-results");
+const statusDiv = document.getElementById("status");
+
+let successCount = 0;
+
+// 测试 qt.gtimg.cn 实时行情
+async function testRealtimeBatch(codes) {
+    const codeStr = codes.join(",");
+    return new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = `https://qt.gtimg.cn/q=${codeStr}&t=${Date.now()}`;
+        
+        script.onload = () => {
+            const results = {};
+            codes.forEach(code => {
+                const varName = "v_" + code.replace(/\./g, "_");
+                const val = window[varName];
+                if (val && val !== "" && val !== "1") {
+                    results[code] = val.substring(0, 100);
+                }
+            });
+            script.remove();
+            resolve(results);
+        };
+        
+        script.onerror = () => {
+            script.remove();
+            resolve({});
+        };
+        
+        document.head.appendChild(script);
+    });
+}
+
+// 测试 K线 API
+async function testKline(code) {
+    try {
+        const resp = await fetch(`https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${code},day,2026-01-01,,100,qfq`);
+        const data = await resp.json();
+        if (data && data.data && typeof data.data === "object") {
+            const keys = Object.keys(data.data);
+            if (keys.length > 0) {
+                const stockData = data.data[keys[0]];
+                if (stockData) {
+                    const klineKeys = ["qfqday", "day", "qfqweek", "week"];
+                    for (const k of klineKeys) {
+                        if (stockData[k] && stockData[k].length > 0) {
+                            return { success: true, count: stockData[k].length, key: k };
+                        }
+                    }
+                }
+            }
+        }
+        return { success: false };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+// 测试其他可能的接口
+async function testOtherAPIs() {
+    const apis = [
+        { name: "proxy.finance.qq.com GIDX", url: "https://proxy.finance.qq.com/ifzqgtimg/appstock/app/GIDX/mstats?type=AS" },
+        { name: "proxy global index", url: "https://proxy.finance.qq.com/ifzqgtimg/appstock/app/globalindex/getGlobal" },
+        { name: "ifzq global", url: "https://web.ifzq.gtimg.cn/appstock/app/globalindex/getGlobal" },
+        { name: "ifzq mktdata GIDX_AS", url: "https://web.ifzq.gtimg.cn/appstock/app/mktdata/mstats?type=gidx_AS" },
+        { name: "ifzq mktdata global", url: "https://web.ifzq.gtimg.cn/appstock/app/mktdata/mstats?type=globalindex" },
+        { name: "stockapp data", url: "https://stockapp.finance.qq.com/mstats/menu_chidata.js?t=" + Date.now() },
+        { name: "web sqt N225", url: "https://web.sqt.gtimg.cn/q=jpN225,krKS11,jpNI225,krKOSPI" },
+        { name: "qt r_hk format", url: "https://qt.gtimg.cn/q=r_hkHSI" },
+    ];
+
+    for (const api of apis) {
+        const div = document.createElement("div");
+        div.className = "result testing";
+        div.textContent = `测试中: ${api.name}`;
+        otherDiv.appendChild(div);
+
+        try {
+            const resp = await fetch(api.url, { mode: "cors" });
+            const text = await resp.text();
+            const snippet = text.substring(0, 200);
+            if (text.length > 10 && !text.includes('"code":11') && !text.includes('none_match')) {
+                div.className = "result success";
+                div.textContent = `✅ ${api.name}: ${snippet}`;
+                successCount++;
+            } else {
+                div.className = "result fail";
+                div.textContent = `❌ ${api.name}: ${snippet}`;
+            }
+        } catch (e) {
+            div.className = "result fail";
+            div.textContent = `❌ ${api.name}: CORS/网络错误 - ${e.message}`;
+        }
+    }
+}
+
+async function runTests() {
+    // 1. 测试所有实时代码
+    const allCodes = [...nikkeiCodes, ...kospiCodes];
+    statusDiv.textContent = `正在测试 ${allCodes.length} 个实时行情代码...`;
+    
+    // 分批测试（每批10个）
+    for (let i = 0; i < allCodes.length; i += 10) {
+        const batch = allCodes.slice(i, i + 10);
+        const results = await testRealtimeBatch(batch);
+        
+        batch.forEach(code => {
+            const div = document.createElement("div");
+            if (results[code]) {
+                div.className = "result success";
+                div.textContent = `✅ ${code}: ${results[code]}`;
+                successCount++;
+            } else {
+                div.className = "result fail";
+                div.textContent = `❌ ${code}: 无数据`;
+            }
+            realtimeDiv.appendChild(div);
+        });
+    }
+
+    // 2. 测试K线（只测试几个最可能的代码）
+    const klineCodes = ["jpN225", "jpNI225", "N225", "krKS11", "krKOSPI", "KS11", "KOSPI", "jp.N225", "kr.KS11"];
+    statusDiv.textContent = `正在测试 ${klineCodes.length} 个K线代码...`;
+    
+    for (const code of klineCodes) {
+        const div = document.createElement("div");
+        div.className = "result testing";
+        div.textContent = `测试K线: ${code}...`;
+        klineDiv.appendChild(div);
+        
+        const result = await testKline(code);
+        if (result.success) {
+            div.className = "result success";
+            div.textContent = `✅ K线 ${code}: ${result.count}条数据 (key=${result.key})`;
+            successCount++;
+        } else {
+            div.className = "result fail";
+            div.textContent = `❌ K线 ${code}: 无数据`;
+        }
+    }
+
+    // 3. 测试其他接口
+    statusDiv.textContent = `正在测试其他接口...`;
+    await testOtherAPIs();
+
+    statusDiv.textContent = `测试完成！共找到 ${successCount} 个有效结果`;
+}
+
+runTests();
+</script>
+</body>
+</html>

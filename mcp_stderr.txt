@@ -1,0 +1,6 @@
+time="2026-04-03T00:04:41+08:00" level=info msg="Registered 13 MCP tools"
+time="2026-04-03T00:04:41+08:00" level=info msg="MCP Server initialized with official SDK"
+time="2026-04-03T00:04:41+08:00" level=info msg="启动 HTTP 服务器: :18060"
+time="2026-04-03T00:06:32+08:00" level=info msg="MCP: 检查登录状态"
+time="2026-04-03T00:06:47+08:00" level=info msg="MCP: 搜索Feeds"
+time="2026-04-03T00:06:47+08:00" level=info msg="MCP: 搜索Feeds - 关键词: 银行消费达标活动"
