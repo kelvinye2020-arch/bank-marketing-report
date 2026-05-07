@@ -1,6 +1,57 @@
-time="2026-04-03T00:04:41+08:00" level=info msg="Registered 13 MCP tools"
-time="2026-04-03T00:04:41+08:00" level=info msg="MCP Server initialized with official SDK"
-time="2026-04-03T00:04:41+08:00" level=info msg="启动 HTTP 服务器: :18060"
-time="2026-04-03T00:06:32+08:00" level=info msg="MCP: 检查登录状态"
-time="2026-04-03T00:06:47+08:00" level=info msg="MCP: 搜索Feeds"
-time="2026-04-03T00:06:47+08:00" level=info msg="MCP: 搜索Feeds - 关键词: 银行消费达标活动"
+time="2026-04-22T10:38:49+08:00" level=info msg="Registered 13 MCP tools"
+time="2026-04-22T10:38:49+08:00" level=info msg="MCP Server initialized with official SDK"
+time="2026-04-22T10:38:49+08:00" level=info msg="启动 HTTP 服务器: :18060"
+
+
+[31m2026/04/22 10:47:33 [Recovery] 2026/04/22 - 10:47:33 panic recovered:
+context canceled
+/home/runner/go/pkg/mod/github.com/go-rod/rod@v0.116.2/lib/utils/utils.go:68 (0xeab9dc)
+/home/runner/go/pkg/mod/github.com/go-rod/rod@v0.116.2/must.go:36 (0xef343b)
+/home/runner/go/pkg/mod/github.com/go-rod/rod@v0.116.2/must.go:769 (0xed799e)
+/home/runner/work/xiaohongshu-mcp/xiaohongshu-mcp/xiaohongshu/search.go:198 (0xef1209)
+/home/runner/work/xiaohongshu-mcp/xiaohongshu-mcp/service.go:381 (0xf10ceb)
+/home/runner/work/xiaohongshu-mcp/xiaohongshu-mcp/handlers_api.go:164 (0xeff7ca)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:185 (0xddbdaa)
+/home/runner/work/xiaohongshu-mcp/xiaohongshu-mcp/middleware.go:22 (0xf13396)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:185 (0xde0eae)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/recovery.go:102 (0xde0e9b)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:185 (0xde0eae)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/recovery.go:102 (0xde0e9b)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:185 (0xddffe4)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/logger.go:249 (0xddffcb)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:185 (0xddf431)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/gin.go:644 (0xddeec0)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/gin.go:600 (0xddeb49)
+/opt/hostedtoolcache/go/1.24.13/x64/src/net/http/server.go:3301 (0xc97f0d)
+/opt/hostedtoolcache/go/1.24.13/x64/src/net/http/server.go:2102 (0xc78e84)
+/opt/hostedtoolcache/go/1.24.13/x64/src/runtime/asm_amd64.s:1700 (0xa879c0)
+[0m
+time="2026-04-22T10:47:33+08:00" level=error msg="服务器内部错误: context canceled, path: /api/v1/feeds/search"
+time="2026-04-22T10:47:33+08:00" level=error msg="POST /api/v1/feeds/search  500"
+
+
+[31m2026/04/22 10:48:17 [Recovery] 2026/04/22 - 10:48:17 panic recovered:
+context canceled
+/home/runner/go/pkg/mod/github.com/go-rod/rod@v0.116.2/lib/utils/utils.go:68 (0xeab9dc)
+/home/runner/go/pkg/mod/github.com/go-rod/rod@v0.116.2/must.go:36 (0xef343b)
+/home/runner/go/pkg/mod/github.com/go-rod/rod@v0.116.2/must.go:457 (0xed71fe)
+/home/runner/work/xiaohongshu-mcp/xiaohongshu-mcp/xiaohongshu/login.go:21 (0xee9ca4)
+/home/runner/work/xiaohongshu-mcp/xiaohongshu-mcp/service.go:113 (0xf0ebc9)
+/home/runner/work/xiaohongshu-mcp/xiaohongshu-mcp/handlers_api.go:43 (0xefedcb)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:185 (0xddbdaa)
+/home/runner/work/xiaohongshu-mcp/xiaohongshu-mcp/middleware.go:22 (0xf13396)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:185 (0xde0eae)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/recovery.go:102 (0xde0e9b)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:185 (0xde0eae)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/recovery.go:102 (0xde0e9b)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:185 (0xddffe4)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/logger.go:249 (0xddffcb)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/context.go:185 (0xddf431)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/gin.go:644 (0xddeec0)
+/home/runner/go/pkg/mod/github.com/gin-gonic/gin@v1.10.1/gin.go:600 (0xddeb49)
+/opt/hostedtoolcache/go/1.24.13/x64/src/net/http/server.go:3301 (0xc97f0d)
+/opt/hostedtoolcache/go/1.24.13/x64/src/net/http/server.go:2102 (0xc78e84)
+/opt/hostedtoolcache/go/1.24.13/x64/src/runtime/asm_amd64.s:1700 (0xa879c0)
+[0m
+time="2026-04-22T10:48:17+08:00" level=error msg="服务器内部错误: context canceled, path: /api/v1/login/status"
+time="2026-04-22T10:48:17+08:00" level=error msg="GET /api/v1/login/status  500"

@@ -1,0 +1,2 @@
+[GIN] 2026/04/22 - 10:47:33 | 500 |          1m1s |             ::1 | POST     "/api/v1/feeds/search"
+[GIN] 2026/04/22 - 10:48:17 | 500 |      11.1893s |             ::1 | GET      "/api/v1/login/status"
