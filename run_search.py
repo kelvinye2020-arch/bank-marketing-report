@@ -1,14 +1,15 @@
-"""Run 6 xiaohongshu searches sequentially, save results as JSON files."""
-import subprocess
-import sys
+"""Batch search xiaohongshu MCP and save results to JSON files."""
 import json
 import time
-import os
+import requests
+import sys
 
+BASE_URL = "http://localhost:18060"
+HEADERS = {"Connection": "close"}
+TIMEOUT = 60
 BASE_DIR = r"c:\Users\kelvinyye\WorkBuddy\20260313150001"
-XHS_SCRIPT = os.path.join(BASE_DIR, "skills", "xiaohongshu-mcp", "scripts", "xhs_client.py")
 
-SEARCHES = [
+KEYWORDS = [
     ("银行满减优惠活动", "search_result_1.json"),
     ("银行信用卡支付立减", "search_result_2.json"),
     ("银行活动羊毛攻略2026", "search_result_3.json"),
@@ -20,44 +21,46 @@ SEARCHES = [
 success_count = 0
 fail_count = 0
 
-for keyword, filename in SEARCHES:
-    outpath = os.path.join(BASE_DIR, filename)
-    print(f"\n--- Searching: {keyword} -> {filename} ---")
+for i, (keyword, filename) in enumerate(KEYWORDS, 1):
+    print(f"[{i}/6] Searching: {keyword} ...", flush=True)
     try:
-        r = subprocess.run(
-            [sys.executable, XHS_SCRIPT, "search", keyword, "--sort", "最多点赞", "--json"],
-            capture_output=True, text=True, encoding="utf-8", timeout=90
+        payload = {
+            "keyword": keyword,
+            "filters": {
+                "sort_by": "最多点赞",
+                "note_type": "不限",
+                "publish_time": "不限"
+            }
+        }
+        resp = requests.post(
+            f"{BASE_URL}/api/v1/feeds/search",
+            json=payload,
+            headers=HEADERS,
+            timeout=TIMEOUT
         )
-        data = r.stdout.strip()
-        if r.returncode != 0 or not data:
-            print(f"  FAILED: rc={r.returncode}, stdout_len={len(data)}")
-            if r.stderr:
-                print(f"  STDERR: {r.stderr[:300]}")
+        data = resp.json()
+        
+        if data.get("success"):
+            feeds = data.get("data", {}).get("feeds", [])
+            print(f"    OK: {len(feeds)} notes found", flush=True)
+            # Save to file with UTF-8 encoding
+            filepath = f"{BASE_DIR}\\{filename}"
+            with open(filepath, "w", encoding="utf-8") as f:
+                json.dump(data.get("data", {}), f, ensure_ascii=False, indent=2)
+            success_count += 1
+        else:
+            error_msg = data.get("error", "Unknown error")
+            print(f"    FAILED: {error_msg}", flush=True)
             fail_count += 1
-            continue
-
-        # Validate JSON
-        parsed = json.loads(data)
-        feeds = parsed.get("feeds") or parsed.get("data", {}).get("feeds", [])
-        print(f"  OK: {len(feeds)} feeds, {len(data)} bytes")
-
-        with open(outpath, "w", encoding="utf-8") as f:
-            json.dump(parsed, f, ensure_ascii=False, indent=2)
-        success_count += 1
-
-    except json.JSONDecodeError as e:
-        print(f"  JSON PARSE ERROR: {e}")
-        fail_count += 1
-    except subprocess.TimeoutExpired:
-        print(f"  TIMEOUT (90s)")
-        fail_count += 1
     except Exception as e:
-        print(f"  ERROR: {e}")
+        print(f"    ERROR: {e}", flush=True)
         fail_count += 1
+    
+    # Wait between requests to avoid rate limiting
+    if i < len(KEYWORDS):
+        print(f"    Waiting 5 seconds...", flush=True)
+        time.sleep(5)
 
-    # Pause between searches
-    if keyword != SEARCHES[-1][0]:
-        print("  Waiting 3s...")
-        time.sleep(3)
-
-print(f"\n=== DONE: {success_count} success, {fail_count} failed ===")
+print(f"\nDone: {success_count} success, {fail_count} failed")
+if fail_count > 0:
+    sys.exit(1)
