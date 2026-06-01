@@ -10,3 +10,17 @@ skills/
 fund_agent/
 market_dashboard/
 market_dashboard_cloud/
+
+# Local credentials and runtime artifacts
+cookies.json
+qr_code.png
+config.local.json
+wecom_config.json
+update_run*.log
+*_run.log
+mcp_stdout.txt
+mcp_stderr.txt
+
+# Local debug helpers
+_get_qr.py
+

@@ -1,6 +1,6 @@
 """Generate bank marketing report HTML with clickable xiaohongshu links.
 
-Time filter: strict 3 calendar months based on note publish date (extracted from note ID).
+Time filter: rolling 60-day window based on note publish date (extracted from note ID).
 Date is dynamically set to today's date at runtime.
 
 Features:
@@ -15,6 +15,7 @@ import json
 import os
 import re
 import sys
+from pathlib import Path
 from datetime import date, datetime, timedelta
 
 # Fix Windows console encoding for emoji/CJK
@@ -22,8 +23,9 @@ if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-BASE_DIR = r"c:\Users\kelvinyye\WorkBuddy\20260313150001"
+BASE_DIR = str(Path(__file__).resolve().parent)
 XHS_BASE = "https://www.xiaohongshu.com/explore/"
+
 SEARCH_FILES = 6  # search_result_1.json .. search_result_6.json (also reads search_result_new_*)
 
 # --- Quality filter ---
@@ -35,13 +37,14 @@ FOCUS_BANKS = {
     "工商银行": ["工商银行", "工行", "宇宙行"],
 }
 
-# --- Time filter config (strict 3 calendar months from note ID timestamp) ---
+# --- Time filter config (rolling 60 days from note ID timestamp) ---
 TODAY = date.today()
 CURRENT_YEAR = TODAY.year
-# Strict range: 1st day of (current_month - 2) to last day of current month
-_first_of_month = TODAY.replace(day=1)
-DATE_START = (_first_of_month - timedelta(days=59)).replace(day=1)
-DATE_END = (_first_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+LOOKBACK_DAYS = 60
+# Rolling range: today - 60 days through today (e.g. 2026-06-01 => 2026-04-02 ~ 2026-06-01)
+DATE_START = TODAY - timedelta(days=LOOKBACK_DAYS)
+DATE_END = TODAY
+
 
 
 def note_id_to_date(note_id):
@@ -60,7 +63,7 @@ def note_id_to_datestr(note_id):
 
 
 def is_recent_by_id(note_id):
-    """Check if note was published within the strict 3-month window."""
+    """Check if note was published within the rolling 60-day window."""
     d = note_id_to_date(note_id)
     if d is None:
         return False
@@ -213,7 +216,7 @@ for _sf in _search_files:
 # Sort by likes descending
 notes = sorted(all_notes.values(), key=lambda x: x["likes"], reverse=True)
 
-# Filter: bank-related AND recent (last 3 months) AND minimum likes
+# Filter: bank-related AND recent (rolling 60 days) AND minimum likes
 def is_bank_related(note):
     title = note["title"].lower()
     keywords = ["银行", "立减", "信用卡", "满减", "支付", "羊毛", "返现", "活动汇总", "月月刷", "充值",
@@ -339,7 +342,7 @@ html = """<!DOCTYPE html>
   <div class="summary">
     <div class="summary-card">
       <div class="num">""" + str(len(bank_notes)) + """</div>
-      <div class="label">近3月银行活动（≥""" + str(MIN_LIKES) + """赞）</div>
+      <div class="label">近60天银行活动（≥""" + str(MIN_LIKES) + """赞）</div>
     </div>
     <div class="summary-card">
       <div class="num" style="color:#52c41a">""" + str(new_count) + """</div>
@@ -354,7 +357,7 @@ html = """<!DOCTYPE html>
   <div class="highlight">
     <h3>核心发现</h3>
     <ul style="margin:0; padding-left:20px; line-height:2;">
-      <li>📅 <strong>数据范围</strong>：""" + f"{DATE_START.year}年{DATE_START.month}月 — {DATE_END.year}年{DATE_END.month}月" + """，基于笔记实际发帖时间精确筛选（非标题推断）</li>
+      <li>📅 <strong>数据范围</strong>：""" + f"{DATE_START.year}年{DATE_START.month}月{DATE_START.day}日 — {DATE_END.year}年{DATE_END.month}月{DATE_END.day}日" + """（滚动60天），基于笔记实际发帖时间精确筛选（非标题推断）</li>
       <li>🆕 <strong>近一周新发</strong>：<strong>""" + str(new_count) + """</strong> 条笔记发帖于近7天内（""" + f"{NEW_CUTOFF.month}月{NEW_CUTOFF.day}日 - {TODAY.month}月{TODAY.day}日" + """），标记为 <span class="new-badge">NEW</span></li>
       <li>📊 <strong>质量筛选</strong>：仅展示 ≥""" + str(MIN_LIKES) + """ 赞的笔记，已过滤 """ + str(len(filtered_low_likes)) + """ 条低赞内容</li>
       <li>🏦 <strong>热门银行</strong>：<strong>建设银行、招商银行、工商银行、中信银行</strong>讨论度最高</li>
@@ -496,7 +499,7 @@ print(f"\nReport generated: {output_path}")
 print(f"Total unique notes: {len(all_notes)}")
 print(f"Bank-related & recent (>={MIN_LIKES} likes): {len(bank_notes)}")
 print(f"Filtered out (low likes <{MIN_LIKES}): {len(filtered_low_likes)}")
-print(f"Filtered out (older months): {len(filtered_out)}")
+print(f"Filtered out (outside rolling {LOOKBACK_DAYS}-day window): {len(filtered_out)}")
 print(f"New notes (published {NEW_CUTOFF} ~ {TODAY}): {new_count}")
 print(f"Focus bank notes: {focus_count} ({', '.join(f'{k}:{v}' for k,v in focus_bank_counts.items())})")
 if bank_notes:
