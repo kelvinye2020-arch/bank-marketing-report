@@ -15,6 +15,8 @@ import json
 import os
 import re
 import sys
+import io
+import base64
 from pathlib import Path
 from datetime import date, datetime, timedelta
 
@@ -23,8 +25,52 @@ if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
+# QR code generation (for scan-to-view original article in 小红书 app)
+try:
+    import qrcode as _qrcode_lib
+    _HAS_QRCODE = True
+except ImportError:
+    _HAS_QRCODE = False
+
+
+def make_qr_data_uri(url, size=140):
+    """Generate a QR code as a base64 PNG data URI for embedding in HTML.
+    Returns "" if qrcode lib is not available or generation fails.
+    """
+    if not _HAS_QRCODE:
+        return ""
+    try:
+        qr = _qrcode_lib.QRCode(
+            version=None,
+            error_correction=_qrcode_lib.constants.ERROR_CORRECT_M,
+            box_size=4,
+            border=1,
+        )
+        qr.add_data(url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        buf = io.BytesIO()
+        img.save(buf, format="PNG", optimize=True)
+        return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
+    except Exception as e:
+        print(f"  QR 生成失败 ({url[:30]}...): {e}", flush=True)
+        return ""
+
 BASE_DIR = str(Path(__file__).resolve().parent)
 XHS_BASE = "https://www.xiaohongshu.com/explore/"
+
+def build_note_url(note_id, xsec_token=None):
+    """Build a Xiaohongshu note URL. Use xsec_token when available so that
+    PC web can open the note directly without the QR-code interstitial.
+
+    Without xsec_token, xhs now serves the "scan with app" QR page to
+    desktop browsers. With the token, the request mimics an authenticated
+    internal navigation and loads the note UI on PC.
+    """
+    if not xsec_token:
+        return XHS_BASE + note_id
+    from urllib.parse import quote
+    return XHS_BASE + note_id + "?xsec_token=" + quote(xsec_token) + "&xsec_source=pc_search"
 
 SEARCH_FILES = 6  # search_result_1.json .. search_result_6.json (also reads search_result_new_*)
 
@@ -86,6 +132,14 @@ def is_new_note(note_id):
     if d is None:
         return False
     return NEW_CUTOFF <= d <= TODAY
+
+# --- Title dedup: strip leading date prefix to merge re-posted series ---
+# 例如 "2026.07.17 招行喊你薅羊毛" 和 "2026.07.10: 招行喊你薅羊毛" 归一化后一样
+def normalize_title(title):
+    """Strip leading date prefix (2026.07.08 / 7月8日 / 07.08 / 2026-07-08 / 2026年7月8日 等格式)."""
+    s = re.sub(r'^\s*(20\d{2})[.\-/年](\d{1,2})[.\-/月](\d{1,2})\s*日?[:：、\-\s]*', '', title)
+    s = re.sub(r'^\s*\d{1,2}\s*月\s*\d{1,2}\s*日?[:：、\-\s]*', '', s)
+    return s.strip()
 
 # --- Determine focus bank for a note ---
 def get_focus_bank(title):
@@ -197,6 +251,8 @@ for _sf in _search_files:
             title_raw = nc.get("displayTitle", "").replace("\u200b", "")
             likes = to_int(interact.get("likedCount", "0"))
             publish_date = note_id_to_datestr(fid)
+            xsec_token = feed.get("xsecToken", "")
+            note_url = build_note_url(fid, xsec_token)
             all_notes[fid] = {
                 "id": fid,
                 "title": title_raw,
@@ -205,7 +261,8 @@ for _sf in _search_files:
                 "collects": to_int(interact.get("collectedCount", "0")),
                 "comments": to_int(interact.get("commentCount", "0")),
                 "shares": to_int(interact.get("sharedCount", "0")),
-                "url": XHS_BASE + fid,
+                "url": note_url,
+                "qr_data_uri": make_qr_data_uri(note_url),
                 "type": nc.get("type", "normal"),
                 "is_new": is_new_note(fid),
                 "focus_bank": get_focus_bank(title_raw),
@@ -215,6 +272,18 @@ for _sf in _search_files:
 
 # Sort by likes descending
 notes = sorted(all_notes.values(), key=lambda x: x["likes"], reverse=True)
+
+# Title dedup: 归一化（去日期前缀）后相同的标题只保留最新发布的一条
+# 例: "2026.07.17 招行喊你薅羊毛" + "2026.07.10 招行喊你薅羊毛" → 保留 07.17
+from collections import OrderedDict
+_deduped = OrderedDict()
+for _n in notes:
+    _orig = _n["title"]
+    _norm = normalize_title(_orig)
+    _key = _norm if _norm != _orig else _orig  # 无日期前缀的不归一化
+    if _key not in _deduped or _n["publish_date"] > _deduped[_key]["publish_date"]:
+        _deduped[_key] = _n
+notes = sorted(_deduped.values(), key=lambda x: x["likes"], reverse=True)
 
 # Filter: bank-related AND recent (rolling 60 days) AND minimum likes
 def is_bank_related(note):
@@ -228,6 +297,22 @@ def is_bank_related(note):
 bank_notes = [n for n in notes if is_bank_related(n) and is_recent_by_id(n["id"]) and n["likes"] >= MIN_LIKES]
 filtered_low_likes = [n for n in notes if is_bank_related(n) and is_recent_by_id(n["id"]) and n["likes"] < MIN_LIKES]
 filtered_out = [n for n in notes if is_bank_related(n) and not is_recent_by_id(n["id"])]
+
+# 动态统计：银行频次（所有 bank_notes 里出现过的银行+次数）
+_bank_counter = {}
+for n in bank_notes:
+    for b in n["tags"][0]:
+        _bank_counter[b] = _bank_counter.get(b, 0) + 1
+_top_banks = sorted(_bank_counter.items(), key=lambda x: -x[1])[:4]
+top_banks_text = "、".join(BANK_SHORT_NAMES.get(b, b) for b, _ in _top_banks) if _top_banks else "（暂无数据）"
+
+# 动态统计：玩法频次（从 ACTIVITY_TYPES 提取）
+_activity_counter = {}
+for n in bank_notes:
+    for a in n["tags"][1]:
+        _activity_counter[a] = _activity_counter.get(a, 0) + 1
+_top_activities = sorted(_activity_counter.items(), key=lambda x: -x[1])[:3]
+top_activities_text = "、".join(a for a, _ in _top_activities) if _top_activities else "（暂无数据）"
 
 
 
@@ -287,6 +372,9 @@ html = """<!DOCTYPE html>
   .note-card .rank.normal { background: #ddd; color: #666; }
   .note-card .link-btn { display: inline-block; margin-top: 12px; padding: 4px 14px; background: #ff2442; color: #fff; border-radius: 20px; font-size: 12px; text-decoration: none; transition: background .2s; }
   .note-card .link-btn:hover { background: #e0203a; }
+  .note-card .qr-wrap { position: absolute; top: 12px; left: 12px; padding: 4px; background: #fff; border: 1px solid #eee; border-radius: 6px; line-height: 0; cursor: help; }
+  .note-card .qr-img { display: block; width: 56px; height: 56px; image-rendering: pixelated; }
+  .note-card .qr-wrap:hover { transform: scale(1.5); transition: transform .2s; z-index: 10; box-shadow: 0 4px 16px rgba(0,0,0,0.2); border-color: #ff2442; }
   .content-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
   .content-tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 500; }
   .content-tag.bank { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
@@ -360,14 +448,14 @@ html = """<!DOCTYPE html>
       <li>📅 <strong>数据范围</strong>：""" + f"{DATE_START.year}年{DATE_START.month}月{DATE_START.day}日 — {DATE_END.year}年{DATE_END.month}月{DATE_END.day}日" + """（滚动60天），基于笔记实际发帖时间精确筛选（非标题推断）</li>
       <li>🆕 <strong>近一周新发</strong>：<strong>""" + str(new_count) + """</strong> 条笔记发帖于近7天内（""" + f"{NEW_CUTOFF.month}月{NEW_CUTOFF.day}日 - {TODAY.month}月{TODAY.day}日" + """），标记为 <span class="new-badge">NEW</span></li>
       <li>📊 <strong>质量筛选</strong>：仅展示 ≥""" + str(MIN_LIKES) + """ 赞的笔记，已过滤 """ + str(len(filtered_low_likes)) + """ 条低赞内容</li>
-      <li>🏦 <strong>热门银行</strong>：<strong>建设银行、招商银行、工商银行、中信银行</strong>讨论度最高</li>
-      <li>🎯 <strong>主流玩法</strong>：<strong>立减金、满减优惠、资产提升返现</strong>为三大主要形式</li>
+      <li>🏦 <strong>热门银行</strong>：<strong>""" + top_banks_text + """</strong>讨论度最高</li>
+      <li>🎯 <strong>主流玩法</strong>：<strong>""" + top_activities_text + """</strong>为本周热门形式</li>
       <li>🔗 <strong>使用方式</strong>：卡片展示封面和互动数据，点击标题可跳转原文</li>
     </ul>
   </div>
 
   <div class="xhs-tip">
-    📱 <strong>温馨提示</strong>：小红书近期收紧了PC端访问限制，跳转后需用手机APP扫码可查看原文
+    💡 <strong>使用提示</strong>：点击「查看原文」可直接在浏览器打开笔记（带 xsec_token，模拟小红书内部访问），如果链接失效再用 App 扫码兜底（卡片右下角的二维码）
   </div>
 
   <!-- ==================== TOP 热门笔记 ==================== -->
@@ -399,6 +487,7 @@ for i, note in enumerate(top_notes, 1):
     html += f"""
       <div class="note-card">
         <div class="rank {rank_class}">{i}</div>
+        {f'<div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="{esc(note["qr_data_uri"])}" alt="QR"></div>' if note.get("qr_data_uri") else ""}
         <div class="title"><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a>{new_tag}{focus_tag}</div>
         <div class="author">作者：{esc(note['author'])} | 📅 {note['publish_date']}</div>
         {tag_html}
@@ -492,6 +581,8 @@ function showAllRows() {
 """
 
 output_path = os.path.join(BASE_DIR, "bank_marketing_report.html")
+if len(sys.argv) > 1:
+    output_path = sys.argv[1]
 with open(output_path, "w", encoding="utf-8") as f:
     f.write(html)
 
