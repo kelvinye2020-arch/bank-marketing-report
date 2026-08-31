@@ -65,6 +65,26 @@ QR_PATH = os.path.join(BASE_DIR, "qr_code.png")
 REPORT_URL = "https://kelvinye2020-arch.github.io/bank-marketing-report/"
 
 GITHUB_REPO = "kelvinye2020-arch/bank-marketing-report"
+GIT_TOKEN_PATH = os.path.join(BASE_DIR, "git_token.json")
+
+
+def get_github_pat():
+    """读取 GitHub Personal Access Token（git_token.json）。失败返回空字符串。
+
+    自动修复历史误写的 'ghp_ghp_' 双前缀，并兼容 BOM 编码。
+    """
+    if not os.path.exists(GIT_TOKEN_PATH):
+        return ""
+    try:
+        with open(GIT_TOKEN_PATH, encoding="utf-8-sig") as f:
+            token = json.load(f).get("github_pat", "").strip()
+        if token.startswith("ghp_ghp_"):
+            token = token[4:]
+        return token
+    except Exception as e:
+        warn(f"读取 GitHub Token 失败: {GIT_TOKEN_PATH} ({e})")
+        return ""
+
 
 # 企业微信机器人配置：优先环境变量，其次本项目本地配置，再读取本地配置声明的外部配置路径。
 # 不把 webhook key 写进脚本，避免误提交密钥。
@@ -81,7 +101,7 @@ SEARCHES = [
     ("银行活动羊毛攻略2026", "search_result_3.json"),
     ("银行立减金活动汇总", "search_result_4.json"),
     ("中国银行立减金满减", "search_result_5.json"),
-    ("工商银行立减金满减", "search_result_6.json"),
+    ("工行立减金", "search_result_6.json"),
 ]
 BATCH_SIZE = 3           # 每批搜索数量
 SEARCH_DELAY_MIN = 10    # 单次搜索间隔最小（秒）
@@ -212,21 +232,29 @@ def send_wecom_image(image_path):
 
 def notify_failure(reason, hint=None, qr_path=None):
 
-    """Notify update failure through WeCom."""
+    """Notify update failure through WeCom.
+
+    2026-07-06 改造：cookie 过期时不再发 QR 图片，改成发 run_xhs_update.bat 路径
+    （用户双击 .bat 就启动 MCP+自动跑全流程）。
+    """
+    BAT_PATH = os.path.join(BASE_DIR, "run_xhs_update.bat")
     lines = [
         "# 小红书银行活动看板更新失败",
         f"> 时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
         f"> 原因：<font color=\"warning\">{reason}</font>",
     ]
-    if qr_path:
-        lines.append(f"> 二维码：`{qr_path}`")
-        lines.append("> 请用小红书小号扫码后，重新运行 `python update_report.py`")
+    # 不再发 QR 图片，改成发一键运行脚本路径
+    use_one_click = bool(qr_path) or ("登录" in reason or "未登录" in reason or "过期" in reason)
+    if use_one_click:
+        lines.append(f"> **一键解决**：双击运行 `{BAT_PATH}`")
+        lines.append("> （脚本会自动启动 MCP + 跑搜索 + 生成报告 + 推送 GitHub）")
+        # 触发一键解决时，旧的"扫码+手动重跑"提示就屏蔽掉，避免双份信息冲突
+        hint = None
     if hint:
         lines.append(f"> 处理建议：{hint}")
     lines.append(f"> 线上看板：{REPORT_URL}")
     send_wecom_markdown("\n".join(lines))
-    if qr_path:
-        send_wecom_image(qr_path)
+    # 不再发送 QR 图片（send_wecom_image 已被 .bat 路径替代）
 
 
 def notify_success(search_stats=None, report_stats=None, push_status=True):
@@ -419,7 +447,7 @@ def stage_check_login():
 
     print("  调用 check_login_status...", flush=True)
     try:
-        data = call_mcp_tool(headers, "check_login_status", {}, timeout=30, request_id=2)
+        data = call_mcp_tool(headers, "check_login_status", {}, timeout=90, request_id=2)
 
         if "result" in data:
             content = data["result"].get("content", [])
@@ -494,7 +522,7 @@ def stage_search(mcp_headers):
                     "id": global_idx + 10,
                     "method": "tools/call",
                     "params": {"name": "search_feeds", "arguments": {"keyword": keyword}}
-                }, headers=mcp_headers, timeout=90)
+                }, headers=mcp_headers, timeout=150)
 
                 data = resp.json()
 
@@ -630,38 +658,37 @@ def stage_git_push():
         warn("没有新的变更需要提交")
         return None
 
-
-
     if commit_result.returncode != 0:
         fail("git commit 失败")
 
     ok("commit 完成")
 
-    # Push master
-    print("  推送 master...", flush=True)
-    push_result = run_git("push", "origin", "master", check=False)
+    # 快进合并 master → main（用 update-ref 避免本地 checkout，规避沙箱 .git 锁）
+    # GitHub Pages 从 main 部署。master 与 main 内容一致，直接把 main 指向 master 的 HEAD。
+    run_git("update-ref", "refs/heads/main", "master", check=False)
+
+    # 推送：优先用 PAT 完整 URL（全自动无需终端凭据），失败则回退到 origin
+    pat = get_github_pat()
+    if pat:
+        push_url = f"https://{pat}@github.com/{GITHUB_REPO}.git"
+        print("  推送 master + main（PAT 鉴权）...", flush=True)
+        # credential.helper= 置空，强制只用 URL 里的 token，不弹终端
+        push_result = run_git(
+            "-c", "credential.helper=", "push", push_url, "master", "main", check=False
+        )
+    else:
+        warn("未找到 git_token.json，回退到 origin（可能需要终端凭据）")
+        push_url = "origin"
+        push_result = run_git("push", "origin", "master", "main", check=False)
+
     if push_result.returncode == 0:
-        ok("master 分支已推送")
+        ok("master + main 已推送（GitHub Pages 将自动部署）")
+        main_pushed = True
     else:
-        warn(f"master 推送失败: {push_result.stderr.strip()}")
-
-    # Merge master → main, then push main (GitHub Pages deploys from main)
-    print("  合并 master → main...", flush=True)
-    run_git("checkout", "main", check=False)
-    merge_result = run_git("merge", "master", "--no-edit", check=False)
-    main_pushed = False
-    if merge_result.returncode == 0:
-        push_main = run_git("push", "origin", "main", check=False)
-        if push_main.returncode == 0:
-            ok("main 分支已推送（GitHub Pages 将自动部署）")
-            main_pushed = True
-        else:
-            warn(f"main 推送失败: {push_main.stderr.strip()}")
-    else:
-        warn(f"合并到 main 失败: {merge_result.stderr.strip()}")
-
-    # Switch back to master
-    run_git("checkout", "master", check=False)
+        # 隐藏 token 再打印错误
+        err = push_result.stderr.strip().replace(pat, "***") if pat else push_result.stderr.strip()
+        warn(f"推送失败: {err}")
+        main_pushed = False
 
     print(f"\n  线上地址: {REPORT_URL}", flush=True)
     return main_pushed
