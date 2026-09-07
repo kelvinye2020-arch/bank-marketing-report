@@ -647,7 +647,7 @@ def stage_git_push():
 
     # Add and commit on master
     print("  git add & commit (master)...", flush=True)
-    run_git("add", "bank_marketing_report.html", check=False)
+    run_git("add", "bank_marketing_report.html", "note_details.json", check=False)
     for i in range(1, 7):
         run_git("add", f"search_result_{i}.json", check=False)
 

@@ -13,9 +13,11 @@ Features:
 """
 import json
 import os
+import random
 import re
 import sys
 import io
+import time
 import base64
 from pathlib import Path
 from datetime import date, datetime, timedelta
@@ -262,6 +264,7 @@ for _sf in _search_files:
                 "comments": to_int(interact.get("commentCount", "0")),
                 "shares": to_int(interact.get("sharedCount", "0")),
                 "url": note_url,
+                "xsec_token": xsec_token,
                 "qr_data_uri": make_qr_data_uri(note_url),
                 "type": nc.get("type", "normal"),
                 "is_new": is_new_note(fid),
@@ -325,6 +328,99 @@ for n in bank_notes:
     if n["focus_bank"]:
         focus_bank_counts[n["focus_bank"]] = focus_bank_counts.get(n["focus_bank"], 0) + 1
 
+# =====================================================
+# Note detail fetching (embedded full-text modal, 2026-09-07)
+# xhs now forces a login modal on PC web even with xsec_token.
+# Workaround: fetch note detail anonymously via the token URL at
+# generation time (server-side HTML contains full noteDetailMap),
+# embed desc + images into the report, view in an in-page modal.
+# Images use ci.xiaohongshu.com/{fileId} — long-lived & hotlinkable
+# (sns-webpic-*.xhscdn.com URLs 403 after a few weeks).
+# =====================================================
+NO_DETAILS = "--no-details" in sys.argv
+DETAILS_CACHE_PATH = os.path.join(BASE_DIR, "note_details.json")
+
+def fetch_note_detail(note_id, xsec_token):
+    """Fetch note detail anonymously. Returns dict or None."""
+    import requests as _rq
+    url = build_note_url(note_id, xsec_token)
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"}
+    r = _rq.get(url, headers=headers, timeout=20)
+    if r.status_code != 200 or "noteDetailMap" not in r.text:
+        return None
+    m = re.search(r"window\.__INITIAL_STATE__\s*=\s*(\{.*?\})\s*</script>", r.text, re.S)
+    if not m:
+        return None
+    st = json.loads(m.group(1).replace("undefined", "null"))
+    nd = st.get("note", {}).get("noteDetailMap", {})
+    entry = nd.get(note_id) or (next(iter(nd.values())) if nd else None)
+    if not entry:
+        return None
+    note = entry.get("note", {})
+    images = []
+    for img in note.get("imageList", [])[:9]:
+        fid_img = img.get("fileId")
+        if fid_img:
+            images.append("https://ci.xiaohongshu.com/" + fid_img)
+    if not images:
+        cov_fid = (note.get("cover") or {}).get("fileId")
+        if cov_fid:
+            images.append("https://ci.xiaohongshu.com/" + cov_fid)
+    tags = [t.get("name", "") for t in note.get("tagList", []) if t.get("name")]
+    ts = note.get("time")
+    pub = ""
+    if ts:
+        try:
+            pub = datetime.fromtimestamp(int(ts) / 1000).strftime("%Y-%m-%d %H:%M")
+        except (ValueError, OSError):
+            pub = ""
+    return {
+        "desc": note.get("desc", ""),
+        "images": images,
+        "tags": tags[:8],
+        "ip": note.get("ipLocation", ""),
+        "pub": pub,
+        "type": note.get("type", "normal"),
+    }
+
+note_details = {}
+if os.path.exists(DETAILS_CACHE_PATH):
+    try:
+        with open(DETAILS_CACHE_PATH, "r", encoding="utf-8") as f:
+            note_details = json.load(f)
+    except (json.JSONDecodeError, IOError):
+        note_details = {}
+# Prune cache to notes in the current report
+_current_ids = {n["id"] for n in bank_notes}
+note_details = {k: v for k, v in note_details.items() if k in _current_ids}
+
+_fetch_ok = _fetch_fail = 0
+if not NO_DETAILS:
+    _todo = [n for n in bank_notes if n["id"] not in note_details and n.get("xsec_token")]
+    if _todo:
+        print(f"Fetching note details: {len(_todo)} to fetch ({len(note_details)} cached)...", flush=True)
+    for n in _todo:
+        try:
+            d = fetch_note_detail(n["id"], n["xsec_token"])
+        except Exception as e:
+            d = None
+            print(f"  detail fetch error {n['id'][:12]}: {e}", flush=True)
+        if d:
+            note_details[n["id"]] = d
+            _fetch_ok += 1
+        else:
+            _fetch_fail += 1
+            print(f"  detail fetch FAILED {n['id'][:12]} ({n['title'][:24]})", flush=True)
+        time.sleep(random.uniform(1.2, 2.5))
+    try:
+        with open(DETAILS_CACHE_PATH, "w", encoding="utf-8") as f:
+            json.dump(note_details, f, ensure_ascii=False, indent=1)
+    except IOError as e:
+        print(f"  警告: note_details.json 写入失败: {e}", flush=True)
+print(f"Note details embedded: {len(note_details)}/{len(bank_notes)} "
+      f"(fetched {_fetch_ok}, failed {_fetch_fail})")
+
 def esc(s):
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
@@ -334,6 +430,23 @@ def fmt_num(n):
     elif n >= 1000:
         return f"{n:,}"
     return str(n)
+
+# Build embedded detail payload for the in-page modal (merge card meta + detail)
+_embed = {}
+for n in bank_notes:
+    d = note_details.get(n["id"])
+    if not d:
+        continue
+    _embed[n["id"]] = {
+        "t": n["title"],
+        "a": n["author"],
+        "url": n["url"],
+        "likes": n["likes"], "collects": n["collects"],
+        "comments": n["comments"], "shares": n["shares"],
+        "desc": d["desc"], "imgs": d["images"], "tags": d["tags"],
+        "ip": d["ip"], "pub": d["pub"], "vtype": d["type"],
+    }
+_embed_json = json.dumps(_embed, ensure_ascii=False).replace("</", "<\\/")
 
 # Generate HTML
 html = """<!DOCTYPE html>
@@ -416,6 +529,30 @@ html = """<!DOCTYPE html>
   .show-more-btn:disabled { display: none; }
   .hidden-row { display: none; }
   .td-summary { font-size: 12px; color: #888; margin-top: 4px; line-height: 1.4; }
+  /* ---- 笔记详情弹窗（免登录全文） ---- */
+  .link-btn.secondary { background: #fff; color: #ff2442; border: 1px solid #ff2442; margin-left: 8px; }
+  .link-btn.secondary:hover { background: #fff0f2; }
+  .modal-mask { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .modal-mask.open { display: flex; }
+  .modal-box { background: #fff; border-radius: 14px; max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px 28px; position: relative; box-shadow: 0 12px 48px rgba(0,0,0,0.3); }
+  .modal-close { position: absolute; top: 12px; right: 14px; width: 32px; height: 32px; border-radius: 50%; border: none; background: #f2f2f2; font-size: 16px; cursor: pointer; color: #666; z-index: 2; }
+  .modal-close:hover { background: #ffe0e5; color: #ff2442; }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; padding-right: 36px; line-height: 1.4; }
+  .modal-meta { font-size: 12px; color: #999; margin-bottom: 14px; }
+  .modal-imgs { position: relative; margin-bottom: 14px; text-align: center; background: #fafafa; border-radius: 10px; }
+  .modal-imgs img { max-width: 100%; max-height: 52vh; border-radius: 10px; display: block; margin: 0 auto; }
+  .carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border-radius: 50%; border: none; background: rgba(0,0,0,0.45); color: #fff; font-size: 16px; cursor: pointer; }
+  .carousel-btn:hover { background: rgba(255,36,66,0.85); }
+  .carousel-btn.prev { left: 8px; }
+  .carousel-btn.next { right: 8px; }
+  .carousel-idx { position: absolute; bottom: 8px; right: 10px; background: rgba(0,0,0,0.5); color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+  .modal-desc { font-size: 14px; line-height: 1.8; white-space: pre-wrap; word-break: break-word; margin-bottom: 14px; }
+  .modal-tags { margin-bottom: 14px; }
+  .modal-tags .htag { display: inline-block; color: #1565c0; font-size: 13px; margin-right: 10px; }
+  .modal-stats { display: flex; gap: 18px; font-size: 12px; color: #999; border-top: 1px solid #f0f0f0; padding-top: 12px; flex-wrap: wrap; align-items: center; }
+  .modal-stats span { color: #ff2442; font-weight: 600; }
+  .modal-orig { margin-left: auto; font-size: 12px; color: #ff2442; text-decoration: none; }
+  .modal-orig:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -455,7 +592,7 @@ html = """<!DOCTYPE html>
   </div>
 
   <div class="xhs-tip">
-    💡 <strong>使用提示</strong>：点击「查看原文」可直接在浏览器打开笔记（带 xsec_token，模拟小红书内部访问），如果链接失效再用 App 扫码兜底（卡片右下角的二维码）
+    💡 <strong>使用提示</strong>：点击「📖 查看全文」在报告内直接阅读完整笔记（正文+图片，<strong>免登录</strong>）；「原帖 ↗」跳转小红书（可能弹登录框）；卡片左上角二维码可用 App 扫码互动
   </div>
 
   <!-- ==================== TOP 热门笔记 ==================== -->
@@ -538,7 +675,7 @@ for i, note in enumerate(bank_notes, 1):
         short = BANK_SHORT_NAMES.get(bk, bk)
         tags += f'<span class="focus-badge">🏦 {short}</span> '
     # Title in table
-    title_cell = f'<a href="{esc(note["url"])}" target="_blank">{esc(note["title"])}</a>'
+    title_cell = f'<a href="javascript:void(0)" onclick="openNote(\'{note["id"]}\')">{esc(note["title"])}</a>'
     html += f"""        <tr{row_class}>
           <td>{i}</td>
           <td>{title_cell}</td>
@@ -568,7 +705,78 @@ html += """  </div>
   <p>报告由 WorkBuddy 通过小红书 MCP 自动生成 | 数据仅供参考，具体活动以银行官方公告为准</p>
 </div>
 
+<!-- 笔记详情弹窗（免登录全文，数据在生成时匿名抓取嵌入） -->
+<div class="modal-mask" id="noteModal" onclick="if(event.target===this)closeNote()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeNote()">✕</button>
+    <div class="modal-title" id="mTitle"></div>
+    <div class="modal-meta" id="mMeta"></div>
+    <div class="modal-imgs" id="mImgs" style="display:none">
+      <img id="mImg" src="" alt="笔记图片">
+      <button class="carousel-btn prev" id="mPrev" onclick="slideImg(-1)">‹</button>
+      <button class="carousel-btn next" id="mNext" onclick="slideImg(1)">›</button>
+      <div class="carousel-idx" id="mIdx"></div>
+    </div>
+    <div class="modal-desc" id="mDesc"></div>
+    <div class="modal-tags" id="mTags"></div>
+    <div class="modal-stats" id="mStats"></div>
+  </div>
+</div>
+
 <script>
+const NOTE_DETAILS = """ + _embed_json + """;
+let _curNote = null, _curIdx = 0;
+
+function openNote(id) {
+    const d = NOTE_DETAILS[id];
+    if (!d) { window.open('https://www.xiaohongshu.com/explore/' + id, '_blank'); return; }
+    _curNote = d; _curIdx = 0;
+    document.getElementById('mTitle').textContent = d.t;
+    document.getElementById('mMeta').textContent =
+        '作者：' + d.a + (d.pub ? ' | 📅 ' + d.pub : '') + (d.ip ? ' | 📍 ' + d.ip : '') + (d.vtype === 'video' ? ' | 🎬 视频笔记' : '');
+    const imgsBox = document.getElementById('mImgs');
+    if (d.imgs && d.imgs.length) {
+        imgsBox.style.display = '';
+        showImg();
+    } else {
+        imgsBox.style.display = 'none';
+    }
+    document.getElementById('mDesc').textContent = d.desc || '（无正文）';
+    document.getElementById('mTags').innerHTML = (d.tags || []).map(t => '<span class="htag">#' + t + '</span>').join('');
+    document.getElementById('mStats').innerHTML =
+        '点赞 <span>' + d.likes + '</span>　收藏 <span>' + d.collects + '</span>　评论 <span>' + d.comments + '</span>　分享 <span>' + d.shares + '</span>' +
+        '<a class="modal-orig" href="' + d.url + '" target="_blank">去小红书看原帖 ↗</a>';
+    document.getElementById('noteModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function showImg() {
+    const imgs = _curNote.imgs;
+    const img = document.getElementById('mImg');
+    img.src = imgs[_curIdx];
+    img.onerror = function() { img.onerror = null; img.alt = '图片加载失败，可点底部「去小红书看原帖」'; };
+    document.getElementById('mIdx').textContent = (_curIdx + 1) + ' / ' + imgs.length;
+    const multi = imgs.length > 1;
+    document.getElementById('mPrev').style.display = multi ? '' : 'none';
+    document.getElementById('mNext').style.display = multi ? '' : 'none';
+}
+function slideImg(step) {
+    if (!_curNote) return;
+    const n = _curNote.imgs.length;
+    _curIdx = (_curIdx + step + n) % n;
+    showImg();
+}
+function closeNote() {
+    document.getElementById('noteModal').classList.remove('open');
+    document.body.style.overflow = '';
+    _curNote = null;
+}
+document.addEventListener('keydown', function(e) {
+    if (!_curNote) return;
+    if (e.key === 'Escape') closeNote();
+    else if (e.key === 'ArrowLeft') slideImg(-1);
+    else if (e.key === 'ArrowRight') slideImg(1);
+});
+
 function showAllRows() {
     const hiddenRows = document.querySelectorAll('.hidden-row');
     hiddenRows.forEach(row => row.classList.remove('hidden-row'));
@@ -581,8 +789,9 @@ function showAllRows() {
 """
 
 output_path = os.path.join(BASE_DIR, "bank_marketing_report.html")
-if len(sys.argv) > 1:
-    output_path = sys.argv[1]
+_args = [a for a in sys.argv[1:] if not a.startswith("--")]
+if _args:
+    output_path = _args[0]
 with open(output_path, "w", encoding="utf-8") as f:
     f.write(html)
 

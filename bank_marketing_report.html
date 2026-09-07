@@ -78,6 +78,30 @@
   .show-more-btn:disabled { display: none; }
   .hidden-row { display: none; }
   .td-summary { font-size: 12px; color: #888; margin-top: 4px; line-height: 1.4; }
+  /* ---- 笔记详情弹窗（免登录全文） ---- */
+  .link-btn.secondary { background: #fff; color: #ff2442; border: 1px solid #ff2442; margin-left: 8px; }
+  .link-btn.secondary:hover { background: #fff0f2; }
+  .modal-mask { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .modal-mask.open { display: flex; }
+  .modal-box { background: #fff; border-radius: 14px; max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px 28px; position: relative; box-shadow: 0 12px 48px rgba(0,0,0,0.3); }
+  .modal-close { position: absolute; top: 12px; right: 14px; width: 32px; height: 32px; border-radius: 50%; border: none; background: #f2f2f2; font-size: 16px; cursor: pointer; color: #666; z-index: 2; }
+  .modal-close:hover { background: #ffe0e5; color: #ff2442; }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; padding-right: 36px; line-height: 1.4; }
+  .modal-meta { font-size: 12px; color: #999; margin-bottom: 14px; }
+  .modal-imgs { position: relative; margin-bottom: 14px; text-align: center; background: #fafafa; border-radius: 10px; }
+  .modal-imgs img { max-width: 100%; max-height: 52vh; border-radius: 10px; display: block; margin: 0 auto; }
+  .carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border-radius: 50%; border: none; background: rgba(0,0,0,0.45); color: #fff; font-size: 16px; cursor: pointer; }
+  .carousel-btn:hover { background: rgba(255,36,66,0.85); }
+  .carousel-btn.prev { left: 8px; }
+  .carousel-btn.next { right: 8px; }
+  .carousel-idx { position: absolute; bottom: 8px; right: 10px; background: rgba(0,0,0,0.5); color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+  .modal-desc { font-size: 14px; line-height: 1.8; white-space: pre-wrap; word-break: break-word; margin-bottom: 14px; }
+  .modal-tags { margin-bottom: 14px; }
+  .modal-tags .htag { display: inline-block; color: #1565c0; font-size: 13px; margin-right: 10px; }
+  .modal-stats { display: flex; gap: 18px; font-size: 12px; color: #999; border-top: 1px solid #f0f0f0; padding-top: 12px; flex-wrap: wrap; align-items: center; }
+  .modal-stats span { color: #ff2442; font-weight: 600; }
+  .modal-orig { margin-left: auto; font-size: 12px; color: #ff2442; text-decoration: none; }
+  .modal-orig:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -117,7 +141,7 @@
   </div>
 
   <div class="xhs-tip">
-    💡 <strong>使用提示</strong>：点击「查看原文」可直接在浏览器打开笔记（带 xsec_token，模拟小红书内部访问），如果链接失效再用 App 扫码兜底（卡片右下角的二维码）
+    💡 <strong>使用提示</strong>：点击「📖 查看全文」在报告内直接阅读完整笔记（正文+图片，<strong>免登录</strong>）；「原帖 ↗」跳转小红书（可能弹登录框）；卡片左上角二维码可用 App 扫码互动
   </div>
 
   <!-- ==================== TOP 热门笔记 ==================== -->
@@ -373,7 +397,7 @@
       <tbody>
         <tr>
           <td>1</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a8ec91f000000001e0162dd?xsec_token=ABkXvZ1eLCL2EjeN0p4MBy9qpKEg8FU3GtTQnYnIIUlJ8%3D&amp;xsec_source=pc_search" target="_blank">太牛了！！！纯靠薅羊毛一年到手10w！！！</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a8ec91f000000001e0162dd')">太牛了！！！纯靠薅羊毛一年到手10w！！！</a></td>
           <td>2026-08-26</td>
           <td></td>
           <td>减肥当美女</td>
@@ -384,7 +408,7 @@
         </tr>
         <tr>
           <td>2</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a96766b000000002603bfa2?xsec_token=ABCZXPqlHlS2Ks2Kyp74ura1ildKrjarxS_-oRpiEL6do%3D&amp;xsec_source=pc_search" target="_blank">建行助力开学季｜大疆pocket 4免费抽🎉</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a96766b000000002603bfa2')">建行助力开学季｜大疆pocket 4免费抽🎉</a></td>
           <td>2026-09-01</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 建行</span> </td>
           <td>中国建设银行上海市分行</td>
@@ -395,7 +419,7 @@
         </tr>
         <tr>
           <td>3</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a96bf0a000000002601e41a?xsec_token=ABCZXPqlHlS2Ks2Kyp74ura5VD52es8QAm3qoSOF-z4hU%3D&amp;xsec_source=pc_search" target="_blank">价值51.88的8个羊毛</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a96bf0a000000002601e41a')">价值51.88的8个羊毛</a></td>
           <td>2026-09-01</td>
           <td><span class="new-badge">NEW</span> </td>
           <td>大橘来啦</td>
@@ -406,7 +430,7 @@
         </tr>
         <tr>
           <td>4</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a965b210000000028003db8?xsec_token=ABCZXPqlHlS2Ks2Kyp74ura3WUpXOSjd4v5WWmktli_no%3D&amp;xsec_source=pc_search" target="_blank">2026年9月份生日礼薅羊毛汇总🎊</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a965b210000000028003db8')">2026年9月份生日礼薅羊毛汇总🎊</a></td>
           <td>2026-09-01</td>
           <td><span class="new-badge">NEW</span> </td>
           <td>薅羊毛的小蚂蚁</td>
@@ -417,7 +441,7 @@
         </tr>
         <tr>
           <td>5</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a9a12a6000000001001d10c?xsec_token=ABYRuH6l5CaDIX-a6JBO7DoZLaM7po9R85cLda9qTjAjE%3D&amp;xsec_source=pc_search" target="_blank">教师们，快去领工行送的10元立减金！💰</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a9a12a6000000001001d10c')">教师们，快去领工行送的10元立减金！💰</a></td>
           <td>2026-09-04</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 工行</span> </td>
           <td>Success</td>
@@ -428,7 +452,7 @@
         </tr>
         <tr>
           <td>6</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a95a580000000002a005fae?xsec_token=ABvYam_edeuzXUq2ydAG_ABYBsFVbEhm5kQWmN76dRozI%3D&amp;xsec_source=pc_search" target="_blank">9月份立减金活动汇总详细的教程（人人有）</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a95a580000000002a005fae')">9月份立减金活动汇总详细的教程（人人有）</a></td>
           <td>2026-09-01</td>
           <td><span class="new-badge">NEW</span> </td>
           <td>Holly</td>
@@ -439,7 +463,7 @@
         </tr>
         <tr>
           <td>7</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a96df430000000029010ed4?xsec_token=ABCZXPqlHlS2Ks2Kyp74urayaRUMoaoJF-BNqgc_9Ruks%3D&amp;xsec_source=pc_search" target="_blank">中国工行教师节专属福利攻略！自己已经领到</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a96df430000000029010ed4')">中国工行教师节专属福利攻略！自己已经领到</a></td>
           <td>2026-09-01</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 工行</span> </td>
           <td>Aurelia</td>
@@ -450,7 +474,7 @@
         </tr>
         <tr>
           <td>8</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a95a508000000000b000cae?xsec_token=ABvYam_edeuzXUq2ydAG_ABctlTHerO2Xd8-7U_O7W0Wg%3D&amp;xsec_source=pc_search" target="_blank">9月建行立减金活动合集来啦🎉</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a95a508000000000b000cae')">9月建行立减金活动合集来啦🎉</a></td>
           <td>2026-09-01</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 建行</span> </td>
           <td>Rose（教程版）</td>
@@ -461,7 +485,7 @@
         </tr>
         <tr>
           <td>9</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a963ef1000000002603a915?xsec_token=ABCZXPqlHlS2Ks2Kyp74urazzCqPWQrIqg-uxNeg5b7vo%3D&amp;xsec_source=pc_search" target="_blank">9月银行优惠活动汇总</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a963ef1000000002603a915')">9月银行优惠活动汇总</a></td>
           <td>2026-09-01</td>
           <td><span class="new-badge">NEW</span> </td>
           <td>会省会攒钱的小绵羊</td>
@@ -472,7 +496,7 @@
         </tr>
         <tr>
           <td>10</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a87cb9c00000000250029aa?xsec_token=ABl7ZwU8Y1-bWjey8F010RwNLT1TLBc1yyZaZj1IatoZ0%3D&amp;xsec_source=pc_search" target="_blank">中了50！工行自己去试试！</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a87cb9c00000000250029aa')">中了50！工行自己去试试！</a></td>
           <td>2026-08-21</td>
           <td><span class="focus-badge">🏦 工行</span> </td>
           <td>卡羊腿</td>
@@ -483,7 +507,7 @@
         </tr>
         <tr>
           <td>11</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a962344000000002502e241?xsec_token=ABCZXPqlHlS2Ks2Kyp74ura6Vo65mNU8UMHfZKtX_M8-0%3D&amp;xsec_source=pc_search" target="_blank">工行抽15.48r</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a962344000000002502e241')">工行抽15.48r</a></td>
           <td>2026-09-01</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 工行</span> </td>
           <td>小贱</td>
@@ -494,7 +518,7 @@
         </tr>
         <tr>
           <td>12</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a7a9b4e000000003400cd46?xsec_token=AB-J2Z129O5neKEIVTLSS-WWKRXS2ayfFFpIrtkpIkE3E%3D&amp;xsec_source=pc_search" target="_blank">用云闪付！60-20</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a7a9b4e000000003400cd46')">用云闪付！60-20</a></td>
           <td>2026-08-11</td>
           <td></td>
           <td>桃子不淘.</td>
@@ -505,7 +529,7 @@
         </tr>
         <tr>
           <td>13</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a994d7c000000002601ecc3?xsec_token=ABRCjGJlPrqQ2UgRer-whA9-SA74lMisFmHfHIvex7KKA%3D&amp;xsec_source=pc_search" target="_blank">农行10元省钱月卡（9月）</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a994d7c000000002601ecc3')">农行10元省钱月卡（9月）</a></td>
           <td>2026-09-03</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 农行</span> </td>
           <td>会省会攒钱的小绵羊</td>
@@ -516,7 +540,7 @@
         </tr>
         <tr>
           <td>14</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a979e6f0000000026015854?xsec_token=ABMthQNfIQPFtvoQcmPUCqTxU6W0MZez_aXVszhJXxxas%3D&amp;xsec_source=pc_search" target="_blank">建行8000积分+3r+5010g能量</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a979e6f0000000026015854')">建行8000积分+3r+5010g能量</a></td>
           <td>2026-09-02</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 建行</span> </td>
           <td>小贱</td>
@@ -527,7 +551,7 @@
         </tr>
         <tr>
           <td>15</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a9943f500000000290188e7?xsec_token=ABRCjGJlPrqQ2UgRer-whA9-rbv9KkAb8r2mFrEgw-YwU%3D&amp;xsec_source=pc_search" target="_blank">9月建行立减金领取攻略！</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a9943f500000000290188e7')">9月建行立减金领取攻略！</a></td>
           <td>2026-09-03</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 建行</span> </td>
           <td>初初麻麻亲子遛娃</td>
@@ -538,7 +562,7 @@
         </tr>
         <tr class="hidden-row">
           <td>16</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a7698ae0000000028032932?xsec_token=ABXayhLvncTe6m5SAPfpd2z3D77Ic2YHaiCQOt3E0Q7Ck%3D&amp;xsec_source=pc_search" target="_blank">每月薅工行48.88元立减金，再不薅养不起车了</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a7698ae0000000028032932')">每月薅工行48.88元立减金，再不薅养不起车了</a></td>
           <td>2026-08-08</td>
           <td><span class="focus-badge">🏦 工行</span> </td>
           <td>努力搬砖人</td>
@@ -549,7 +573,7 @@
         </tr>
         <tr class="hidden-row">
           <td>17</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a9d2657000000001103aee7?xsec_token=AB5HFPSAAN3spigN6qBtYKytJ6tGGb6JTVx60XPQ28R7w%3D&amp;xsec_source=pc_search" target="_blank">工行唯一让人欣慰的点</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a9d2657000000001103aee7')">工行唯一让人欣慰的点</a></td>
           <td>2026-09-06</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 工行</span> </td>
           <td>小狗好可爱</td>
@@ -560,7 +584,7 @@
         </tr>
         <tr class="hidden-row">
           <td>18</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a960af9000000000d026fcf?xsec_token=ABCZXPqlHlS2Ks2Kyp74urayWUbKf2OJK2Knst_9RxW3A%3D&amp;xsec_source=pc_search" target="_blank">2026.09.01 今日份招行羊毛👌</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a960af9000000000d026fcf')">2026.09.01 今日份招行羊毛👌</a></td>
           <td>2026-09-01</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 招行</span> </td>
           <td>今天要发财啦</td>
@@ -571,7 +595,7 @@
         </tr>
         <tr class="hidden-row">
           <td>19</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a97b0da000000001103a92b?xsec_token=ABMthQNfIQPFtvoQcmPUCqT8s9Y8HXJESyarmiJwR6zoQ%3D&amp;xsec_source=pc_search" target="_blank">工享月月花9月零钱通可以，建行不行</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a97b0da000000001103a92b')">工享月月花9月零钱通可以，建行不行</a></td>
           <td>2026-09-02</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 建行</span> </td>
           <td>垂儿</td>
@@ -582,7 +606,7 @@
         </tr>
         <tr class="hidden-row">
           <td>20</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a99a879000000000d026636?xsec_token=ABRCjGJlPrqQ2UgRer-whA94jFzJTBCWjfebkYEZBcQAk%3D&amp;xsec_source=pc_search" target="_blank">工行抽1+1+0.58+1r（预告）</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a99a879000000000d026636')">工行抽1+1+0.58+1r（预告）</a></td>
           <td>2026-09-04</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 工行</span> </td>
           <td>小贱</td>
@@ -593,7 +617,7 @@
         </tr>
         <tr class="hidden-row">
           <td>21</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a93f243000000002003acdd?xsec_token=ABiAbzFKfJmjGBhhdlj0htue-mCvlmmvl2afMu6Cwl8G0%3D&amp;xsec_source=pc_search" target="_blank">每月薅30+电费的教程</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a93f243000000002003acdd')">每月薅30+电费的教程</a></td>
           <td>2026-08-30</td>
           <td></td>
           <td>会省会攒钱的小绵羊</td>
@@ -604,7 +628,7 @@
         </tr>
         <tr class="hidden-row">
           <td>22</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a99f494000000002802d98f?xsec_token=ABRCjGJlPrqQ2UgRer-whA93d3yGmdH9yBm5LKTY03i18%3D&amp;xsec_source=pc_search" target="_blank">农行10元立减金</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a99f494000000002802d98f')">农行10元立减金</a></td>
           <td>2026-09-04</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 农行</span> </td>
           <td>羊毛党小张哥</td>
@@ -615,7 +639,7 @@
         </tr>
         <tr class="hidden-row">
           <td>23</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a6d578a000000003301883c?xsec_token=ABXSHTkcfC4woN_4y7QR2eD5SZKLTrNBu-b2MTl9tGBKs%3D&amp;xsec_source=pc_search" target="_blank">建行8月更新‼️3r、5r、10r立减金</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a6d578a000000003301883c')">建行8月更新‼️3r、5r、10r立减金</a></td>
           <td>2026-08-01</td>
           <td><span class="focus-badge">🏦 建行</span> </td>
           <td>羊毛妹君君</td>
@@ -626,7 +650,7 @@
         </tr>
         <tr class="hidden-row">
           <td>24</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a9bdb34000000001203c407?xsec_token=ABPMfgPPaIBFB3_KIzAVf5sS3dE7KyLWrgFFCfKutYCwk%3D&amp;xsec_source=pc_search" target="_blank">工行10元立减金教师身份认证礼流程</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a9bdb34000000001203c407')">工行10元立减金教师身份认证礼流程</a></td>
           <td>2026-09-05</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 工行</span> </td>
           <td>让世界震惊宝宝</td>
@@ -637,7 +661,7 @@
         </tr>
         <tr class="hidden-row">
           <td>25</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a98c63000000000290192f2?xsec_token=ABAFoc-61LrBrUCZKCDkr3ppEpYyn3Pv7DiRHwzYXmpjM%3D&amp;xsec_source=pc_search" target="_blank">9月～工行立减金汇总</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a98c63000000000290192f2')">9月～工行立减金汇总</a></td>
           <td>2026-09-03</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 工行</span> </td>
           <td>优质活动</td>
@@ -648,7 +672,7 @@
         </tr>
         <tr class="hidden-row">
           <td>26</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a9da41c000000002902fb7c?xsec_token=AB5HFPSAAN3spigN6qBtYKyt1YyPX3IajiaPa8wkqNWjE%3D&amp;xsec_source=pc_search" target="_blank">工行节气答题活动攻略合集！附详细教程</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a9da41c000000002902fb7c')">工行节气答题活动攻略合集！附详细教程</a></td>
           <td>2026-09-07</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 工行</span> </td>
           <td>有羊毛日记</td>
@@ -659,7 +683,7 @@
         </tr>
         <tr class="hidden-row">
           <td>27</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a99aba50000000025034f92?xsec_token=ABRCjGJlPrqQ2UgRer-whA945rSwcUCNp9IMFCg7HTXZg%3D&amp;xsec_source=pc_search" target="_blank">2026.09.04招行喊你薅羊毛🐏🐏🐏</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a99aba50000000025034f92')">2026.09.04招行喊你薅羊毛🐏🐏🐏</a></td>
           <td>2026-09-04</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 招行</span> </td>
           <td>薅羊毛进行时</td>
@@ -670,7 +694,7 @@
         </tr>
         <tr class="hidden-row">
           <td>28</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a6da2d60000000035014708?xsec_token=ABXSHTkcfC4woN_4y7QR2eD6g1mPSYhugd3-6zQ8IH-qs%3D&amp;xsec_source=pc_search" target="_blank">8月新羊毛！银行立减金汇总完毕</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a6da2d60000000035014708')">8月新羊毛！银行立减金汇总完毕</a></td>
           <td>2026-08-01</td>
           <td></td>
           <td>桃桃</td>
@@ -681,7 +705,7 @@
         </tr>
         <tr class="hidden-row">
           <td>29</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a6ffde6000000002500e783?xsec_token=ABePTgCITEbQxcXSkH2wZMV-yIwcR5eFBpfvWd8g121TM%3D&amp;xsec_source=pc_search" target="_blank">8🈷️五大银行立减金活动汇总</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a6ffde6000000002500e783')">8🈷️五大银行立减金活动汇总</a></td>
           <td>2026-08-03</td>
           <td></td>
           <td>只薅大毛的珊妈🐟</td>
@@ -692,7 +716,7 @@
         </tr>
         <tr class="hidden-row">
           <td>30</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a966dc00000000029019f9c?xsec_token=ABCZXPqlHlS2Ks2Kyp74urayEY6J9iZhbCZs7c8evvgLg%3D&amp;xsec_source=pc_search" target="_blank">工行6元微信立减金-9.1</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a966dc00000000029019f9c')">工行6元微信立减金-9.1</a></td>
           <td>2026-09-01</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 工行</span> </td>
           <td>努力搬砖人</td>
@@ -703,7 +727,7 @@
         </tr>
         <tr class="hidden-row">
           <td>31</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a9559640000000028005681?xsec_token=ABvYam_edeuzXUq2ydAG_ABfagZaQuYFw5nEoQ-rN1Kvc%3D&amp;xsec_source=pc_search" target="_blank">银行月月刷8月总结｜工行建行出公告9月悬了</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a9559640000000028005681')">银行月月刷8月总结｜工行建行出公告9月悬了</a></td>
           <td>2026-08-31</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 建行</span> <span class="focus-badge">🏦 工行</span> </td>
           <td>羊毛有术</td>
@@ -714,7 +738,7 @@
         </tr>
         <tr class="hidden-row">
           <td>32</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a9788e50000000028033bf1?xsec_token=ABMthQNfIQPFtvoQcmPUCqT1v0fO8XCKZuDvibHcpduIc%3D&amp;xsec_source=pc_search" target="_blank">一定要学会薅羊毛之银行立减金！！</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a9788e50000000028033bf1')">一定要学会薅羊毛之银行立减金！！</a></td>
           <td>2026-09-02</td>
           <td><span class="new-badge">NEW</span> </td>
           <td>一一不叫二二（佛系存钱中）</td>
@@ -725,7 +749,7 @@
         </tr>
         <tr class="hidden-row">
           <td>33</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a9a0c3e000000000d027d84?xsec_token=ABYRuH6l5CaDIX-a6JBO7Doep1TVbak0Xq5WfLUjTopoE%3D&amp;xsec_source=pc_search" target="_blank">9月4日上午10点记得蹲工行立减金，新的</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a9a0c3e000000000d027d84')">9月4日上午10点记得蹲工行立减金，新的</a></td>
           <td>2026-09-04</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 工行</span> </td>
           <td>十六哦</td>
@@ -736,7 +760,7 @@
         </tr>
         <tr class="hidden-row">
           <td>34</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a9ae75c000000000d027ef5?xsec_token=ABYRuH6l5CaDIX-a6JBO7DoUZpOHunGe0gRwbaTfKOAoM%3D&amp;xsec_source=pc_search" target="_blank">9月农行12元立减活动合集</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a9ae75c000000000d027ef5')">9月农行12元立减活动合集</a></td>
           <td>2026-09-04</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 农行</span> </td>
           <td>Stars</td>
@@ -747,7 +771,7 @@
         </tr>
         <tr class="hidden-row">
           <td>35</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a77c320000000003301ece6?xsec_token=AB3Rwa76WKQU4yXlbaHBalwUEnWoE0mCSDzvx2XSs44KI%3D&amp;xsec_source=pc_search" target="_blank">中行充话费/电费/生活缴费立省10元的教程</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a77c320000000003301ece6')">中行充话费/电费/生活缴费立省10元的教程</a></td>
           <td>2026-08-09</td>
           <td><span class="focus-badge">🏦 中行</span> </td>
           <td>会省会攒钱的小绵羊</td>
@@ -758,7 +782,7 @@
         </tr>
         <tr class="hidden-row">
           <td>36</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a992ebc000000001103793c?xsec_token=ABRCjGJlPrqQ2UgRer-whA99OGLixgUSjrVU1MOpIxm6Q%3D&amp;xsec_source=pc_search" target="_blank">官方教您如何在出行游玩时薅邮储信用卡羊毛</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a992ebc000000001103793c')">官方教您如何在出行游玩时薅邮储信用卡羊毛</a></td>
           <td>2026-09-03</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 邮储</span> </td>
           <td>邮储银行信用卡</td>
@@ -769,7 +793,7 @@
         </tr>
         <tr class="hidden-row">
           <td>37</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a86ffc2000000001d01c718?xsec_token=ABIe236IsPWthCtShqj8EuFcwptrwW-1lE5o5uAPzlQsw%3D&amp;xsec_source=pc_search" target="_blank">广州社保卡换工行有100立减金</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a86ffc2000000001d01c718')">广州社保卡换工行有100立减金</a></td>
           <td>2026-08-20</td>
           <td><span class="focus-badge">🏦 工行</span> </td>
           <td>图里震</td>
@@ -780,7 +804,7 @@
         </tr>
         <tr class="hidden-row">
           <td>38</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a7a672c000000002403d579?xsec_token=AB-J2Z129O5neKEIVTLSS-WW96K5LByEtvXJXAQZKQpnI%3D&amp;xsec_source=pc_search" target="_blank">全国中行10元立减金</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a7a672c000000002403d579')">全国中行10元立减金</a></td>
           <td>2026-08-11</td>
           <td><span class="focus-badge">🏦 中行</span> </td>
           <td>羊毛党小张哥</td>
@@ -791,7 +815,7 @@
         </tr>
         <tr class="hidden-row">
           <td>39</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a82770300000000080135b9?xsec_token=AB9Cyj5RUSMeYvhOGYEtRBdzAMKyjpKZ5hFc8342qlwRI%3D&amp;xsec_source=pc_search" target="_blank">工行活动</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a82770300000000080135b9')">工行活动</a></td>
           <td>2026-08-17</td>
           <td><span class="focus-badge">🏦 工行</span> </td>
           <td>-w-</td>
@@ -802,7 +826,7 @@
         </tr>
         <tr class="hidden-row">
           <td>40</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a9c43060000000012036f11?xsec_token=ABK6fu-4kxbBqRm-fnv9PmFO0AjXHHcyNJ0M8t7LFhzKo%3D&amp;xsec_source=pc_search" target="_blank">9月6日-周日各大银行优惠活动</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a9c43060000000012036f11')">9月6日-周日各大银行优惠活动</a></td>
           <td>2026-09-06</td>
           <td><span class="new-badge">NEW</span> </td>
           <td>薅羊毛的葡萄精</td>
@@ -813,7 +837,7 @@
         </tr>
         <tr class="hidden-row">
           <td>41</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a9839a3000000002900c48e?xsec_token=ABAFoc-61LrBrUCZKCDkr3pqVi3aDP9a7MTdJ14EV5lo0%3D&amp;xsec_source=pc_search" target="_blank">9月3日-周四各大银行优惠活动</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a9839a3000000002900c48e')">9月3日-周四各大银行优惠活动</a></td>
           <td>2026-09-02</td>
           <td><span class="new-badge">NEW</span> </td>
           <td>薅羊毛的葡萄精</td>
@@ -824,7 +848,7 @@
         </tr>
         <tr class="hidden-row">
           <td>42</td>
-          <td><a href="https://www.xiaohongshu.com/explore/6a9d351b000000000d02402c?xsec_token=AB5HFPSAAN3spigN6qBtYKyutAxgou_Qf9QG6kHmmJxFg%3D&amp;xsec_source=pc_search" target="_blank">工行教师节15立减活动合集</a></td>
+          <td><a href="javascript:void(0)" onclick="openNote('6a9d351b000000000d02402c')">工行教师节15立减活动合集</a></td>
           <td>2026-09-06</td>
           <td><span class="new-badge">NEW</span> <span class="focus-badge">🏦 工行</span> </td>
           <td>Stars</td>
@@ -844,7 +868,78 @@
   <p>报告由 WorkBuddy 通过小红书 MCP 自动生成 | 数据仅供参考，具体活动以银行官方公告为准</p>
 </div>
 
+<!-- 笔记详情弹窗（免登录全文，数据在生成时匿名抓取嵌入） -->
+<div class="modal-mask" id="noteModal" onclick="if(event.target===this)closeNote()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeNote()">✕</button>
+    <div class="modal-title" id="mTitle"></div>
+    <div class="modal-meta" id="mMeta"></div>
+    <div class="modal-imgs" id="mImgs" style="display:none">
+      <img id="mImg" src="" alt="笔记图片">
+      <button class="carousel-btn prev" id="mPrev" onclick="slideImg(-1)">‹</button>
+      <button class="carousel-btn next" id="mNext" onclick="slideImg(1)">›</button>
+      <div class="carousel-idx" id="mIdx"></div>
+    </div>
+    <div class="modal-desc" id="mDesc"></div>
+    <div class="modal-tags" id="mTags"></div>
+    <div class="modal-stats" id="mStats"></div>
+  </div>
+</div>
+
 <script>
+const NOTE_DETAILS = {"6a8ec91f000000001e0162dd": {"t": "太牛了！！！纯靠薅羊毛一年到手10w！！！", "a": "减肥当美女", "url": "https://www.xiaohongshu.com/explore/6a8ec91f000000001e0162dd?xsec_token=ABkXvZ1eLCL2EjeN0p4MBy9qpKEg8FU3GtTQnYnIIUlJ8%3D&xsec_source=pc_search", "likes": 9464, "collects": 8288, "comments": 238, "shares": 810, "desc": "#花小钱办大事[话题]# #小妙招[话题]# #薅羊毛[话题]##这是一种很新的省钱方式[话题]# #省钱[话题]# #不花一分钱[话题]# #羊毛[话题]# #省钱才是硬道理[话题]# #副业还可以这么干[话题]# #还有人不知道知道的人越多[话题]#", "imgs": ["https://ci.xiaohongshu.com/1040g2sg324b47kcfn4e05o9rivdgjugb442ds4o"], "tags": ["花小钱办大事", "小妙招", "薅羊毛", "这是一种很新的省钱方式", "省钱", "不花一分钱", "羊毛", "省钱才是硬道理"], "ip": "辽宁", "pub": "2026-08-26 19:08", "vtype": "video"}, "6a96766b000000002603bfa2": {"t": "建行助力开学季｜大疆pocket 4免费抽🎉", "a": "中国建设银行上海市分行", "url": "https://www.xiaohongshu.com/explore/6a96766b000000002603bfa2?xsec_token=ABCZXPqlHlS2Ks2Kyp74ura1ildKrjarxS_-oRpiEL6do%3D&xsec_source=pc_search", "likes": 8168, "collects": 7989, "comments": 9944, "shares": 606, "desc": "开学啦！又到了给书包换新搭子的时候🎒\n\t\n[哇R][哇R]建行给同学们准备了一份开学小惊喜：9.1-9.15，Pocket 4 等你来领～折屏小小一个，揣兜里不占地儿，社团拍照随手打开，新学期用它记录校园生活，排面拉满✨\n\t\n📅活动时间：2026.9.1--2026.9.15\n⏰开奖时间：2026.9.15 16:00\n📍奖品：大奖pocket 4 一份，抽1位\n🔍参与方式：🐷+❤️+⭐+💬\n\t\n✅温馨提示：中奖的小宝需在7天内提交收货信息，逾期视为自动放弃哦～\n⚠为保证公平公正，本次活动将通过 @我们爱抽奖  进行抽奖～\n\t\n#上海建设银行[话题]# #建设银行[话题]# #上海建行[话题]# #建行手机银行[话题]#  #大疆抽奖[话题]#  #大疆pocket4[话题]# #粉丝福利[话题]#  #开学宠粉[话题]#  #开学季抽奖[话题]#  #上海建行宠粉[话题]#", "imgs": ["https://ci.xiaohongshu.com/1040g2sg324ik659h7udg4b3linc8eji5et7h3kg"], "tags": ["上海建设银行", "建设银行", "上海建行", "建行手机银行", "大疆抽奖", "大疆pocket4", "粉丝福利", "开学宠粉"], "ip": "浙江", "pub": "2026-09-01 15:00", "vtype": "normal"}, "6a96bf0a000000002601e41a": {"t": "价值51.88的8个羊毛", "a": "大橘来啦", "url": "https://www.xiaohongshu.com/explore/6a96bf0a000000002601e41a?xsec_token=ABCZXPqlHlS2Ks2Kyp74ura5VD52es8QAm3qoSOF-z4hU%3D&xsec_source=pc_search", "likes": 3866, "collects": 2796, "comments": 218, "shares": 893, "desc": "#好视频扶持计划[话题]# #羊毛[话题]# #薅羊毛[话题]# #省钱[话题]# #省钱攻略[话题]# #立减金[话题]# #生活小技巧[话题]#", "imgs": ["https://ci.xiaohongshu.com/1040g2sg324it1dcgnudg5p7gej61meiipgaqe4g"], "tags": ["好视频扶持计划", "羊毛", "薅羊毛", "省钱", "省钱攻略", "立减金", "生活小技巧"], "ip": "广东", "pub": "2026-09-01 20:03", "vtype": "video"}, "6a965b210000000028003db8": {"t": "2026年9月份生日礼薅羊毛汇总🎊", "a": "薅羊毛的小蚂蚁", "url": "https://www.xiaohongshu.com/explore/6a965b210000000028003db8?xsec_token=ABCZXPqlHlS2Ks2Kyp74ura3WUpXOSjd4v5WWmktli_no%3D&xsec_source=pc_search", "likes": 1353, "collects": 1058, "comments": 82, "shares": 752, "desc": "美食、甜品饮料、各行生日福利\n#薅羊毛[话题]##省钱攻略[话题]##不薅白不薅[话题]##生日礼福利[话题]##生日礼物[话题]##一起薅羊毛[话题]##省钱小技巧[话题]##省钱日记[话题]##省钱[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324igqdl76udg5o7qned08pg771l6jl8", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324igqdl76ubg5o7qned08pg7vm5agpo", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324igqdl76ucg5o7qned08pg7v5l5tj8", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324igqdl76ud05o7qned08pg79uvnf80"], "tags": ["薅羊毛", "省钱攻略", "不薅白不薅", "生日礼福利", "生日礼物", "一起薅羊毛", "省钱小技巧", "省钱日记"], "ip": "江苏", "pub": "2026-09-01 12:57", "vtype": "normal"}, "6a9a12a6000000001001d10c": {"t": "教师们，快去领工行送的10元立减金！💰", "a": "Success", "url": "https://www.xiaohongshu.com/explore/6a9a12a6000000001001d10c?xsec_token=ABYRuH6l5CaDIX-a6JBO7DoZLaM7po9R85cLda9qTjAjE%3D&xsec_source=pc_search", "likes": 1152, "collects": 954, "comments": 224, "shares": 1114, "desc": "先去工行app认证教师身份，微金融小程序兑换立减金就可以啦，超简单[赞R][赞R][赞R]#银行卡[话题]# #积分兑换[话题]# #不花一分钱[话题]# #教师节[话题]# #工行教师白金卡[话题]#", "imgs": ["https://ci.xiaohongshu.com/1040g2sg324m4sc74na705niom1sg8v4b4ah2ft8", "https://ci.xiaohongshu.com/1040g2sg324m4sc74na7g5niom1sg8v4blnmreug"], "tags": ["银行卡", "积分兑换", "不花一分钱", "教师节", "工行教师白金卡"], "ip": "陕西", "pub": "2026-09-04 08:36", "vtype": "normal"}, "6a95a580000000002a005fae": {"t": "9月份立减金活动汇总详细的教程（人人有）", "a": "Holly", "url": "https://www.xiaohongshu.com/explore/6a95a580000000002a005fae?xsec_token=ABvYam_edeuzXUq2ydAG_ABYBsFVbEhm5kQWmN76dRozI%3D&xsec_source=pc_search", "likes": 912, "collects": 925, "comments": 23, "shares": 236, "desc": "一篇汇总9月立减金详细攻略\n宝子们先码住刚月初后面会陆续补充上[派对R]\n#省钱小妙招[话题]# #立减金[话题]# #一起薅羊毛[话题]# #建设银行[话题]# #能省一点是一点[话题]# #省钱攻略[话题]# #工商银行[话题]# #薅羊毛[话题]# #中行[话题]# #话费[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324hpo6tagoa05n10nsi1br4l5ph6qeo", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324hpo6tagoag5n10nsi1br4l3i7ep68", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324hpo6tagob05n10nsi1br4l9vvdnl0", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324hpo6tagobg5n10nsi1br4ls156jk8", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324hpo6tagoc05n10nsi1br4lvco8ls0", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324hpo6tagocg5n10nsi1br4le4ci47o"], "tags": ["省钱小妙招", "立减金", "一起薅羊毛", "建设银行", "能省一点是一点", "省钱攻略", "工商银行", "薅羊毛"], "ip": "四川", "pub": "2026-09-01 00:02", "vtype": "normal"}, "6a96df430000000029010ed4": {"t": "中国工行教师节专属福利攻略！自己已经领到", "a": "Aurelia", "url": "https://www.xiaohongshu.com/explore/6a96df430000000029010ed4?xsec_token=ABCZXPqlHlS2Ks2Kyp74urayaRUMoaoJF-BNqgc_9Ruks%3D&xsec_source=pc_search", "likes": 907, "collects": 646, "comments": 248, "shares": 1479, "desc": "如图一找到工行app里的任务中心的教师身份认证(需要你的教师资格证在中国教师通过认证才行，基本要求就是在职，因为中国教师显示了你的工作单位学校，个别离职老师反映也可以通过认证，是因为之前学校没有删除自己在中国教师的信息），认证通过后有1W豆子，可以用于兑换工行立减金和商城里的商品[赞R][赞R][赞R] ,价值十块                                                               关于豆子问题，统一回复下，工行里咱们领取到的豆子也叫工银i豆。第一,主要用于微信立减金(通过微信搜工行小程序ICBC微金融，再点击积分兑立减金，详见图四五六)，你微信支付时候选择工行支付可以直接抵扣。第二，用于工行app里的工银i豆商城里的商品兑换，我个人一般兑换美团抵扣券多些(详见图七八九)，你也可以选择一些小东西如牙膏记号笔便利贴之类\n#教师节福利[话题]# #教师节福利活动[话题]# #中国工商银行[话题]#", "imgs": ["https://ci.xiaohongshu.com/1040g2sg324kaqfpe72e05oqfhurm5jd391dnoho", "https://ci.xiaohongshu.com/1040g2sg324kaqfpe72eg5oqfhurm5jd3ambe20o", "https://ci.xiaohongshu.com/1040g2sg324kaqfpe72f05oqfhurm5jd31dfrg08", "https://ci.xiaohongshu.com/1040g2sg324kaqfpe72fg5oqfhurm5jd33equ99g", "https://ci.xiaohongshu.com/1040g2sg324kaqfpe72g05oqfhurm5jd30i9f9ko", "https://ci.xiaohongshu.com/1040g2sg324kaqfpe72gg5oqfhurm5jd3sra0lvg", "https://ci.xiaohongshu.com/1040g2sg324kaqfpe72h05oqfhurm5jd3538jiho", "https://ci.xiaohongshu.com/1040g2sg324kaqfpe72hg5oqfhurm5jd3v455p1g", "https://ci.xiaohongshu.com/1040g2sg324kaqfpe72i05oqfhurm5jd36dq81g0"], "tags": ["教师节福利", "教师节福利活动", "中国工商银行"], "ip": "江苏", "pub": "2026-09-01 22:20", "vtype": "normal"}, "6a95a508000000000b000cae": {"t": "9月建行立减金活动合集来啦🎉", "a": "Rose（教程版）", "url": "https://www.xiaohongshu.com/explore/6a95a508000000000b000cae?xsec_token=ABvYam_edeuzXUq2ydAG_ABctlTHerO2Xd8-7U_O7W0Wg%3D&xsec_source=pc_search", "likes": 534, "collects": 517, "comments": 27, "shares": 88, "desc": "9月建行立减金活动合集来啦\n可以先码住等闲了记得查漏补缺哦\n刚月初后面会陆续补充的哈[派对R][派对R]\n如有遗漏错误感谢宝子们纠正补充哦[派对R][派对R]\n#一起薅羊毛[话题]# #薅羊毛的快乐[话题]# #不薅白不薅[话题]# #优惠[话题]# #立减金[话题]# #一起来省钱[话题]# #建行[话题]# #多种支付方式[话题]# #省钱小妙招[话题]#  #能省一点是一点[话题]#", "imgs": ["https://ci.xiaohongshu.com/1040g008324hqcctm7k4g5pq5v9r735jhf0v4m38", "https://ci.xiaohongshu.com/1040g008324hqcctm7k0g5pq5v9r735jhp7etvio", "https://ci.xiaohongshu.com/1040g008324hqcctm7k105pq5v9r735jhsp011go", "https://ci.xiaohongshu.com/1040g008324hqcctm7k405pq5v9r735jhgafoltg", "https://ci.xiaohongshu.com/1040g008324hqcctm7k6g5pq5v9r735jh7unf3pg", "https://ci.xiaohongshu.com/1040g008324hqcctm7k505pq5v9r735jhi9bdb40"], "tags": ["一起薅羊毛", "薅羊毛的快乐", "不薅白不薅", "优惠", "立减金", "一起来省钱", "建行", "多种支付方式"], "ip": "天津", "pub": "2026-09-01 00:00", "vtype": "normal"}, "6a963ef1000000002603a915": {"t": "9月银行优惠活动汇总", "a": "会省会攒钱的小绵羊", "url": "https://www.xiaohongshu.com/explore/6a963ef1000000002603a915?xsec_token=ABCZXPqlHlS2Ks2Kyp74urazzCqPWQrIqg-uxNeg5b7vo%3D&xsec_source=pc_search", "likes": 500, "collects": 575, "comments": 29, "shares": 143, "desc": "#省钱小妙招[话题]# #省钱[话题]# #立减金[话题]# #信用卡使用[话题]# #多种支付方式[话题]# #工商银行[话题]# #中国银行[话题]##建行银行[话题]##云闪付[话题]# #积分兑换[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324idbnia0a005pd75jgi4a9ks5pghqo", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324idbnia0a0g5pd75jgi4a9k8jo3lcg", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324idbnia0a105pd75jgi4a9kimg8i00", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324idbnia0a1g5pd75jgi4a9kvu6n9ig", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324idbnia0a205pd75jgi4a9k8bfba20", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324idbnia0a2g5pd75jgi4a9kigtjmog"], "tags": ["省钱小妙招", "省钱", "立减金", "信用卡使用", "多种支付方式", "工商银行", "中国银行", "建行银行"], "ip": "湖南", "pub": "2026-09-01 10:56", "vtype": "normal"}, "6a87cb9c00000000250029aa": {"t": "中了50！工行自己去试试！", "a": "卡羊腿", "url": "https://www.xiaohongshu.com/explore/6a87cb9c00000000250029aa?xsec_token=ABl7ZwU8Y1-bWjey8F010RwNLT1TLBc1yyZaZj1IatoZ0%3D&xsec_source=pc_search", "likes": 451, "collects": 272, "comments": 15, "shares": 109, "desc": "感谢 @迷途的指路人 提供信息\n\t\n#工行[话题]# #藏品[话题]# #卡羊腿[话题]# #工行羊毛[话题]# #工行信用卡[话题]#", "imgs": ["https://ci.xiaohongshu.com/spectrum/1040g34o32449nuvg6u105pfb5dilrema0eot8uo", "https://ci.xiaohongshu.com/spectrum/1040g34o32449nuvg6u1g5pfb5dilremahagbat8", "https://ci.xiaohongshu.com/spectrum/1040g0k03244amccpn4005pfb5dilremajhvsok8", "https://ci.xiaohongshu.com/spectrum/1040g34o32449o44a72105pfb5dilremakq4ip80"], "tags": ["工行", "藏品", "卡羊腿", "工行羊毛", "工行信用卡"], "ip": "北京", "pub": "2026-08-21 11:53", "vtype": "normal"}, "6a962344000000002502e241": {"t": "工行抽15.48r", "a": "小贱", "url": "https://www.xiaohongshu.com/explore/6a962344000000002502e241?xsec_token=ABCZXPqlHlS2Ks2Kyp74ura6Vo65mNU8UMHfZKtX_M8-0%3D&xsec_source=pc_search", "likes": 401, "collects": 283, "comments": 212, "shares": 251, "desc": "[一R] 任务中心-查看更多-逛官微有礼\n[二R] 限广除深❗️搜【粤月有礼】-定期存款\n⚠️ 四选一即可，有💰的可忽略这条建议[暗中观察R]\n[三R] 限广除深❗️首页-广东-粤享权益-马上赢好礼\n[四R] 限广州❗️e生活App-广州特惠-1分购数币\n#银行卡[话题]# #工商银行[话题]# #微信[话题]# #立减金[话题]# #数币红包[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324i9n71v7u0g5o75m5v08kdh5mp982o"], "tags": ["银行卡", "工商银行", "微信", "立减金", "数币红包"], "ip": "广东", "pub": "2026-09-01 08:58", "vtype": "normal"}, "6a7a9b4e000000003400cd46": {"t": "用云闪付！60-20", "a": "桃子不淘.", "url": "https://www.xiaohongshu.com/explore/6a7a9b4e000000003400cd46?xsec_token=AB-J2Z129O5neKEIVTLSS-WWKRXS2ayfFFpIrtkpIkE3E%3D&xsec_source=pc_search", "likes": 392, "collects": 294, "comments": 55, "shares": 121, "desc": "有人知道这个优惠券怎么用嘛？\n我扫的支付宝二维码选的银行卡支付但是没优惠", "imgs": ["https://ci.xiaohongshu.com/1040g2sg323ndlgqm7ukg5p0ikv14ic3qhantea8"], "tags": [], "ip": "河南", "pub": "2026-08-11 11:47", "vtype": "normal"}, "6a994d7c000000002601ecc3": {"t": "农行10元省钱月卡（9月）", "a": "会省会攒钱的小绵羊", "url": "https://www.xiaohongshu.com/explore/6a994d7c000000002601ecc3?xsec_token=ABRCjGJlPrqQ2UgRer-whA9-SA74lMisFmHfHIvex7KKA%3D&xsec_source=pc_search", "likes": 383, "collects": 243, "comments": 101, "shares": 164, "desc": "图二图三\n分别是zfb端和v端，各5元\n最低可以0.02拿下10元\n都是保存用v掃\nzfb的买完需要挨个领取\nv端的自动到账，但是经常有延迟\n后续有dy或者mt端再更新\n观住主包，蹲住后续更新\n#省钱小妙招[话题]# #省钱[话题]# #立减金[话题]# #不薅白不薅[话题]# #农业银行[话题]# #省钱月卡[话题]# #支付有优惠[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324lcj7kd7u0g5pd75jgi4a9k61gbuvo", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324lcj7kd7u105pd75jgi4a9kp492h3g", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324lcj7kd7u1g5pd75jgi4a9k7djua3g"], "tags": ["省钱小妙招", "省钱", "立减金", "不薅白不薅", "农业银行", "省钱月卡", "支付有优惠"], "ip": "湖南", "pub": "2026-09-03 18:35", "vtype": "normal"}, "6a979e6f0000000026015854": {"t": "建行8000积分+3r+5010g能量", "a": "小贱", "url": "https://www.xiaohongshu.com/explore/6a979e6f0000000026015854?xsec_token=ABMthQNfIQPFtvoQcmPUCqTxU6W0MZez_aXVszhJXxxas%3D&xsec_source=pc_search", "likes": 383, "collects": 357, "comments": 138, "shares": 74, "desc": "[一R] 我的-任务中心，集齐10卡牌可抽立减金/积分\n[二R] 建粤有礼-1分抽大奖+惠消费，抽立减金\n[三R] 生活-低碳生活-领奖励，上月绿色能量兑积分\n[四R] 生活-低碳生活-做任务👇\n✅ 线上支付：零钱通可用，每天6次\n✅ 生活缴费：找到公益服务-爱心捐助，0.01r即可\n✅ 存理基：每天1次，最低5/1/0.01r即可\n[五R] 生活-低碳生活-更多能量-光盘行动，每天可得167g\n#银行卡[话题]# #建设银行[话题]# #龙积分[话题]# #微信[话题]# #立减金[话题]# #抽奖[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324joad9v7k005o75m5v08kdhqj6tst8", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324joad9v7k0g5o75m5v08kdhc41qj88", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324joad9v7k105o75m5v08kdh99ae880"], "tags": ["银行卡", "建设银行", "龙积分", "微信", "立减金", "抽奖"], "ip": "广东", "pub": "2026-09-02 11:56", "vtype": "normal"}, "6a9943f500000000290188e7": {"t": "9月建行立减金领取攻略！", "a": "初初麻麻亲子遛娃", "url": "https://www.xiaohongshu.com/explore/6a9943f500000000290188e7?xsec_token=ABRCjGJlPrqQ2UgRer-whA9-rbv9KkAb8r2mFrEgw-YwU%3D&xsec_source=pc_search", "likes": 344, "collects": 423, "comments": 14, "shares": 99, "desc": "整理好了，欢迎补充！\n\t\n#建行[话题]# #信用卡[话题]# #银行卡[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324lbob3snad05pp21ci7dtldos82sm0", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324lbob8pnk6g5pp21ci7dtld644qu9o", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324lbob8pnk5g5pp21ci7dtldlvl5k68", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324lbob3snac05pp21ci7dtldp4i7ik8", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324lbob8pnk605pp21ci7dtldgb5autg"], "tags": ["建行", "信用卡", "银行卡"], "ip": "上海", "pub": "2026-09-03 17:55", "vtype": "normal"}, "6a7698ae0000000028032932": {"t": "每月薅工行48.88元立减金，再不薅养不起车了", "a": "努力搬砖人", "url": "https://www.xiaohongshu.com/explore/6a7698ae0000000028032932?xsec_token=ABXayhLvncTe6m5SAPfpd2z3D77Ic2YHaiCQOt3E0Q7Ck%3D&xsec_source=pc_search", "likes": 324, "collects": 178, "comments": 48, "shares": 55, "desc": "工行云网大熊猫，需要日常养熊猫\n每月第一个周五10点抢至高88.88元立减金\n现在越来越难了，也不敢上88.88了\n拿个48.88元都心跳加速，全凭手速\n之前还有每月的5次，现在只有每月的1次\n\t\n路径：工银天府公主号-领福利-云养大熊猫\n需开通四川二类三类：游乐园-钱包有礼\n兑换入口：游乐园-好礼兑换不停\n有问题都可提问🙋\n\t\n最近薅羊毛是越来越难了，加上又要给我的车交保险了，这车一直停在停车场里边吃灰，每年的停车费、保养费都是一笔很大的开销，我平时也不开就想着卖了算了，开始先去问了几个车商，结果嫌公里数大，现场压价最高给到4.6万。\n后来朋友让我试试瓜子二手车就挂上了，挂上后就没再开，后面也没和我压价，在挂了四五天时候有个杭州的个人买家出了5.2万，比车商报出的高6千多，到第四天就给我过户了，感觉买到我的车人也挺划算的～\n#卖车[话题]# #个人卖车[话题]# #瓜子二手车[话题]# #薅羊毛[话题]# #一起薅羊毛[话题]# #薅羊毛攻略[话题]# #薅羊毛的快乐[话题]# #一起来省钱[话题]# #薅羊毛啦[话题]# #银行活动[话题]# #不薅白不薅[话题]# #微信立减金[话题]# #银行卡[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k8323jg7b0gnae05p00pglk5e3p5saf170", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8323jg7b0gnaeg5p00pglk5e3pbjrov2g", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8323jg7b0gnaf05p00pglk5e3p6ksrsi8", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8323jg7b0gnafg5p00pglk5e3pet2lcao"], "tags": ["卖车", "个人卖车", "瓜子二手车", "薅羊毛", "一起薅羊毛", "薅羊毛攻略", "薅羊毛的快乐", "一起来省钱"], "ip": "安徽", "pub": "2026-08-10 15:15", "vtype": "normal"}, "6a9d2657000000001103aee7": {"t": "工行唯一让人欣慰的点", "a": "小狗好可爱", "url": "https://www.xiaohongshu.com/explore/6a9d2657000000001103aee7?xsec_token=AB5HFPSAAN3spigN6qBtYKytJ6tGGb6JTVx60XPQ28R7w%3D&xsec_source=pc_search", "likes": 284, "collects": 203, "comments": 36, "shares": 21, "desc": "攒豆子能换立减金[吃瓜R]\n#工商银行[话题]# #立减金[话题]# #工行i豆[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324p542ti1g704ad8uci0g8oes5gfek8"], "tags": ["工商银行", "立减金", "工行i豆"], "ip": "湖北", "pub": "2026-09-06 16:37", "vtype": "normal"}, "6a960af9000000000d026fcf": {"t": "2026.09.01 今日份招行羊毛👌", "a": "今天要发财啦", "url": "https://www.xiaohongshu.com/explore/6a960af9000000000d026fcf?xsec_token=ABCZXPqlHlS2Ks2Kyp74urayWUbKf2OJK2Knst_9RxW3A%3D&xsec_source=pc_search", "likes": 256, "collects": 157, "comments": 75, "shares": 112, "desc": "恭喜你 成功解锁9月＂地图＂\n见图2图3[派对R] 2345有的等级好像可以在4位置把三个领全 优先领这个！指数拼图记得新一轮集拼图你～\n九月 祝你祝我 吃好喝好睡好玩好 不生病 平安发财～\n#一起薅羊毛[话题]# #不薅白不薅[话题]# #人人都是大赢家[话题]# #积少成多[话题]# #今天要发财啦[话题]# #九月[话题]# #平安[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324i72acmgo505pb5f99v3mivg649gcg", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324i72aejnaag5pb5f99v3mivrvig0fg", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324i72aejnadg5pb5f99v3miv7u0apho"], "tags": ["一起薅羊毛", "不薅白不薅", "人人都是大赢家", "积少成多", "今天要发财啦", "九月", "平安"], "ip": "广东", "pub": "2026-09-01 07:15", "vtype": "normal"}, "6a97b0da000000001103a92b": {"t": "工享月月花9月零钱通可以，建行不行", "a": "垂儿", "url": "https://www.xiaohongshu.com/explore/6a97b0da000000001103a92b?xsec_token=ABMthQNfIQPFtvoQcmPUCqT8s9Y8HXJESyarmiJwR6zoQ%3D&xsec_source=pc_search", "likes": 233, "collects": 275, "comments": 268, "shares": 82, "desc": "仔细对比了细则，昨天也开始1万试试水\n\t\n结论：\n工行要求支付机构为“财付通”，从账单看零钱通符合\n\t\n建行也要求支付机构为“财付通”，但额外明确其中商户名称字段中有“零钱通”的不计入，从建行账单看零钱通的商户名称为“微信支付-零钱通”，不符合要求\n\t\n因此想通过零钱通达标的，建行别试了，可以先试试工行，9月交易更新了我再发，拭目以待[萌萌哒R]#建行[话题]# #工行[话题]# #立减金[话题]# #工享月月花[话题]# #支付达标[话题]#", "imgs": ["https://ci.xiaohongshu.com/1040g2sg324jqbnbj74905ngnth2g8m1os4bad18", "https://ci.xiaohongshu.com/1040g2sg324jqbnbj749g5ngnth2g8m1ojuq0j30", "https://ci.xiaohongshu.com/1040g2sg324jqbnbj74a05ngnth2g8m1osl94da0", "https://ci.xiaohongshu.com/1040g2sg324jqbnbj74ag5ngnth2g8m1o60o5pv0"], "tags": ["建行", "工行", "立减金", "工享月月花", "支付达标"], "ip": "北京", "pub": "2026-09-02 13:15", "vtype": "normal"}, "6a99a879000000000d026636": {"t": "工行抽1+1+0.58+1r（预告）", "a": "小贱", "url": "https://www.xiaohongshu.com/explore/6a99a879000000000d026636?xsec_token=ABRCjGJlPrqQ2UgRer-whA94jFzJTBCWjfebkYEZBcQAk%3D&xsec_source=pc_search", "likes": 218, "collects": 183, "comments": 94, "shares": 58, "desc": "周五啦，小🍊序工行服务准备[暗中观察R]\n[一R] 定位贵阳-马上有确幸，9点开始\n[二R] 定位铜仁-工享好礼，9点开始\n[三R] 定位宁波慈溪-今秋开学季，9点开始\n[四R] 定位巴音-惠在星期五，10点开始\n#银行卡[话题]# #工商银行[话题]# #工行服务[话题]# #微信[话题]# #立减金[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324lntcu1ga805o75m5v08kdhl45g238", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324lntcu1ga8g5o75m5v08kdh8jckmc8"], "tags": ["银行卡", "工商银行", "工行服务", "微信", "立减金"], "ip": "广东", "pub": "2026-09-04 08:01", "vtype": "normal"}, "6a93f243000000002003acdd": {"t": "每月薅30+电费的教程", "a": "会省会攒钱的小绵羊", "url": "https://www.xiaohongshu.com/explore/6a93f243000000002003acdd?xsec_token=ABiAbzFKfJmjGBhhdlj0htue-mCvlmmvl2afMu6Cwl8G0%3D&xsec_source=pc_search", "likes": 216, "collects": 276, "comments": 16, "shares": 56, "desc": "流程 ：这里以【网上国网App】和【邮储云网笔笔减】举例\n第1️⃣步：打开 网上国网App【充电费】->点击【自定义】，设置充值金额为：5元，然后点击【立即支付】按钮\n第2️⃣步：选云闪付支付选择其它支付方式->【云闪付】，自动跳转并打开云闪付App\n第3️⃣步：选邮储银行在云闪付支付选项里，选择【邮储银行App】，并自动切换邮储云网支付组件\n第4️⃣步：确认优惠并完成支付在付款前，要确认优惠信息是否是【邮储云网笔笔减】，如果存在多个优惠活动，需要手动切换优惠，最后确认立减金额，完成付款。如果当日云网立减优惠名额没有，当前优惠信息栏 字体会呈现灰色，就不要付款\n\t\n各银行优惠汇总：\n1️⃣建设银行注意，建行云网支付不支持网上国网App，但是，建行App🔍缴费小美好，完成一笔30元及以上金额的生活缴费，可随机抽1~5元微信立减金。\n2️⃣邮储银行满5-1，每日3次，月限5次，加起来5元\n3️⃣交通银行，满8元随机立减0.1~5元，月限4次，这个卡余额或等群报水，不是太黑基本有1~4亓的单笔立减，按最低算，加起来4元\n4️⃣工商银行：\n①满10元随机立减0.88~5.88元，月限享1次\n②满100元随机立减5.88~18.88元，月限享1次按最低的算，加起来6.76元\n5️⃣中国银行\n①满30-10，月限1次，活动期共2次，限信用卡\n②满10元随机立减0.88~88元，日限1次，月限4次，活动期共35次，限信用卡中行按最低计算，每月有13.52元以上\n加起来相当于每月额外有30+的电费立减优惠。\n#省钱小妙招[话题]# #省钱[话题]# #立减金[话题]# #电费[话题]# #不薅白不薅[话题]# #电费优惠[话题]# #薅羊毛的快乐[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324g57fdv0a7g5pd75jgi4a9kq50ftp8"], "tags": ["省钱小妙招", "省钱", "立减金", "电费", "不薅白不薅", "电费优惠", "薅羊毛的快乐"], "ip": "湖南", "pub": "2026-08-30 17:05", "vtype": "normal"}, "6a99f494000000002802d98f": {"t": "农行10元立减金", "a": "羊毛党小张哥", "url": "https://www.xiaohongshu.com/explore/6a99f494000000002802d98f?xsec_token=ABRCjGJlPrqQ2UgRer-whA93d3yGmdH9yBm5LKTY03i18%3D&xsec_source=pc_search", "likes": 188, "collects": 117, "comments": 34, "shares": 133, "desc": "操作如图，每日0点更新，有疑问留着\n#一起褥羊毛[话题]# #一起来省钱[话题]# #省钱小妙招[话题]# #不薅白不薅[话题]# #主打一个省钱[话题]# #省钱就是赚钱[话题]# #农业银行[话题]#", "imgs": ["https://ci.xiaohongshu.com/1040g008324m1aaijgo5g5p145jf6k7o7iiug88o", "https://ci.xiaohongshu.com/1040g008324m1aaijgo505p145jf6k7o7knu69n8"], "tags": ["一起褥羊毛", "一起来省钱", "省钱小妙招", "不薅白不薅", "主打一个省钱", "省钱就是赚钱", "农业银行"], "ip": "吉林", "pub": "2026-09-04 06:28", "vtype": "normal"}, "6a6d578a000000003301883c": {"t": "建行8月更新‼️3r、5r、10r立减金", "a": "羊毛妹君君", "url": "https://www.xiaohongshu.com/explore/6a6d578a000000003301883c?xsec_token=ABXSHTkcfC4woN_4y7QR2eD5SZKLTrNBu-b2MTl9tGBKs%3D&xsec_source=pc_search", "likes": 179, "collects": 98, "comments": 51, "shares": 21, "desc": "唉（又是长叹一口气），我对建行真的无语至极！\n\t\n今天主要是有两个活动更新，但我每次都是吃亏的：\n\t\n[一R] 任务更新，得11张卡牌，可以抽3-100r立减金。有友友昨晚开到了100块，而我每次都只有6张卡牌，大家谨慎一点吧，可以等有水。\n\t\n[二R] 龙积分活动，可以兑换立减金，我本来一直在攒积分，想要一口气兑换50r立减金，但是上月月末发现没有50r面额，我以为规则调整了，紧赶慢赶兑换了5r和10r的，结果这个月又出来50r的了（掐人中）\n\t\n建行的活动真不好说，大家视情况自己定吧，我给不到好的建议，因为自己老是“被坑”。\n\t\n#多种支付方式[话题]# #立减金[话题]# #一起来省钱[话题]# #红包[话题]# #能省一点是一点[话题]# #省钱就是赚钱[话题]# @生活薯 @小红书创作助手", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k8323af1umd6s705pu8atsj97kgdlroem8", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8323af1umd6s7g5pu8atsj97kg9t99bq0", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8323af1umd6s805pu8atsj97kgebjvmqg"], "tags": ["多种支付方式", "立减金", "一起来省钱", "红包", "能省一点是一点", "省钱就是赚钱"], "ip": "", "pub": "2026-08-01 10:18", "vtype": "normal"}, "6a9bdb34000000001203c407": {"t": "工行10元立减金教师身份认证礼流程", "a": "让世界震惊宝宝", "url": "https://www.xiaohongshu.com/explore/6a9bdb34000000001203c407?xsec_token=ABPMfgPPaIBFB3_KIzAVf5sS3dE7KyLWrgFFCfKutYCwk%3D&xsec_source=pc_search", "likes": 168, "collects": 114, "comments": 70, "shares": 294, "desc": "教师认证网上流程拿到10元立减金的搜索流程有的缺胳膊少腿让我找得好辛苦啊啊啊啊，这也是我决定要分享做攻略的原因！！！\n第一步：进入工行app\n搜索🔍教师身份认证，点击进入即可\n第二步：认证成功后，右下角有一个可以点击抽奖，点击进入直接进入任务中心\n第三步：微信搜索ICBC微金融“积分兑立减金”，10块钱，只能用11000豆子兑换。兑换支付时只要是零块钱就是没有问题的\n第四步：微信——我——小店与卡包——卡包——优惠券【立减金的优惠券在哪里呢？（刚才让我找得好辛苦）到底是一次性是1块钱还是10块钱，我想提前查看，而不是支付的时候才知道。终于让我找到了，可能之前没有操作过吧，找了好久显得孤陋寡闻了，现在会了】\n#教师节[话题]# #工商银行[话题]##工商银行立减金[话题]# #工行教师认证有礼[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324nrst4fhg904a7g7q9crqa4jlnt9sg", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324nrst4fhg9g4a7g7q9crqa4f9o2m1o", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324nrst4fhga04a7g7q9crqa4q2tmuk8", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324nrst4fhgag4a7g7q9crqa4p6gml48", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324nrst4fhgb04a7g7q9crqa4k96or8o", "https://ci.xiaohongshu.com/1040g2sg324nrst4imu704a7g7q9crqa4aa03ghg", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324nrst4fhgc04a7g7q9crqa4dsqt5k0"], "tags": ["教师节", "工商银行", "工商银行立减金", "工行教师认证有礼"], "ip": "江苏", "pub": "2026-09-05 17:04", "vtype": "normal"}, "6a98c63000000000290192f2": {"t": "9月～工行立减金汇总", "a": "优质活动", "url": "https://www.xiaohongshu.com/explore/6a98c63000000000290192f2?xsec_token=ABAFoc-61LrBrUCZKCDkr3ppEpYyn3Pv7DiRHwzYXmpjM%3D&xsec_source=pc_search", "likes": 164, "collects": 179, "comments": 24, "shares": 25, "desc": "入口均在[萌萌哒R]工行服务小程序\n⚠️不会切换网点的看图二\n\t\n工行每月一次，记得领一下\nmp://v9xwMNHfdKbQkxl\n\t\n✅宁波慈溪市\n⏰9:00 截止到9月7号\n\t\n✅贵阳黔西南州\n⏰9:00 截止到9月30号\n\t\n✅贵州铜仁市\n⏰9:00 截止到9月30号\n\t\n✅内蒙古网点不定时\nmp://1peWgdlKYCYpaDb\n\t\n后面有新的在编辑✍️感兴趣自己定好闹钟⏰可以每天来看看有无新活动[萌萌哒R]#薅羊毛[话题]# #工行立减金[话题]# #工行立减[话题]# #优质活动[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324ks98dl7ae05ot3sdu9uraekuo8ju8", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324ks98dl7aeg5ot3sdu9uraeakaucfg"], "tags": ["薅羊毛", "工行立减金", "工行立减", "优质活动"], "ip": "广东", "pub": "2026-09-03 08:58", "vtype": "normal"}, "6a9da41c000000002902fb7c": {"t": "工行节气答题活动攻略合集！附详细教程", "a": "有羊毛日记", "url": "https://www.xiaohongshu.com/explore/6a9da41c000000002902fb7c?xsec_token=AB5HFPSAAN3spigN6qBtYKyt1YyPX3IajiaPa8wkqNWjE%3D&xsec_source=pc_search", "likes": 161, "collects": 119, "comments": 0, "shares": 40, "desc": "#工商银行[话题]# #工行[话题]# #节气[话题]# #答题[话题]# #工行i豆[话题]# #工银i豆[话题]# #教程[话题]# #银行活动[话题]# #一起薅羊毛[话题]# #一起来省钱[话题]#", "imgs": ["https://ci.xiaohongshu.com/1040g008324pkcip1gs0049hn3d616dsikh5i9jo"], "tags": ["工商银行", "工行", "节气", "答题", "工行i豆", "工银i豆", "教程", "银行活动"], "ip": "广西", "pub": "2026-09-07 01:34", "vtype": "video"}, "6a99aba50000000025034f92": {"t": "2026.09.04招行喊你薅羊毛🐏🐏🐏", "a": "薅羊毛进行时", "url": "https://www.xiaohongshu.com/explore/6a99aba50000000025034f92?xsec_token=ABRCjGJlPrqQ2UgRer-whA945rSwcUCNp9IMFCg7HTXZg%3D&xsec_source=pc_search", "likes": 145, "collects": 107, "comments": 14, "shares": 47, "desc": "#招商银行[话题]#\n#薅羊毛[话题]#\n#一起褥羊毛[话题]#\n#薅羊毛攻略[话题]#\n#薅羊毛的快乐[话题]#\n#不薅白不薅[话题]#\n#一起来省钱[话题]#\n#能省一点是一点[话题]#\n免责声明： 以上活动基于招商银行APP已公开信息整理而成，仅用于分享不构成任何投资建议。", "imgs": ["https://ci.xiaohongshu.com/spectrum/1040g34o324lod6g7mub05np09lhg9bekuu0f09g", "https://ci.xiaohongshu.com/spectrum/1040g34o324lod6g7mubg5np09lhg9bekotlreuo", "https://ci.xiaohongshu.com/spectrum/1040g34o324lod6g7muc05np09lhg9bek8s7m95o", "https://ci.xiaohongshu.com/spectrum/1040g34o324lod6g7mucg5np09lhg9bekri9hirg", "https://ci.xiaohongshu.com/spectrum/1040g34o324lod6g7mud05np09lhg9bekifp8tkg", "https://ci.xiaohongshu.com/spectrum/1040g34o324lod6g7mudg5np09lhg9bekc15v1kg", "https://ci.xiaohongshu.com/spectrum/1040g34o324lod6g7mue05np09lhg9bek8fighjo", "https://ci.xiaohongshu.com/spectrum/1040g34o324lod6g7mueg5np09lhg9bekc4l8rog", "https://ci.xiaohongshu.com/spectrum/1040g34o324lod6g7muf05np09lhg9beklo75kcg"], "tags": ["招商银行", "薅羊毛", "一起褥羊毛", "薅羊毛攻略", "薅羊毛的快乐", "不薅白不薅", "一起来省钱", "能省一点是一点"], "ip": "北京", "pub": "2026-09-04 07:01", "vtype": "normal"}, "6a6da2d60000000035014708": {"t": "8月新羊毛！银行立减金汇总完毕", "a": "桃桃", "url": "https://www.xiaohongshu.com/explore/6a6da2d60000000035014708?xsec_token=ABXSHTkcfC4woN_4y7QR2eD6g1mPSYhugd3-6zQ8IH-qs%3D&xsec_source=pc_search", "likes": 141, "collects": 195, "comments": 7, "shares": 51, "desc": "羊毛汇总清单来了\n✨建行\n✨工行\n✨农行\n✨招行\n✨邮储\n宝子们快快码住！！\n#一起褥羊毛[话题]# #建设银行[话题]# #银行卡[话题]# #积分[话题]# #省钱小妙招[话题]# #信用卡使用[话题]# #多种支付方式[话题]# #农行[话题]# #工行[话题]# #立减金[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k0323aoaf7r02005qhq33ik03028ckkrv0", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0323aoafem0a005qhq33ik030271vs6q0"], "tags": ["一起褥羊毛", "建设银行", "银行卡", "积分", "省钱小妙招", "信用卡使用", "多种支付方式", "农行"], "ip": "", "pub": "2026-08-01 16:40", "vtype": "normal"}, "6a6ffde6000000002500e783": {"t": "8🈷️五大银行立减金活动汇总", "a": "只薅大毛的珊妈🐟", "url": "https://www.xiaohongshu.com/explore/6a6ffde6000000002500e783?xsec_token=ABePTgCITEbQxcXSkH2wZMV-yIwcR5eFBpfvWd8g121TM%3D&xsec_source=pc_search", "likes": 117, "collects": 121, "comments": 3, "shares": 36, "desc": "自用版本，经验证\n#一起褥羊毛[话题]# #不薅白不薅[话题]# #中国银行[话题]##农业银行[话题]# #交通银行[话题]# #工商银行[话题]# #工商银行[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k0323d1fccank2g5nptq4t08jhpqfa12b8", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0323d1fccank305nptq4t08jhpd40e4eg", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0323d1fccank3g5nptq4t08jhppf8bsig", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0323d1fccank405nptq4t08jhpllcfhc8", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0323d1fccank4g5nptq4t08jhpec5pg9o", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0323d1fccank505nptq4t08jhp8aleueo", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0323d1fccank5g5nptq4t08jhpiqcbhso", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0323d1fccank605nptq4t08jhp3d9d2q0", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0323d1fccank6g5nptq4t08jhpqusfjqo"], "tags": ["一起褥羊毛", "不薅白不薅", "中国银行", "农业银行", "交通银行", "工商银行"], "ip": "", "pub": "2026-08-03 10:33", "vtype": "normal"}, "6a966dc00000000029019f9c": {"t": "工行6元微信立减金-9.1", "a": "努力搬砖人", "url": "https://www.xiaohongshu.com/explore/6a966dc00000000029019f9c?xsec_token=ABCZXPqlHlS2Ks2Kyp74urayEY6J9iZhbCZs7c8evvgLg%3D&xsec_source=pc_search", "likes": 104, "collects": 43, "comments": 119, "shares": 122, "desc": "#工商银行app[话题]# 任wu中心\n浏览“普惠版”\n完成抽，非必中，中了就是6#微信立减金[话题]#\n#薅羊毛[话题]# #薅羊毛攻略[话题]# #薅羊毛的快乐[话题]# #薅羊毛啦[话题]# #一起来省钱[话题]# #一起薅羊毛[话题]# #银行活动[话题]# #一起褥羊毛[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324ij33ju7a005p00pglk5e3pop1qgf0", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324ij33ju7a0g5p00pglk5e3pgpua2k0", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324ij33ju7a105p00pglk5e3pl6tvdi0"], "tags": ["工商银行app", "微信立减金", "薅羊毛", "薅羊毛攻略", "薅羊毛的快乐", "薅羊毛啦", "一起来省钱", "一起薅羊毛"], "ip": "", "pub": "2026-09-01 14:16", "vtype": "normal"}, "6a9559640000000028005681": {"t": "银行月月刷8月总结｜工行建行出公告9月悬了", "a": "羊毛有术", "url": "https://www.xiaohongshu.com/explore/6a9559640000000028005681?xsec_token=ABvYam_edeuzXUq2ydAG_ABfagZaQuYFw5nEoQ-rN1Kvc%3D&xsec_source=pc_search", "likes": 96, "collects": 74, "comments": 72, "shares": 13, "desc": "到8月底了，来做个8月份月月刷总结，也顺便说一下9月份的情况。\n\t\n先说下我自己的情况：\n\t\n之前用的几个号基本都被限制了，后面刷不了了😂\n\t\n好在重新弄了一个小号，运气还不错，理财通活期+一直都可以用。中间虽然也封过，但后面又解了，所以这个月还是把几个活动勉强刷完了。\n\t\n🏦 工商银行\n\t\n全国+地区活动刷满60万。\n\t\n算下来奖励大概 200元左右。\n\t\n这个月工行整体还算正常，主要就是把额度刷满，拿到对应奖励。\n\t\n🏦 建设银行\n\t\n建行也是50万刷满，现在就等9月份抽奖了。\n\t\n不过8月份抽奖运气有点差：\n\t\n8月9号只抽到了一个99元。\n\t\n之前基本都是两个99，这个月少了一个，所以最后也就200出头一点点。\n\t\n只能说抽奖这东西是真的看脸😂\n\t\n---\n\t\n### ⚠️ 重点来了，9月份可能真的悬了\n\t\n工行和建行最近都出了公告：\n\t\n9月份开始，通过微信理财通平台进行的支付，不再计入活动统计。\n\t\n这对于一直靠理财通刷月月刷的人来说，影响还是挺大的。\n\t\n说白了，之前比较好用的一条路，基本被堵上了。\n\t\n所以9月份这个活动到底还能不能继续玩，现在真的不好说。\n\t\n不过我个人感觉先别急着宣布凉凉。\n\t\n之前也碰到过一些看起来已经被堵死的活动，后面还是能找到一些新的变化或者方法。\n\t\n所以9月份我还是准备自己实际去探一探。\n\t\n能不能找到新的路子现在不敢保证，先试了再说。\n\t\n如果真有什么新的发现，到时候再给大家更新。\n\t\n毕竟月月刷都刷这么久了，突然说没就没，多少还是有点舍不得😂\n\t\n大家8月份都刷满了吗？\n\t\n工行拿了多少？建行抽到了几个99？\n\t\n评论区可以报一下战绩，顺便看看有没有什么新的刷法大家一起研究研究，还有什么比较好的大毛？\n\t\n9月份，继续探路，可以点点关注一下看进展\n\t\n#副业挣钱[话题]# #零钱通[话题]#   #活期➕[话题]#  #薅羊毛攻略[话题]#  #无风险收益[话题]# #月月刷[话题]# #攒钱日记[话题]# #一起褥羊毛[话题]#  #宝妈赚钱[话题]##记账打卡[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324hhbue00m005qc9o3rn6go7rqmcvso", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324hhbunv6u005qc9o3rn6go7l16dfbo", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324hhbum3gm005qc9o3rn6go7m2fai7o", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324hhbujmn4005qc9o3rn6go722tvqq8", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324hhbugon4005qc9o3rn6go7del8qd0"], "tags": ["副业挣钱", "零钱通", "活期➕", "薅羊毛攻略", "无风险收益", "月月刷", "攒钱日记", "一起褥羊毛"], "ip": "上海", "pub": "2026-08-31 18:37", "vtype": "normal"}, "6a9788e50000000028033bf1": {"t": "一定要学会薅羊毛之银行立减金！！", "a": "一一不叫二二（佛系存钱中）", "url": "https://www.xiaohongshu.com/explore/6a9788e50000000028033bf1?xsec_token=ABMthQNfIQPFtvoQcmPUCqT1v0fO8XCKZuDvibHcpduIc%3D&xsec_source=pc_search", "likes": 76, "collects": 49, "comments": 3, "shares": 17, "desc": "很久没跟大家分享薅羊毛的细节了。我每个月花销少有很大的功劳就是因为到处薅羊毛。\n这篇帖子就讲一讲银行立减金。\n[一R]每个银行几乎都有的：消费转账领立减金的活动。具体我附到图二（以中国银行为例），图三是工商银行的，在小程序工银微金融里领。\n每个月报名以后，你可以转账给自己的小号或者是老公再转回来，或者是你所有的消费都可以计算进来。消费金额越高领的次数越多，或者领到的立减金金额越大。\n[二R]各个银行特色活动，每个银行为了促活或者拉新。都会有一些活动，比如工商银行图三这两个小游戏随手做一下，一个领了18.88，一个领了5.88。这些活动一般都在银行的任务中心或者特色活动里面，自己去APP里找一下。\n[三R]微信里面各个银行转账也是可以领立减金的。在小程序微信转账有福利里面。图五图六。自己去对应的银行报名，报名之后满足要求就会发放到账户。这个可以叠加。微信支付提现笔笔省里的银行限时活动来领取，自己琢磨一下。\n先说这么3点，授人以鱼不如授人以渔，我把思路给到大家，大家可以扩充，主要就是围绕银行APP来参与各个活动。下次有机会再讲一讲芭芭农场。\n#银行卡[话题]# #存钱[话题]# #存钱真的会上瘾[话题]# #存钱大作战[话题]# #绑定银行卡[话题]# #存钱是最顶级自律[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324jlm9f3ga104315chjmdbj91vjbg38", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324jlm9f3ga1g4315chjmdbj9vtl6l70", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324jlm9f3ga204315chjmdbj9ktpjbv0", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324jlm9f3ga2g4315chjmdbj9u4eoma8", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324jlm9f3ga304315chjmdbj9gd2al1o", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324jlm9f3ga3g4315chjmdbj93783l5g"], "tags": ["银行卡", "存钱", "存钱真的会上瘾", "存钱大作战", "绑定银行卡", "存钱是最顶级自律"], "ip": "四川", "pub": "2026-09-02 10:24", "vtype": "normal"}, "6a9a0c3e000000000d027d84": {"t": "9月4日上午10点记得蹲工行立减金，新的", "a": "十六哦", "url": "https://www.xiaohongshu.com/explore/6a9a0c3e000000000d027d84?xsec_token=ABYRuH6l5CaDIX-a6JBO7Doep1TVbak0Xq5WfLUjTopoE%3D&xsec_source=pc_search", "likes": 72, "collects": 75, "comments": 10, "shares": 45, "desc": "工行服务🍊进改巴音就看到了\n\t\n记得去拿立减哦 宝子们！\n\t\n#工行立减金[话题]# #惠在星期五[话题]# #工行星期五立减金[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324lb01810o4g4a38eo6cprf9uu70aa0", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324lb01810o604a38eo6cprf9jtmjod8"], "tags": ["工行立减金", "惠在星期五", "工行星期五立减金"], "ip": "河北", "pub": "2026-09-04 08:09", "vtype": "normal"}, "6a9ae75c000000000d027ef5": {"t": "9月农行12元立减活动合集", "a": "Stars", "url": "https://www.xiaohongshu.com/explore/6a9ae75c000000000d027ef5?xsec_token=ABYRuH6l5CaDIX-a6JBO7DoUZpOHunGe0gRwbaTfKOAoM%3D&xsec_source=pc_search", "likes": 69, "collects": 48, "comments": 7, "shares": 16, "desc": "农行9月12元立减活动合集详细攻略\n宝子们看到去拿两个都是卡点去[派对R][派对R]\n可以先码住哦等零点就行[派对R]\n#薅羊毛[话题]# #一起薅羊毛[话题]# #不薅白不薅[话题]# #省钱就是赚钱[话题]# #立减金[话题]# #多种支付方式[话题]# #一起来省钱[话题]# #农行[话题]# #能省一点是一点[话题]# #主打的就是省钱[话题]#", "imgs": ["https://ci.xiaohongshu.com/1040g2sg324mugpn7nai05ovgf5ak3sr6ijlevtg", "https://ci.xiaohongshu.com/1040g2sg324mugpn7nahg5ovgf5ak3sr6ej36h88", "https://ci.xiaohongshu.com/1040g2sg324mugpn7nag05ovgf5ak3sr604d5250", "https://ci.xiaohongshu.com/1040g2sg324mugpn7nae05ovgf5ak3sr6bdila5g", "https://ci.xiaohongshu.com/1040g2sg324mugpn7nagg5ovgf5ak3sr67gqbfg0", "https://ci.xiaohongshu.com/1040g2sg324mugpn7nah05ovgf5ak3sr67e8pf8o"], "tags": ["薅羊毛", "一起薅羊毛", "不薅白不薅", "省钱就是赚钱", "立减金", "多种支付方式", "一起来省钱", "农行"], "ip": "天津", "pub": "2026-09-04 23:44", "vtype": "normal"}, "6a77c320000000003301ece6": {"t": "中行充话费/电费/生活缴费立省10元的教程", "a": "会省会攒钱的小绵羊", "url": "https://www.xiaohongshu.com/explore/6a77c320000000003301ece6?xsec_token=AB3Rwa76WKQU4yXlbaHBalwUEnWoE0mCSDzvx2XSs44KI%3D&xsec_source=pc_search", "likes": 68, "collects": 57, "comments": 9, "shares": 39, "desc": "中国移动/中国联通充话费，网上国网电费，加油等也都可以这样操作每月都可以享受一次，总共2次，下面按中国移动充话费举例。\n中国移动-充值-选30-立即支付-云闪付（不要跳转去云闪付）-中国银行a.pp-中行信用卡-见减10再付\n一月一次，活动期间总共两次，每天8点更新名额，如果没了就等隔天\n\t\n#省钱小妙招[话题]# #省钱[话题]# #立减金[话题]# #话费[话题]# #多种支付方式[话题]# #不薅白不薅[话题]# #中国银行[话题]##电费[话题]# #生活缴费[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k0323kitlbona0g5pd75jgi4a9ks07ss1o", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0323kitlbona105pd75jgi4a9kks7grhg"], "tags": ["省钱小妙招", "省钱", "立减金", "话费", "多种支付方式", "不薅白不薅", "中国银行", "电费"], "ip": "湖南", "pub": "2026-08-09 08:00", "vtype": "normal"}, "6a992ebc000000001103793c": {"t": "官方教您如何在出行游玩时薅邮储信用卡羊毛", "a": "邮储银行信用卡", "url": "https://www.xiaohongshu.com/explore/6a992ebc000000001103793c?xsec_token=ABRCjGJlPrqQ2UgRer-whA99OGLixgUSjrVU1MOpIxm6Q%3D&xsec_source=pc_search", "likes": 48, "collects": 45, "comments": 196, "shares": 8, "desc": "是谁一进9月就陷入制定出行计划的焦虑！！\n不管是P人临时突击，还是J人提前规划\n全都抱着手机疯狂刷票刷机酒😭\n\t\n开学返校抢票，中秋短途、十一黄金周囤机酒\n很多宝子都是直接付款，啥优惠都没薅到\n平白无故多花钱，真的会心痛！[哭惹R]\n\t\n小编帮您整理了邮储信用卡的隐藏省钱技巧\n支付通道选对，直接立减，最高能省 50元✨\n\t\n▪️首绑立减 6元\n第一次绑定邮储信用卡，实付＞6.01 元就有机会立减 6 元\n\t\n▪️日常满 300-6元\n已经绑好卡的宝子看这里，订单实付满 300 立减 6元，酒店、机票、门票都能用\n\t\n▪️大额出游满减\n⏰2026年7月1日10:00:00至2026年10月10日23:59:59\n✅ 满 2000 立减 30元\n✅ 满 5000 立减 50元\n两档优惠各享 1 次，同一订单无法叠加\n——————\n当代年轻人可以买贵的，但是不能买贵了，省下来多吃一顿当地美食多香~\n来评论区分享一下你这个月计划去哪儿玩？\n\t\n#邮储银行信用卡[话题]# #邮储信用卡[话题]#  #国庆旅游howto[话题]# #携程[话题]# #去哪儿[话题]# #出行攻略howto[话题]# #旅行轻松省[话题]# #邮储银行文旅季[话题]# #邮储银行[话题]# #出行攻略[话题]#", "imgs": ["https://ci.xiaohongshu.com/spectrum/1040g0k0324l90k056u005qb38il0q0i4urlskd8", "https://ci.xiaohongshu.com/spectrum/1040g0k0324l90k056u105qb38il0q0i4drjc7lg", "https://ci.xiaohongshu.com/spectrum/1040g0k0324l9qsdi6u005qb38il0q0i49lns298"], "tags": ["邮储银行信用卡", "邮储信用卡", "国庆旅游howto", "携程", "去哪儿", "出行攻略howto", "旅行轻松省", "邮储银行文旅季"], "ip": "北京", "pub": "2026-09-03 19:02", "vtype": "normal"}, "6a86ffc2000000001d01c718": {"t": "广州社保卡换工行有100立减金", "a": "图里震", "url": "https://www.xiaohongshu.com/explore/6a86ffc2000000001d01c718?xsec_token=ABIe236IsPWthCtShqj8EuFcwptrwW-1lE5o5uAPzlQsw%3D&xsec_source=pc_search", "likes": 48, "collects": 55, "comments": 37, "shares": 30, "desc": "原来社保卡是光大银行的，今天换到了工行，工行给了100立减金[偷笑R][偷笑R][偷笑R]\n流程:\n[彩虹R]1.广州人社服务号上传照片，拿到回执。自己用手机拍就行，背景选个白色的墙，上传后会给修图，没花一分钱拿到了社保卡照片回执。没有短信通知审核通过，过1-2天自己在广州人社服务号上查一下。图3\n[彩虹R]2.粤省事上申请社保卡换银行预约，这一步和1可以同时进行，审核需要1-3个工作日，短信通知审核结果。图4图5\n[彩虹R]3.收到审核通过短信后，带上原社保卡和身份证去新银行办新社保卡，去可以即时制卡的工行网点，可以在广州人社服务号上查询到哪些网点可以即时制卡！别忘记找工作人员领100立减金！\n[彩虹R]4.办好新社保卡后，去原社保卡银行注销旧社保卡，3和4可以同一天完成！\n恭喜你从此有了工行社保卡！\n[彩虹R]如果第一次办广州社保卡，可以直接扫图2线上直接办理！#社保卡办理[话题]# #广州社保卡[话题]#", "imgs": ["https://ci.xiaohongshu.com/1040g2sg3243geur67acg5o28963gbo55cjouorg", "https://ci.xiaohongshu.com/1040g2sg3243geur67a7g5o28963gbo551g7g9og", "https://ci.xiaohongshu.com/1040g2sg3243geur67ab05o28963gbo55dt9ece0", "https://ci.xiaohongshu.com/1040g2sg3243geur67abg5o28963gbo55ov1el98", "https://ci.xiaohongshu.com/1040g2sg3243geur67ac05o28963gbo552sig4no"], "tags": ["社保卡办理", "广州社保卡"], "ip": "广东", "pub": "2026-08-20 21:23", "vtype": "normal"}, "6a7a672c000000002403d579": {"t": "全国中行10元立减金", "a": "羊毛党小张哥", "url": "https://www.xiaohongshu.com/explore/6a7a672c000000002403d579?xsec_token=AB-J2Z129O5neKEIVTLSS-WW96K5LByEtvXJXAQZKQpnI%3D&xsec_source=pc_search", "likes": 46, "collects": 27, "comments": 1, "shares": 18, "desc": "月两次，操作如图，不懂留言#一起褥羊毛[话题]# #一起来省钱[话题]# #省钱小妙招[话题]# #不薅白不薅[话题]# #省钱就是赚钱[话题]# #中国银行[话题]#", "imgs": ["https://ci.xiaohongshu.com/1040g008323n7a5070o405p145jf6k7o7951jio8", "https://ci.xiaohongshu.com/1040g008323n7a5070o4g5p145jf6k7o7drpu5ig"], "tags": ["一起褥羊毛", "一起来省钱", "省钱小妙招", "不薅白不薅", "省钱就是赚钱", "中国银行"], "ip": "吉林", "pub": "2026-08-11 08:05", "vtype": "normal"}, "6a82770300000000080135b9": {"t": "工行活动", "a": "-w-", "url": "https://www.xiaohongshu.com/explore/6a82770300000000080135b9?xsec_token=AB9Cyj5RUSMeYvhOGYEtRBdzAMKyjpKZ5hFc8342qlwRI%3D&xsec_source=pc_search", "likes": 38, "collects": 14, "comments": 37, "shares": 16, "desc": "工行数币活动立减金，冲就完事了，中山的码\n❗️深圳广州东莞除外❗️\n#工行活动[话题]##工行立减金[话题]##工商银行[话题]##工行数字人民币[话题]# #银行卡[话题]# #省钱小妙招[话题]# #省钱攻略[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k0323v38015go005nsepv8gbmrmtnulr3g", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0323v38071gae05nsepv8gbmrmac2dqtg", "https://ci.xiaohongshu.com/1040g008324iermh27k6g5nsepv8gbmrmen2nse8"], "tags": ["工行活动", "工行立减金", "工商银行", "工行数字人民币", "银行卡", "省钱小妙招", "省钱攻略"], "ip": "广东", "pub": "2026-08-17 10:50", "vtype": "normal"}, "6a9c43060000000012036f11": {"t": "9月6日-周日各大银行优惠活动", "a": "薅羊毛的葡萄精", "url": "https://www.xiaohongshu.com/explore/6a9c43060000000012036f11?xsec_token=ABK6fu-4kxbBqRm-fnv9PmFO0AjXHHcyNJ0M8t7LFhzKo%3D&xsec_source=pc_search", "likes": 34, "collects": 17, "comments": 0, "shares": 3, "desc": "#省钱小妙招[话题]# #薅羊毛攻略[话题]# #省钱小技巧[话题]# #省钱[话题]# #薅羊毛[话题]# #优惠[话题]# #银行卡[话题]# #银行[话题]# #省钱攻略[话题]# #不薅白不薅[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324o9cn9chg7040kcf9i5g514q3tf9h0", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324o9cn9chg7g40kcf9i5g514e1nbpmo", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324o9cn9chg8040kcf9i5g51408smvvg", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k8324o9cn9chg8g40kcf9i5g514rih2s9o"], "tags": ["省钱小妙招", "薅羊毛攻略", "省钱小技巧", "省钱", "薅羊毛", "优惠", "银行卡", "银行"], "ip": "安徽", "pub": "2026-09-06 00:27", "vtype": "normal"}, "6a9839a3000000002900c48e": {"t": "9月3日-周四各大银行优惠活动", "a": "薅羊毛的葡萄精", "url": "https://www.xiaohongshu.com/explore/6a9839a3000000002900c48e?xsec_token=ABAFoc-61LrBrUCZKCDkr3pqVi3aDP9a7MTdJ14EV5lo0%3D&xsec_source=pc_search", "likes": 32, "collects": 20, "comments": 0, "shares": 4, "desc": "#省钱小妙招[话题]# #省钱小技巧[话题]# #省钱[话题]# #银行[话题]# #薅羊毛[话题]# #银行卡[话题]# #优惠[话题]# #薅羊毛攻略[话题]# #省钱攻略[话题]# #不薅白不薅[话题]#", "imgs": ["https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324kb76bh740040kcf9i5g514iq7bik8", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324kb76bh740g40kcf9i5g514fj35jt8", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324kb76bh741040kcf9i5g514i30endo", "https://ci.xiaohongshu.com/notes_pre_post/1040g3k0324kb76bh741g40kcf9i5g514m3tomho"], "tags": ["省钱小妙招", "省钱小技巧", "省钱", "银行", "薅羊毛", "银行卡", "优惠", "薅羊毛攻略"], "ip": "安徽", "pub": "2026-09-02 22:58", "vtype": "normal"}, "6a9d351b000000000d02402c": {"t": "工行教师节15立减活动合集", "a": "Stars", "url": "https://www.xiaohongshu.com/explore/6a9d351b000000000d02402c?xsec_token=AB5HFPSAAN3spigN6qBtYKyutAxgou_Qf9QG6kHmmJxFg%3D&xsec_source=pc_search", "likes": 31, "collects": 44, "comments": 3, "shares": 12, "desc": "工行5立减+10000i豆\n看到记得去拿1️⃣不用去线下哈\n#薅羊毛[话题]# #一起薅羊毛[话题]# #不薅白不薅[话题]# #工行[话题]# #立减金[话题]# #教师节[话题]# #多种支付方式[话题]# #省钱就是赚钱[话题]# #一起来省钱[话题]# #省钱小妙招[话题]#", "imgs": ["https://ci.xiaohongshu.com/1040g2sg324p6lq247u805ovgf5ak3sr6627ees8", "https://ci.xiaohongshu.com/1040g2sg324p6lq247ubg5ovgf5ak3sr6gu1fhb8", "https://ci.xiaohongshu.com/1040g2sg324p6lq247uag5ovgf5ak3sr6u2sde50", "https://ci.xiaohongshu.com/1040g2sg324p6lq247u705ovgf5ak3sr6uaalhn8", "https://ci.xiaohongshu.com/1040g2sg324p6lq247uc05ovgf5ak3sr6pq23070"], "tags": ["薅羊毛", "一起薅羊毛", "不薅白不薅", "工行", "立减金", "教师节", "多种支付方式", "省钱就是赚钱"], "ip": "天津", "pub": "2026-09-06 17:40", "vtype": "normal"}};
+let _curNote = null, _curIdx = 0;
+
+function openNote(id) {
+    const d = NOTE_DETAILS[id];
+    if (!d) { window.open('https://www.xiaohongshu.com/explore/' + id, '_blank'); return; }
+    _curNote = d; _curIdx = 0;
+    document.getElementById('mTitle').textContent = d.t;
+    document.getElementById('mMeta').textContent =
+        '作者：' + d.a + (d.pub ? ' | 📅 ' + d.pub : '') + (d.ip ? ' | 📍 ' + d.ip : '') + (d.vtype === 'video' ? ' | 🎬 视频笔记' : '');
+    const imgsBox = document.getElementById('mImgs');
+    if (d.imgs && d.imgs.length) {
+        imgsBox.style.display = '';
+        showImg();
+    } else {
+        imgsBox.style.display = 'none';
+    }
+    document.getElementById('mDesc').textContent = d.desc || '（无正文）';
+    document.getElementById('mTags').innerHTML = (d.tags || []).map(t => '<span class="htag">#' + t + '</span>').join('');
+    document.getElementById('mStats').innerHTML =
+        '点赞 <span>' + d.likes + '</span>　收藏 <span>' + d.collects + '</span>　评论 <span>' + d.comments + '</span>　分享 <span>' + d.shares + '</span>' +
+        '<a class="modal-orig" href="' + d.url + '" target="_blank">去小红书看原帖 ↗</a>';
+    document.getElementById('noteModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function showImg() {
+    const imgs = _curNote.imgs;
+    const img = document.getElementById('mImg');
+    img.src = imgs[_curIdx];
+    img.onerror = function() { img.onerror = null; img.alt = '图片加载失败，可点底部「去小红书看原帖」'; };
+    document.getElementById('mIdx').textContent = (_curIdx + 1) + ' / ' + imgs.length;
+    const multi = imgs.length > 1;
+    document.getElementById('mPrev').style.display = multi ? '' : 'none';
+    document.getElementById('mNext').style.display = multi ? '' : 'none';
+}
+function slideImg(step) {
+    if (!_curNote) return;
+    const n = _curNote.imgs.length;
+    _curIdx = (_curIdx + step + n) % n;
+    showImg();
+}
+function closeNote() {
+    document.getElementById('noteModal').classList.remove('open');
+    document.body.style.overflow = '';
+    _curNote = null;
+}
+document.addEventListener('keydown', function(e) {
+    if (!_curNote) return;
+    if (e.key === 'Escape') closeNote();
+    else if (e.key === 'ArrowLeft') slideImg(-1);
+    else if (e.key === 'ArrowRight') slideImg(1);
+});
+
 function showAllRows() {
     const hiddenRows = document.querySelectorAll('.hidden-row');
     hiddenRows.forEach(row => row.classList.remove('hidden-row'));
