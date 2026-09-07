@@ -625,7 +625,7 @@ for i, note in enumerate(top_notes, 1):
       <div class="note-card">
         <div class="rank {rank_class}">{i}</div>
         {f'<div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="{esc(note["qr_data_uri"])}" alt="QR"></div>' if note.get("qr_data_uri") else ""}
-        <div class="title"><a href="{esc(note['url'])}" target="_blank">{esc(note['title'])}</a>{new_tag}{focus_tag}</div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('{note["id"]}')">{esc(note['title'])}</a>{new_tag}{focus_tag}</div>
         <div class="author">作者：{esc(note['author'])} | 📅 {note['publish_date']}</div>
         {tag_html}
         <div class="stats">
@@ -634,7 +634,7 @@ for i, note in enumerate(top_notes, 1):
           <div class="stat">评论 <span>{fmt_num(note['comments'])}</span></div>
           <div class="stat">分享 <span>{fmt_num(note['shares'])}</span></div>
         </div>
-        <a class="link-btn" href="{esc(note['url'])}" target="_blank">查看原文 &rarr;</a>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('{note["id"]}')">📖 查看全文</a><a class="link-btn secondary" href="{esc(note['url'])}" target="_blank">原帖 ↗</a>
       </div>
 """
 
