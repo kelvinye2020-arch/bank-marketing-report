@@ -438,6 +438,88 @@ def generate_login_qrcode(headers):
     )
 
 
+LOGIN_PROBE_TIMEOUT = 150   # 真实搜索复核登录态的超时（秒）
+
+
+def probe_login_by_search(headers, timeout=LOGIN_PROBE_TIMEOUT):
+    """用真实搜索复核登录态。
+
+    背景：check_login_status 依赖浏览器加载页面，网络慢/页面卡住时会超时，
+    被误判成「未登录」（2026-09-14 实测误报过一次，实际登录态正常）。
+    而 search_feeds 不受影响，只要浏览器 cookie 有效就能正常返回笔记。
+    所以判定「未登录」前先做一次真实搜索复核，避免误发告警。
+    返回 (ok: bool, detail: str)
+    """
+    probe_kw = SEARCHES[-1][0]  # 用最后一组的关键词（最短，返回最快）
+    try:
+        data = call_mcp_tool(headers, "search_feeds", {"keyword": probe_kw},
+                             timeout=timeout, request_id=2)
+    except Exception as e:
+        return False, f"search_feeds 调用异常: {e}"
+
+    if data.get("error"):
+        return False, f"search_feeds 返回错误: {data['error']}"
+
+    res = data.get("result", {})
+    if not isinstance(res, dict) or res.get("isError"):
+        return False, f"search_feeds 返回 isError: {json.dumps(res, ensure_ascii=False)[:200]}"
+
+    text = ""
+    for item in res.get("content", []):
+        if item.get("type") == "text":
+            text = item.get("text", "")
+            break
+    if not text:
+        return False, "search_feeds 返回空内容"
+
+    count = 0
+    try:
+        inner = json.loads(text)
+
+        def find_feeds(o):
+            if isinstance(o, dict):
+                if "feeds" in o:
+                    return o["feeds"]
+                for v in o.values():
+                    r = find_feeds(v)
+                    if r:
+                        return r
+            return None
+
+        count = len(find_feeds(inner) or [])
+    except Exception:
+        count = 0
+
+    if count > 0:
+        return True, f"search_feeds('{probe_kw}') 返回 {count} 条笔记 → 登录态正常"
+    return False, f"search_feeds 未返回笔记（疑似未登录）: {text[:200]}"
+
+
+def probe_login_by_qrcode(headers):
+    """第二个登录态信号源：get_login_qrcode 在已登录时会直接返回「你当前已处于登录状态」。
+
+    search_feeds 依赖 rod 浏览器实际执行搜索，MCP 抖动/浏览器忙时会超时（假阴性）；
+    get_login_qrcode 开销小，是很好的兜底确认手段。
+    返回 (ok: bool, detail: str)
+    """
+    try:
+        data = call_mcp_tool(headers, "get_login_qrcode", {}, timeout=90, request_id=2)
+    except Exception as e:
+        return False, f"get_login_qrcode 调用异常: {e}"
+
+    res = data.get("result", {})
+    text = ""
+    for item in (res.get("content") or []):
+        if item.get("type") == "text":
+            text = item.get("text", "")
+            break
+
+    already = ("已处于登录状态", "已登录", "already logged in", "logged in")
+    if any(m in text for m in already):
+        return True, f"get_login_qrcode 返回「{text.strip()[:40]}」→ 登录态正常"
+    return False, f"get_login_qrcode 未确认登录: {text[:200]}"
+
+
 def stage_check_login():
     banner(2, "检查小红书登录状态")
 
@@ -446,6 +528,45 @@ def stage_check_login():
         headers = init_mcp_session()
     except Exception as e:
         fail(f"MCP 会话初始化失败: {e}", "检查 MCP 服务是否正常运行")
+
+    def handle_not_logged(reason):
+        """判定「未登录」前，用两个独立信号源复核，避免 MCP/浏览器抖动造成误报。
+
+        信号源 1：search_feeds 真实搜索（失败则冷却后重试一次）
+        信号源 2：get_login_qrcode（已登录时会直接说明「你当前已处于登录状态」）
+        两个都确认失败，才真正判定未登录并发告警。
+        """
+        warn(f"check_login_status 判定异常：{reason}")
+
+        # 信号源 1：真实搜索（含一次冷却重试）
+        for attempt in (1, 2):
+            print(f"  用真实搜索复核登录态（第 {attempt} 次）...", flush=True)
+            probe_ok, probe_detail = probe_login_by_search(headers)
+            print(f"  复核结果: {probe_detail}", flush=True)
+            if probe_ok:
+                ok(f"复核通过：登录态正常，继续执行（check_login_status 为误报，第 {attempt} 次确认）")
+                return headers
+            if attempt == 1:
+                time.sleep(8)
+
+        # 信号源 2：二维码接口
+        print("  用 get_login_qrcode 二次确认登录态...", flush=True)
+        qr_ok, qr_detail = probe_login_by_qrcode(headers)
+        print(f"  二次确认: {qr_detail}", flush=True)
+        if qr_ok:
+            ok("二次确认通过：登录态正常，继续执行（search_feeds 为临时抖动）")
+            return headers
+
+        qr_path, qr_text = generate_login_qrcode(headers)
+        hint = (
+            f"登录已过期（已用真实搜索复核确认），二维码已生成：{qr_path}\n"
+            "       请用小红书小号扫码后，重新运行：python update_report.py"
+        )
+        if qr_text:
+            print(f"  二维码提示: {qr_text[:300]}", flush=True)
+        print(f"  二维码路径: {qr_path}", flush=True)
+        notify_failure("小红书登录已过期，需要扫码", hint, qr_path=qr_path)
+        fail("未登录或登录已过期（真实搜索复核确认）", hint, notify=False)
 
     print("  调用 check_login_status...", flush=True)
     try:
@@ -459,32 +580,34 @@ def stage_check_login():
                     text = item["text"]
                     break
 
-            # check_login_status 返回文本含 "logged in" 或中文"已登录"表示成功
+            # 先判否定表述：英文 "not logged in" 含子串 "logged in"，
+            # 中文"未登录"也常被误匹配，必须先排除，否则会把未登录判成已登录。
             text_lower = text.lower()
+            not_logged_markers = (
+                "not logged in", "未登录", "未登陆", "尚未登录",
+                "login status: false", "已过期", "expired",
+                "需要登录", "请登录", "请重新登录",
+            )
+            if any(m in text_lower for m in not_logged_markers):
+                return handle_not_logged(f"明确未登录: {text[:200]}")
+
+            # 再判肯定表述
             if "logged in" in text_lower or "已登录" in text_lower or "login status: true" in text_lower:
                 ok("登录状态正常")
                 print(f"  详情: {text[:200]}", flush=True)
                 return headers  # Return headers with session for reuse
 
-            qr_path, qr_text = generate_login_qrcode(headers)
-            hint = (
-                f"登录已过期，二维码已生成：{qr_path}\n"
-                "       请用小红书小号扫码后，重新运行：python update_report.py"
-            )
-            if qr_text:
-                print(f"  二维码提示: {qr_text[:300]}", flush=True)
-            print(f"  二维码路径: {qr_path}", flush=True)
-            notify_failure("小红书登录已过期，需要扫码", hint, qr_path=qr_path)
-            fail("未登录或登录已过期", hint, notify=False)
+            return handle_not_logged(f"返回未登录: {text[:200]}")
         elif "error" in data:
-            fail(f"check_login_status 返回错误: {data['error']}")
+            return handle_not_logged(f"返回错误: {data['error']}")
         else:
-            fail(f"check_login_status 返回异常: {json.dumps(data, ensure_ascii=False)[:300]}")
+            return handle_not_logged(
+                f"返回异常: {json.dumps(data, ensure_ascii=False)[:300]}")
 
     except SystemExit:
         raise
     except Exception as e:
-        fail(f"检查登录状态失败: {e}")
+        return handle_not_logged(f"调用异常: {e}")
 
 
 
