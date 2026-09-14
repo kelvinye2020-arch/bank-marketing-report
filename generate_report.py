@@ -301,6 +301,101 @@ bank_notes = [n for n in notes if is_bank_related(n) and is_recent_by_id(n["id"]
 filtered_low_likes = [n for n in notes if is_bank_related(n) and is_recent_by_id(n["id"]) and n["likes"] < MIN_LIKES]
 filtered_out = [n for n in notes if is_bank_related(n) and not is_recent_by_id(n["id"])]
 
+# =====================================================
+# Tab 2/3: 产品功能讨论 + 舆情讨论（2026-09-14 v2 升级）
+# 产品 tab：按评论数降序（讨论浓度），互动量≥20
+# 舆情 tab：按发布时间倒序（时效优先），互动量≥5，信号词标红
+# 跨 tab 去重：舆情优先（负面不能漏），产品 tab 剔除舆情已收录笔记
+# =====================================================
+PRODUCT_FILES = [f"search_product_{i}.json" for i in range(1, 4)]
+SENTIMENT_FILES = [f"search_sentiment_{i}.json" for i in range(1, 5)]
+
+
+def load_notes_from_files(file_names):
+    """Load + dedup notes from a list of search result files (same shape as marketing loader)."""
+    out = {}
+    for sf in file_names:
+        path = os.path.join(BASE_DIR, sf)
+        if not os.path.exists(path):
+            continue
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+            if not content:
+                continue
+            data = json.loads(content)
+        except (json.JSONDecodeError, IOError):
+            continue
+        feeds = data.get("feeds") or data.get("data", {}).get("feeds", [])
+        if isinstance(data, list):
+            feeds = data
+        for feed in feeds:
+            if feed.get("modelType") != "note":
+                continue
+            fid = feed["id"]
+            if fid in out:
+                continue
+            nc = feed.get("noteCard", {})
+            user = nc.get("user", {})
+            interact = nc.get("interactInfo", {})
+            title_raw = nc.get("displayTitle", "").replace("​", "")
+            xsec_token = feed.get("xsecToken", "")
+            out[fid] = {
+                "id": fid,
+                "title": title_raw,
+                "author": user.get("nickname", "Unknown"),
+                "likes": to_int(interact.get("likedCount", "0")),
+                "collects": to_int(interact.get("collectedCount", "0")),
+                "comments": to_int(interact.get("commentCount", "0")),
+                "shares": to_int(interact.get("sharedCount", "0")),
+                "url": build_note_url(fid, xsec_token),
+                "xsec_token": xsec_token,
+                "qr_data_uri": make_qr_data_uri(build_note_url(fid, xsec_token)),
+                "type": nc.get("type", "normal"),
+                "is_new": is_new_note(fid),
+                "publish_date": note_id_to_datestr(fid),
+            }
+    return out
+
+
+def engagement(n):
+    return n["likes"] + n["collects"] + n["comments"] + n["shares"]
+
+
+# 相关性过滤词（剔除关键词搜索带回的跑题笔记）
+PRODUCT_REL = ["零钱通", "理财通", "余额宝", "基金", "攒钱", "存钱", "定投", "收益"]
+SENTIMENT_REL = ["零钱通", "理财通", "冻结", "被骗", "诈骗", "亏", "投诉", "客服",
+                 "风险", "安全", "转不出", "避雷", "跑路"]
+
+# 舆情信号词：命中即在表格标红
+SENTIMENT_SIGNAL_WORDS = ["冻结", "被骗", "诈骗", "投诉", "客服", "赎回失败", "转不出",
+                          "别开通", "千万别", "避雷", "垃圾", "细思极恐", "跑路", "亏"]
+
+
+def sentiment_flags(n):
+    return [w for w in SENTIMENT_SIGNAL_WORDS if w in n["title"]]
+
+
+# --- 舆情：60天内 + 互动≥5，按发布时间倒序（新帖优先） ---
+_sentiment_all = load_notes_from_files(SENTIMENT_FILES)
+sentiment_notes = [n for n in _sentiment_all.values()
+                   if is_recent_by_id(n["id"]) and engagement(n) >= 5
+                   and any(k in n["title"] for k in SENTIMENT_REL)]
+for n in sentiment_notes:
+    n["flags"] = sentiment_flags(n)
+sentiment_notes.sort(key=lambda n: (n["publish_date"], n["likes"]), reverse=True)
+_sentiment_ids = {n["id"] for n in sentiment_notes}
+sentiment_flagged = sum(1 for n in sentiment_notes if n["flags"])
+
+# --- 产品：60天内 + 互动≥20，按评论降序；剔除舆情已收录 ---
+_product_all = load_notes_from_files(PRODUCT_FILES)
+product_notes = [n for n in _product_all.values()
+                 if is_recent_by_id(n["id"]) and engagement(n) >= 20
+                 and n["id"] not in _sentiment_ids
+                 and any(k in n["title"] for k in PRODUCT_REL)]
+product_notes.sort(key=lambda n: (-n["comments"], -n["likes"]))
+product_new_count = sum(1 for n in product_notes if n["is_new"])
+
 # 动态统计：银行频次（所有 bank_notes 里出现过的银行+次数）
 _bank_counter = {}
 for n in bank_notes:
@@ -463,13 +558,20 @@ if os.path.exists(DETAILS_CACHE_PATH):
             note_details = json.load(f)
     except (json.JSONDecodeError, IOError):
         note_details = {}
-# Prune cache to notes in the current report
-_current_ids = {n["id"] for n in bank_notes}
+# Prune cache to notes in the current report（三 tab 并集）
+_all_report_notes = bank_notes + product_notes + sentiment_notes
+_current_ids = {n["id"] for n in _all_report_notes}
 note_details = {k: v for k, v in note_details.items() if k in _current_ids}
 
 _fetch_ok = _fetch_fail = 0
 if not NO_DETAILS:
-    _todo = [n for n in bank_notes if n["id"] not in note_details and n.get("xsec_token")]
+    _seen_todo = set()
+    _todo = []
+    for n in _all_report_notes:
+        if n["id"] in _seen_todo or n["id"] in note_details or not n.get("xsec_token"):
+            continue
+        _seen_todo.add(n["id"])
+        _todo.append(n)
     if _todo:
         print(f"Fetching note details: {len(_todo)} to fetch ({len(note_details)} cached)...", flush=True)
     for n in _todo:
@@ -494,7 +596,7 @@ if not NO_DETAILS:
             json.dump(note_details, f, ensure_ascii=False, indent=1)
     except IOError as e:
         print(f"  警告: note_details.json 写入失败: {e}", flush=True)
-print(f"Note details embedded: {len(note_details)}/{len(bank_notes)} "
+print(f"Note details embedded: {len(note_details)}/{len(_current_ids)} "
       f"(fetched {_fetch_ok}, failed {_fetch_fail})")
 
 def esc(s):
@@ -509,7 +611,7 @@ def fmt_num(n):
 
 # Build embedded detail payload for the in-page modal (merge card meta + detail)
 _embed = {}
-for n in bank_notes:
+for n in _all_report_notes:
     d = note_details.get(n["id"])
     if not d:
         continue
@@ -531,7 +633,7 @@ html = """<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="referrer" content="no-referrer">
-<title>小红书 · 银行营销活动搜索报告</title>
+<title>小红书 · 声量监控周报</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
@@ -605,6 +707,17 @@ html = """<!DOCTYPE html>
   .show-more-btn:disabled { display: none; }
   .hidden-row { display: none; }
   .td-summary { font-size: 12px; color: #888; margin-top: 4px; line-height: 1.4; }
+  /* ---- Tab 导航（胶囊，参考理财通看板） ---- */
+  .tab-nav { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; background: #fff; padding: 8px; border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); width: fit-content; }
+  .tab-btn { border: none; background: transparent; padding: 9px 22px; border-radius: 999px; font-size: 14px; font-weight: 600; color: #666; cursor: pointer; transition: all .2s; white-space: nowrap; }
+  .tab-btn:hover { color: #ff2442; }
+  .tab-btn.active { background: linear-gradient(135deg, #ff2442, #ff6b81); color: #fff; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+  .signal-badge { display: inline-block; background: #d4380d; color: #fff; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  tr.flagged td { background: #fff1f0; }
+  tr.flagged:hover td { background: #ffe4e0; }
+  td .cmt-num { color: #ff2442; font-weight: 700; }
   /* ---- 笔记详情弹窗（免登录全文） ---- */
   .link-btn.secondary { background: #fff; color: #ff2442; border: 1px solid #ff2442; margin-left: 8px; }
   .link-btn.secondary:hover { background: #fff0f2; }
@@ -634,11 +747,19 @@ html = """<!DOCTYPE html>
 <body>
 
 <div class="header">
-  <h1>小红书 · 银行营销活动搜索报告</h1>
-  <p>搜索时间：""" + f"{TODAY.year}年{TODAY.month}月{TODAY.day}日" + """ | 数据来源：小红书 | 发帖时间：""" + f"{DATE_START.year}年{DATE_START.month}月{DATE_START.day}日 - {TODAY.year}年{TODAY.month}月{TODAY.day}日" + """ | 💡 原文链接需在小红书App或已登录浏览器中打开</p>
+  <h1>小红书 · 声量监控周报</h1>
+  <p>搜索时间：""" + f"{TODAY.year}年{TODAY.month}月{TODAY.day}日" + """ | 数据来源：小红书 | 发帖时间：""" + f"{DATE_START.year}年{DATE_START.month}月{DATE_START.day}日 - {TODAY.year}年{TODAY.month}月{TODAY.day}日" + """ | 营销周更 · 舆情周一/周四双更</p>
 </div>
 
 <div class="container">
+
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('marketing', this)">📊 银行营销活动</button>
+    <button class="tab-btn" onclick="switchTab('product', this)">💬 产品功能讨论</button>
+    <button class="tab-btn" onclick="switchTab('sentiment', this)">🚨 舆情讨论</button>
+  </div>
+
+  <div class="tab-pane active" id="pane-marketing">
 
   <div class="summary">
     <div class="summary-card">
@@ -775,6 +896,140 @@ if hidden_count > 0:
 
 html += """  </div>
 
+  </div><!-- /pane-marketing -->
+
+  <!-- ==================== Tab 2: 产品功能讨论 ==================== -->
+  <div class="tab-pane" id="pane-product">
+
+  <div class="summary">
+    <div class="summary-card">
+      <div class="num">""" + str(len(product_notes)) + """</div>
+      <div class="label">近60天产品讨论（互动≥20）</div>
+    </div>
+    <div class="summary-card">
+      <div class="num" style="color:#52c41a">""" + str(product_new_count) + """</div>
+      <div class="label">🆕 近一周新发</div>
+    </div>
+    <div class="summary-card">
+      <div class="num">""" + str(sum(n["comments"] for n in product_notes)) + """</div>
+      <div class="label">评论总数（讨论浓度）</div>
+    </div>
+  </div>
+
+  <div class="xhs-tip">
+    💬 <strong>口径</strong>：关键词「零钱通收益」「理财通基金」；按<strong>评论数</strong>降序（评论是讨论浓度的最佳代理）；互动量（赞+藏+评+享）≥20 入选；与舆情 tab 已去重（负面讨论归舆情 tab）
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">产品功能讨论榜（按评论数排序）</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th>标题</th>
+          <th style="width:90px">发帖日期</th>
+          <th style="width:120px">作者</th>
+          <th style="width:70px">评论</th>
+          <th style="width:65px">点赞</th>
+          <th style="width:65px">收藏</th>
+          <th style="width:65px">分享</th>
+        </tr>
+      </thead>
+      <tbody>
+"""
+
+for i, note in enumerate(product_notes, 1):
+    new_badge = ' <span class="new-badge">NEW</span>' if note["is_new"] else ""
+    title_cell = f'<a href="javascript:void(0)" onclick="openNote(\'{note["id"]}\')">{esc(note["title"])}</a>{new_badge}'
+    html += f"""        <tr>
+          <td>{i}</td>
+          <td>{title_cell}</td>
+          <td>{note['publish_date']}</td>
+          <td>{esc(note['author'])}</td>
+          <td><span class="cmt-num">{fmt_num(note['comments'])}</span></td>
+          <td>{fmt_num(note['likes'])}</td>
+          <td>{fmt_num(note['collects'])}</td>
+          <td>{fmt_num(note['shares'])}</td>
+        </tr>
+"""
+
+if not product_notes:
+    html += """        <tr><td colspan="8" style="text-align:center;color:#999">本周暂无入选笔记（周一全量更新后展示）</td></tr>
+"""
+
+html += """      </tbody>
+    </table>
+  </div>
+
+  </div><!-- /pane-product -->
+
+  <!-- ==================== Tab 3: 舆情讨论 ==================== -->
+  <div class="tab-pane" id="pane-sentiment">
+
+  <div class="summary">
+    <div class="summary-card">
+      <div class="num">""" + str(len(sentiment_notes)) + """</div>
+      <div class="label">近60天舆情笔记（互动≥5）</div>
+    </div>
+    <div class="summary-card">
+      <div class="num" style="color:#d4380d">""" + str(sentiment_flagged) + """</div>
+      <div class="label">🚨 命中信号词（标红）</div>
+    </div>
+    <div class="summary-card">
+      <div class="num" style="font-size:22px">""" + (sentiment_notes[0]["publish_date"] if sentiment_notes else "—") + """</div>
+      <div class="label">最新一条发帖时间</div>
+    </div>
+  </div>
+
+  <div class="xhs-tip">
+    🚨 <strong>口径</strong>：关键词「零钱通安全吗」「理财通亏钱」「零钱通冻结」；按<strong>发布时间倒序</strong>（舆情时效优先于热度）；互动量≥5 入选；命中信号词（""" + "、".join(SENTIMENT_SIGNAL_WORDS[:8]) + """ 等）标红。⚠️ 注意：「冻结」类关键词会带入司法冻结等第三方语境内容，非平台舆情，需人工甄别
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">舆情监控（按发帖时间倒序）</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th>标题</th>
+          <th style="width:90px">发帖日期</th>
+          <th style="width:120px">作者</th>
+          <th style="width:65px">点赞</th>
+          <th style="width:65px">收藏</th>
+          <th style="width:65px">评论</th>
+          <th style="width:65px">分享</th>
+        </tr>
+      </thead>
+      <tbody>
+"""
+
+for i, note in enumerate(sentiment_notes, 1):
+    flag_badges = "".join(f'<span class="signal-badge">{esc(w)}</span>' for w in note["flags"][:3])
+    new_badge = ' <span class="new-badge">NEW</span>' if note["is_new"] else ""
+    title_cell = f'{flag_badges}<a href="javascript:void(0)" onclick="openNote(\'{note["id"]}\')">{esc(note["title"])}</a>{new_badge}'
+    row_class = ' class="flagged"' if note["flags"] else ""
+    html += f"""        <tr{row_class}>
+          <td>{i}</td>
+          <td>{title_cell}</td>
+          <td>{note['publish_date']}</td>
+          <td>{esc(note['author'])}</td>
+          <td>{fmt_num(note['likes'])}</td>
+          <td>{fmt_num(note['collects'])}</td>
+          <td>{fmt_num(note['comments'])}</td>
+          <td>{fmt_num(note['shares'])}</td>
+        </tr>
+"""
+
+if not sentiment_notes:
+    html += """        <tr><td colspan="8" style="text-align:center;color:#999">本周暂无入选舆情笔记</td></tr>
+"""
+
+html += """      </tbody>
+    </table>
+  </div>
+
+  </div><!-- /pane-sentiment -->
+
 </div>
 
 <div class="footer">
@@ -858,6 +1113,14 @@ function showAllRows() {
     hiddenRows.forEach(row => row.classList.remove('hidden-row'));
     document.querySelector('.show-more-btn').style.display = 'none';
 }
+
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('pane-' + name).classList.add('active');
+    btn.classList.add('active');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
 </script>
 
 </body>
@@ -877,6 +1140,9 @@ print(f"Bank-related & recent (>={MIN_LIKES} likes): {len(bank_notes)}")
 print(f"Filtered out (low likes <{MIN_LIKES}): {len(filtered_low_likes)}")
 print(f"Filtered out (outside rolling {LOOKBACK_DAYS}-day window): {len(filtered_out)}")
 print(f"New notes (published {NEW_CUTOFF} ~ {TODAY}): {new_count}")
+print(f"Product notes selected: {len(product_notes)}")
+print(f"Sentiment notes selected: {len(sentiment_notes)}")
+print(f"Sentiment flagged (signal words): {sentiment_flagged}")
 print(f"Focus bank notes: {focus_count} ({', '.join(f'{k}:{v}' for k,v in focus_bank_counts.items())})")
 if bank_notes:
     print(f"Top note likes: {bank_notes[0]['likes']}")

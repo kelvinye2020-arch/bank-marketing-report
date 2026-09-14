@@ -95,14 +95,31 @@ WECOM_WEBHOOK_URL_TEMPLATE = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?k
 
 
 # Search config
-SEARCHES = [
-    ("银行满减优惠活动", "search_result_1.json"),
-    ("银行信用卡支付立减", "search_result_2.json"),
-    ("银行活动羊毛攻略2026", "search_result_3.json"),
-    ("银行立减金活动汇总", "search_result_4.json"),
-    ("中国银行立减金满减", "search_result_5.json"),
-    ("工行立减金", "search_result_6.json"),
-]
+# 三组搜索：营销（原 6 组）、产品功能讨论、舆情讨论（2026-09-14 升级 v2）
+SEARCH_GROUPS = {
+    "marketing": [
+        ("银行满减优惠活动", "search_result_1.json"),
+        ("银行信用卡支付立减", "search_result_2.json"),
+        ("银行活动羊毛攻略2026", "search_result_3.json"),
+        ("银行立减金活动汇总", "search_result_4.json"),
+        ("中国银行立减金满减", "search_result_5.json"),
+        ("工行立减金", "search_result_6.json"),
+    ],
+    # 产品功能讨论（评论优先排序）——候选词经 2026-09-14 声量验证定稿；
+    # 「理财通赎回」「零钱通提现」「零钱通余额宝」连续超时疑触发风控，弃用
+    "product": [
+        ("零钱通收益", "search_product_1.json"),
+        ("理财通基金", "search_product_2.json"),
+    ],
+    # 舆情讨论（时间优先排序）——每周一 + 周四各跑一次
+    "sentiment": [
+        ("零钱通安全吗", "search_sentiment_1.json"),
+        ("理财通亏钱", "search_sentiment_2.json"),
+        ("零钱通冻结", "search_sentiment_3.json"),
+    ],
+}
+SEARCHES = SEARCH_GROUPS["marketing"]  # 兼容旧引用（probe_login_by_search 用）
+GROUP_ORDER = ["marketing", "product", "sentiment"]
 BATCH_SIZE = 3           # 每批搜索数量
 SEARCH_DELAY_MIN = 10    # 单次搜索间隔最小（秒）
 SEARCH_DELAY_MAX = 15    # 单次搜索间隔最大（秒）
@@ -266,14 +283,14 @@ def notify_success(search_stats=None, report_stats=None, push_status=True):
     report_stats = report_stats or {}
 
     lines = [
-        "# 小红书银行活动看板更新成功",
+        "# 小红书声量监控看板更新成功",
         f"> 时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
     ]
     if search_stats:
         lines.append(f"> 搜索：{search_stats.get('success', 0)}/{search_stats.get('total', 0)} 成功，失败 {search_stats.get('failed', 0)} 组")
     if report_stats:
-        lines.append(f"> 唯一笔记：{report_stats.get('total_unique', '-') } 条")
-        lines.append(f"> 入选看板：<font color=\"info\">{report_stats.get('bank_recent', '-') }</font> 条；近一周新增：{report_stats.get('new_notes', '-') } 条")
+        lines.append(f"> 营销 tab：入选 <font color=\"info\">{report_stats.get('bank_recent', '-') }</font> 条；近一周新增：{report_stats.get('new_notes', '-') } 条")
+        lines.append(f"> 产品 tab：{report_stats.get('product_selected', '-') } 条；舆情 tab：{report_stats.get('sentiment_selected', '-') } 条（标红 {report_stats.get('sentiment_flagged', '-') } 条）")
         lines.append(f"> 低赞过滤：{report_stats.get('filtered_low_likes', '-') } 条；超出60天过滤：{report_stats.get('filtered_out_window', '-') } 条")
     if push_status is True:
         push_text = "已推送"
@@ -614,19 +631,21 @@ def stage_check_login():
 # ============================================================
 # Stage 3: Search (batched, with random delays)
 # ============================================================
-def stage_search(mcp_headers):
-    banner(3, "分批搜索小红书")
+def stage_search(mcp_headers, searches=None, group_label=""):
+    label = f"分批搜索小红书（{group_label}）" if group_label else "分批搜索小红书"
+    banner(3, label)
     import requests
 
+    searches = searches or SEARCHES
     session = requests.Session()
     success_count = 0
     fail_count = 0
-    total = len(SEARCHES)
+    total = len(searches)
 
     # Split into batches
     batches = []
     for i in range(0, total, BATCH_SIZE):
-        batches.append(SEARCHES[i:i + BATCH_SIZE])
+        batches.append(searches[i:i + BATCH_SIZE])
 
     for batch_idx, batch in enumerate(batches):
         if batch_idx > 0:
@@ -706,6 +725,9 @@ def parse_report_stats(output):
         "filtered_out_window": "Filtered out (outside rolling",
         "new_notes": "New notes (published",
         "top_note_likes": "Top note likes:",
+        "product_selected": "Product notes selected:",
+        "sentiment_selected": "Sentiment notes selected:",
+        "sentiment_flagged": "Sentiment flagged (signal words):",
     }
 
     for line in (output or "").splitlines():
@@ -775,6 +797,9 @@ def stage_git_push():
     run_git("add", "bank_marketing_report.html", "note_details.json", check=False)
     for i in range(1, 7):
         run_git("add", f"search_result_{i}.json", check=False)
+    for i in range(1, 4):
+        run_git("add", f"search_product_{i}.json", check=False)
+        run_git("add", f"search_sentiment_{i}.json", check=False)
 
     commit_msg = f"update: bank marketing report {time.strftime('%Y-%m-%d %H:%M')}"
     commit_result = run_git("commit", "-m", commit_msg, check=False)
@@ -824,13 +849,16 @@ def stage_git_push():
 # Main
 # ============================================================
 def main():
-    parser = argparse.ArgumentParser(description="小红书银行营销看板一站式更新")
+    parser = argparse.ArgumentParser(description="小红书声量监控看板一站式更新")
     parser.add_argument("--search-only", action="store_true", help="只执行搜索，不生成报告和推送")
     parser.add_argument("--report-only", action="store_true", help="跳过搜索，直接用现有数据生成报告并推送")
     parser.add_argument("--no-push", action="store_true", help="不执行 git 推送")
+    parser.add_argument("--only", choices=["marketing", "product", "sentiment"], default=None,
+                        help="只搜索指定分组（默认全量 marketing+product+sentiment）；"
+                             "报告始终基于全部已有数据生成。周四舆情任务用 --only sentiment")
     args = parser.parse_args()
 
-    print("🚀 小红书银行营销看板更新开始", flush=True)
+    print("🚀 小红书声量监控看板更新开始", flush=True)
     print(f"   工作目录: {BASE_DIR}", flush=True)
     print(f"   MCP 地址: {MCP_URL}", flush=True)
 
@@ -838,6 +866,17 @@ def main():
     report_stats = None
     pushed = "skipped" if args.no_push else None
 
+    groups = [args.only] if args.only else list(GROUP_ORDER)
+    group_names = {"marketing": "银行营销活动", "product": "产品功能讨论", "sentiment": "舆情讨论"}
+
+    def run_searches(mcp_headers):
+        stats = {"success": 0, "failed": 0, "total": 0}
+        for g in groups:
+            s = stage_search(mcp_headers, SEARCH_GROUPS[g], group_label=group_names[g])
+            stats["success"] += s["success"]
+            stats["failed"] += s["failed"]
+            stats["total"] += s["total"]
+        return stats
 
     if args.report_only:
         print("   模式: --report-only（跳过搜索）", flush=True)
@@ -845,15 +884,16 @@ def main():
         if not args.no_push:
             pushed = stage_git_push()
     elif args.search_only:
-        print("   模式: --search-only（只搜索）", flush=True)
+        print(f"   模式: --search-only（只搜索: {'+'.join(groups)}）", flush=True)
         stage_check_mcp()
         mcp_headers = stage_check_login()
-        search_stats = stage_search(mcp_headers)
+        search_stats = run_searches(mcp_headers)
     else:
         # Full pipeline
+        print(f"   搜索分组: {'+'.join(groups)}", flush=True)
         stage_check_mcp()
         mcp_headers = stage_check_login()
-        search_stats = stage_search(mcp_headers)
+        search_stats = run_searches(mcp_headers)
         report_stats = stage_generate_report()
         if not args.no_push:
             pushed = stage_git_push()
