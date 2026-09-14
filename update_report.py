@@ -246,7 +246,9 @@ def notify_failure(reason, hint=None, qr_path=None):
     # 不再发 QR 图片，改成发一键运行脚本路径
     use_one_click = bool(qr_path) or ("登录" in reason or "未登录" in reason or "过期" in reason)
     if use_one_click:
-        lines.append(f"> **一键解决**：双击运行 `{BAT_PATH}`")
+        # 企微 markdown 会把反斜杠当转义符吃掉，路径必须用正斜杠（Win+R / 资源管理器都兼容）
+        bat_display = BAT_PATH.replace("\\", "/")
+        lines.append(f"> **一键解决**：复制路径到 Win+R 运行框或资源管理器打开：`{bat_display}`")
         lines.append("> （脚本会自动启动 MCP + 跑搜索 + 生成报告 + 推送 GitHub）")
         # 触发一键解决时，旧的"扫码+手动重跑"提示就屏蔽掉，避免双份信息冲突
         hint = None

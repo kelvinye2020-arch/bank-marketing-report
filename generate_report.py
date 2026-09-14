@@ -384,6 +384,78 @@ def fetch_note_detail(note_id, xsec_token):
         "type": note.get("type", "normal"),
     }
 
+# --- MCP fallback (2026-09-14): xhs now serves 461 verification page to
+# anonymous requests, so detail fetch via plain requests fails. Fall back to
+# the logged-in MCP browser (get_feed_detail) when anonymous fetch returns None.
+MCP_URL = "http://localhost:18060/mcp"
+_mcp_headers = None
+
+def get_mcp_headers():
+    global _mcp_headers
+    if _mcp_headers is None:
+        import requests as _rq
+        h = {"Content-Type": "application/json",
+             "Accept": "application/json, text/event-stream"}
+        resp = _rq.post(MCP_URL, json={
+            "jsonrpc": "2.0", "id": 1, "method": "initialize",
+            "params": {"protocolVersion": "2025-03-26", "capabilities": {},
+                       "clientInfo": {"name": "generate_report", "version": "1.0"}}
+        }, headers=h, timeout=15)
+        sid = resp.headers.get("Mcp-Session-Id")
+        if sid:
+            h["Mcp-Session-Id"] = sid
+        _rq.post(MCP_URL, json={"jsonrpc": "2.0", "method": "notifications/initialized"},
+                 headers=h, timeout=10)
+        _mcp_headers = h
+    return _mcp_headers
+
+def fetch_note_detail_mcp(note_id, xsec_token):
+    """Fetch note detail via the logged-in MCP browser. Returns dict or None."""
+    import requests as _rq
+    try:
+        resp = _rq.post(MCP_URL, json={
+            "jsonrpc": "2.0", "id": 50, "method": "tools/call",
+            "params": {"name": "get_feed_detail",
+                       "arguments": {"feed_id": note_id, "xsec_token": xsec_token}}
+        }, headers=get_mcp_headers(), timeout=180)
+        data = resp.json().get("result", {})
+        if data.get("isError"):
+            return None
+        content = data.get("content", [])
+        text = next((i.get("text", "") for i in content if i.get("type") == "text"), "")
+        if not text:
+            return None
+        note = json.loads(text).get("data", {}).get("note", {})
+    except Exception:
+        return None
+    if not note:
+        return None
+    images = []
+    for img in note.get("imageList", [])[:9]:
+        fid_img = img.get("fileId")
+        if fid_img:
+            images.append("https://ci.xiaohongshu.com/" + fid_img)
+    if not images:
+        cov_fid = (note.get("cover") or {}).get("fileId")
+        if cov_fid:
+            images.append("https://ci.xiaohongshu.com/" + cov_fid)
+    tags = [t.get("name", "") for t in note.get("tagList", []) if t.get("name")]
+    ts = note.get("time")
+    pub = ""
+    if ts:
+        try:
+            pub = datetime.fromtimestamp(int(ts) / 1000).strftime("%Y-%m-%d %H:%M")
+        except (ValueError, OSError):
+            pub = ""
+    return {
+        "desc": note.get("desc", ""),
+        "images": images,
+        "tags": tags[:8],
+        "ip": note.get("ipLocation", ""),
+        "pub": pub,
+        "type": note.get("type", "normal"),
+    }
+
 note_details = {}
 if os.path.exists(DETAILS_CACHE_PATH):
     try:
@@ -403,6 +475,10 @@ if not NO_DETAILS:
     for n in _todo:
         try:
             d = fetch_note_detail(n["id"], n["xsec_token"])
+            if d is None and n.get("xsec_token"):
+                d = fetch_note_detail_mcp(n["id"], n["xsec_token"])
+                if d:
+                    print(f"  detail via MCP {n['id'][:12]} ({n['title'][:24]})", flush=True)
         except Exception as e:
             d = None
             print(f"  detail fetch error {n['id'][:12]}: {e}", flush=True)
