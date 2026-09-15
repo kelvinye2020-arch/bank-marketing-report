@@ -302,13 +302,27 @@ filtered_low_likes = [n for n in notes if is_bank_related(n) and is_recent_by_id
 filtered_out = [n for n in notes if is_bank_related(n) and not is_recent_by_id(n["id"])]
 
 # =====================================================
-# Tab 2/3: 产品功能讨论 + 舆情讨论（2026-09-14 v2 升级）
+# Tab 2/3: 产品功能讨论 + 舆情讨论（2026-09-14 v2，2026-09-15 v3 收紧）
 # 产品 tab：按评论数降序（讨论浓度），互动量≥20
 # 舆情 tab：按发布时间倒序（时效优先），互动量≥5，信号词标红
 # 跨 tab 去重：舆情优先（负面不能漏），产品 tab 剔除舆情已收录笔记
+#
+# v3 改造（解决「相关度不高」）：
+#   1. 相关性判定改为【必须命中品牌词】——原来「基金/攒钱/定投/收益」等泛词
+#      可单独放行，导致「攒钱会上瘾」「qdii定投计划」这类泛理财内容混入
+#   2. 两段式过滤：粗筛(时间+互动) → 抓详情 → 精筛(标题 or 正文命中品牌词)
+#      很多笔记标题为空或标题不提品牌，只靠标题判定会误杀真实讨论
+#   3. 标题为空的笔记用正文首句回填，避免报告出现空行
 # =====================================================
-PRODUCT_FILES = [f"search_product_{i}.json" for i in range(1, 4)]
+PRODUCT_FILES = [f"search_product_{i}.json" for i in range(1, 5)]
 SENTIMENT_FILES = [f"search_sentiment_{i}.json" for i in range(1, 5)]
+
+# 品牌词：判定「是否真的在讨论我们的产品」的唯一硬标准
+BRAND_WORDS = ["零钱通", "理财通", "微信理财", "微信零钱", "活期+", "零钱+", "腾讯理财"]
+
+
+def hit_brand(text):
+    return any(b in (text or "") for b in BRAND_WORDS)
 
 
 def load_notes_from_files(file_names):
@@ -362,39 +376,28 @@ def engagement(n):
     return n["likes"] + n["collects"] + n["comments"] + n["shares"]
 
 
-# 相关性过滤词（剔除关键词搜索带回的跑题笔记）
-PRODUCT_REL = ["零钱通", "理财通", "余额宝", "基金", "攒钱", "存钱", "定投", "收益"]
-SENTIMENT_REL = ["零钱通", "理财通", "冻结", "被骗", "诈骗", "亏", "投诉", "客服",
-                 "风险", "安全", "转不出", "避雷", "跑路"]
-
 # 舆情信号词：命中即在表格标红
 SENTIMENT_SIGNAL_WORDS = ["冻结", "被骗", "诈骗", "投诉", "客服", "赎回失败", "转不出",
-                          "别开通", "千万别", "避雷", "垃圾", "细思极恐", "跑路", "亏"]
+                          "别开通", "千万别", "避雷", "垃圾", "细思极恐", "跑路", "亏",
+                          "恶心", "不让转", "没到账", "维权"]
 
 
 def sentiment_flags(n):
-    return [w for w in SENTIMENT_SIGNAL_WORDS if w in n["title"]]
+    """信号词判定：标题 + 正文（正文在详情抓取后才可用）"""
+    text = n["title"] + " " + (n.get("desc_snippet") or "")
+    return [w for w in SENTIMENT_SIGNAL_WORDS if w in text]
 
 
-# --- 舆情：60天内 + 互动≥5，按发布时间倒序（新帖优先） ---
+# --- 第 1 段：粗筛（时间 + 互动门槛），品牌相关性留到抓完详情再判 ---
 _sentiment_all = load_notes_from_files(SENTIMENT_FILES)
-sentiment_notes = [n for n in _sentiment_all.values()
-                   if is_recent_by_id(n["id"]) and engagement(n) >= 5
-                   and any(k in n["title"] for k in SENTIMENT_REL)]
-for n in sentiment_notes:
-    n["flags"] = sentiment_flags(n)
-sentiment_notes.sort(key=lambda n: (n["publish_date"], n["likes"]), reverse=True)
-_sentiment_ids = {n["id"] for n in sentiment_notes}
-sentiment_flagged = sum(1 for n in sentiment_notes if n["flags"])
+_sentiment_raw = [n for n in _sentiment_all.values()
+                  if is_recent_by_id(n["id"]) and engagement(n) >= 5]
 
-# --- 产品：60天内 + 互动≥20，按评论降序；剔除舆情已收录 ---
 _product_all = load_notes_from_files(PRODUCT_FILES)
-product_notes = [n for n in _product_all.values()
-                 if is_recent_by_id(n["id"]) and engagement(n) >= 20
-                 and n["id"] not in _sentiment_ids
-                 and any(k in n["title"] for k in PRODUCT_REL)]
-product_notes.sort(key=lambda n: (-n["comments"], -n["likes"]))
-product_new_count = sum(1 for n in product_notes if n["is_new"])
+_sentiment_raw_ids = {n["id"] for n in _sentiment_raw}
+_product_raw = [n for n in _product_all.values()
+                if is_recent_by_id(n["id"]) and engagement(n) >= 20
+                and n["id"] not in _sentiment_raw_ids]
 
 # 动态统计：银行频次（所有 bank_notes 里出现过的银行+次数）
 _bank_counter = {}
@@ -558,8 +561,8 @@ if os.path.exists(DETAILS_CACHE_PATH):
             note_details = json.load(f)
     except (json.JSONDecodeError, IOError):
         note_details = {}
-# Prune cache to notes in the current report（三 tab 并集）
-_all_report_notes = bank_notes + product_notes + sentiment_notes
+# Prune cache to notes in the current report（营销 + 产品/舆情粗筛集合）
+_all_report_notes = bank_notes + _product_raw + _sentiment_raw
 _current_ids = {n["id"] for n in _all_report_notes}
 note_details = {k: v for k, v in note_details.items() if k in _current_ids}
 
@@ -599,6 +602,68 @@ if not NO_DETAILS:
 print(f"Note details embedded: {len(note_details)}/{len(_current_ids)} "
       f"(fetched {_fetch_ok}, failed {_fetch_fail})")
 
+
+# =====================================================
+# 第 2 段：精筛（品牌相关性 + 空标题回填）—— 必须在详情抓取之后
+# 判定依据 = 标题 or 正文命中品牌词。只看标题会误杀「标题为空 / 标题没提品牌
+# 但正文全程在讲零钱通」的真实讨论；只看泛词又会放进泛理财内容。
+# =====================================================
+def _desc_of(n):
+    d = note_details.get(n["id"]) or {}
+    return d.get("desc", "") or ""
+
+
+def _backfill_title(n):
+    """标题为空时用正文首句回填，避免报告里出现空行。
+
+    正文常以 `#话题[话题]#` 标签开头或夹杂其间，直接截取会得到一串标签，
+    因此先剥离标签、压缩空白，再取首句（按中英文句末标点切分）。
+    """
+    if n["title"].strip():
+        return
+    desc = _desc_of(n)
+    # 去掉 #xxx[话题]# 与 #xxx# 两种标签写法
+    cleaned = re.sub(r"#[^#\n]{0,30}?\[话题\]#", " ", desc)
+    cleaned = re.sub(r"#[^#\s]{1,20}#", " ", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    if not cleaned:
+        n["title"] = "（无标题笔记）"
+        return
+    # 首句优先：遇到句末标点就断
+    m = re.split(r"[。！？!?~\n]", cleaned, maxsplit=1)
+    first = (m[0] or cleaned).strip()
+    if len(first) < 6:  # 首句过短则退回整段
+        first = cleaned
+    n["title"] = (first[:38] + "…") if len(first) > 38 else first
+
+
+def refine(raw_notes):
+    """保留标题或正文命中品牌词的笔记，并回填空标题。"""
+    kept = []
+    for n in raw_notes:
+        desc = _desc_of(n)
+        if hit_brand(n["title"]) or hit_brand(desc):
+            n["desc_snippet"] = desc[:300]
+            _backfill_title(n)
+            kept.append(n)
+    return kept
+
+
+sentiment_notes = refine(_sentiment_raw)
+for n in sentiment_notes:
+    n["flags"] = sentiment_flags(n)
+sentiment_notes.sort(key=lambda n: (n["publish_date"], n["likes"]), reverse=True)
+sentiment_flagged = sum(1 for n in sentiment_notes if n["flags"])
+_sentiment_ids = {n["id"] for n in sentiment_notes}
+
+product_notes = [n for n in refine(_product_raw) if n["id"] not in _sentiment_ids]
+product_notes.sort(key=lambda n: (-n["comments"], -n["likes"]))
+product_new_count = sum(1 for n in product_notes if n["is_new"])
+
+print(f"Product raw {len(_product_raw)} -> refined {len(product_notes)} "
+      f"(brand-relevance filter)")
+print(f"Sentiment raw {len(_sentiment_raw)} -> refined {len(sentiment_notes)}")
+
 def esc(s):
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
@@ -610,8 +675,10 @@ def fmt_num(n):
     return str(n)
 
 # Build embedded detail payload for the in-page modal (merge card meta + detail)
+# 用精筛后的最终三 tab 集合，避免把已剔除笔记的详情也塞进 HTML
+_final_notes = bank_notes + product_notes + sentiment_notes
 _embed = {}
-for n in _all_report_notes:
+for n in _final_notes:
     d = note_details.get(n["id"])
     if not d:
         continue
@@ -917,7 +984,7 @@ html += """  </div>
   </div>
 
   <div class="xhs-tip">
-    💬 <strong>口径</strong>：关键词「零钱通收益」「理财通基金」；按<strong>评论数</strong>降序（评论是讨论浓度的最佳代理）；互动量（赞+藏+评+享）≥20 入选；与舆情 tab 已去重（负面讨论归舆情 tab）
+    💬 <strong>口径</strong>：关键词「理财通转账」「零钱通收益」「零钱通转出」「理财通会员」；按<strong>评论数</strong>降序（评论是讨论浓度的最佳代理）；互动量（赞+藏+评+享）≥20 入选；<strong>标题或正文必须提及零钱通/理财通</strong>（泛理财内容已剔除）；与舆情 tab 已去重（负面讨论归舆情 tab）
   </div>
 
   <div class="section">
@@ -982,7 +1049,7 @@ html += """      </tbody>
   </div>
 
   <div class="xhs-tip">
-    🚨 <strong>口径</strong>：关键词「零钱通安全吗」「理财通亏钱」「零钱通冻结」；按<strong>发布时间倒序</strong>（舆情时效优先于热度）；互动量≥5 入选；命中信号词（""" + "、".join(SENTIMENT_SIGNAL_WORDS[:8]) + """ 等）标红。⚠️ 注意：「冻结」类关键词会带入司法冻结等第三方语境内容，非平台舆情，需人工甄别
+    🚨 <strong>口径</strong>：关键词「零钱通安全吗」「理财通亏钱」「零钱通冻结」「腾讯理财通投诉」；按<strong>发布时间倒序</strong>（舆情时效优先于热度）；互动量≥5 入选；<strong>标题或正文必须提及零钱通/理财通</strong>；命中信号词（""" + "、".join(SENTIMENT_SIGNAL_WORDS[:8]) + """ 等）标红。⚠️ 注意：「冻结」类关键词可能带入司法冻结等第三方语境内容，需人工甄别
   </div>
 
   <div class="section">

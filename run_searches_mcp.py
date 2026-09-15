@@ -81,7 +81,7 @@ for batch_idx, batch in enumerate(batches):
             resp = session.post(URL, json={
                 "jsonrpc": "2.0", "id": global_idx + 10, "method": "tools/call",
                 "params": {"name": "search_feeds", "arguments": {"keyword": keyword}}
-            }, headers=HEADERS, timeout=90)
+            }, headers=HEADERS, timeout=180)
 
             data = json.loads(resp.text)
 

@@ -16,6 +16,7 @@ cookies.json
 qr_code.png
 config.local.json
 wecom_config.json
+git_token.json
 update_run*.log
 *_run.log
 mcp_stdout.txt

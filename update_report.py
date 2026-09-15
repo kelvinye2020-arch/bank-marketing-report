@@ -105,17 +105,23 @@ SEARCH_GROUPS = {
         ("中国银行立减金满减", "search_result_5.json"),
         ("工行立减金", "search_result_6.json"),
     ],
-    # 产品功能讨论（评论优先排序）——候选词经 2026-09-14 声量验证定稿；
-    # 「理财通赎回」「零钱通提现」「零钱通余额宝」连续超时疑触发风控，弃用
+    # 产品功能讨论（评论优先排序）——2026-09-15 换血：原「理财通基金」是泛词噪音源
+    # （带回攒钱/定投/选基类泛理财内容），已剔除。新词经品牌相关度验证：
+    # 理财通转账 68% / 零钱通转出 36% / 理财通会员 22%（量少但话题垂直）
+    # 弃用：理财通赎回、零钱通提现、零钱通余额宝、活期+（均连续超时疑触发风控）
     "product": [
-        ("零钱通收益", "search_product_1.json"),
-        ("理财通基金", "search_product_2.json"),
+        ("理财通转账", "search_product_1.json"),
+        ("零钱通收益", "search_product_2.json"),
+        ("零钱通转出", "search_product_3.json"),
+        ("理财通会员", "search_product_4.json"),
     ],
     # 舆情讨论（时间优先排序）——每周一 + 周四各跑一次
+    # 2026-09-15 新增「腾讯理财通投诉」：验证时发现投诉类内容舆情价值最高
     "sentiment": [
         ("零钱通安全吗", "search_sentiment_1.json"),
         ("理财通亏钱", "search_sentiment_2.json"),
         ("零钱通冻结", "search_sentiment_3.json"),
+        ("腾讯理财通投诉", "search_sentiment_4.json"),
     ],
 }
 SEARCHES = SEARCH_GROUPS["marketing"]  # 兼容旧引用（probe_login_by_search 用）
@@ -797,7 +803,7 @@ def stage_git_push():
     run_git("add", "bank_marketing_report.html", "note_details.json", check=False)
     for i in range(1, 7):
         run_git("add", f"search_result_{i}.json", check=False)
-    for i in range(1, 4):
+    for i in range(1, 5):
         run_git("add", f"search_product_{i}.json", check=False)
         run_git("add", f"search_sentiment_{i}.json", check=False)
 
