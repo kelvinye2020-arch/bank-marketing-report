@@ -534,7 +534,31 @@ def get_mcp_headers():
         _mcp_headers = h
     return _mcp_headers
 
-def fetch_note_detail_mcp(note_id, xsec_token):
+def _extract_comments(data, limit=10):
+    """从 get_feed_detail 响应提取前 N 条一级热评（默认返回即前 10，零额外耗时）。"""
+    raw = (data.get("comments") or {}).get("list") or []
+    out = []
+    for c in raw[:limit]:
+        content = (c.get("content") or "").strip()
+        if not content:
+            continue
+        ts = c.get("createTime")
+        date = ""
+        if ts:
+            try:
+                date = datetime.fromtimestamp(int(ts) / 1000).strftime("%m-%d")
+            except (ValueError, OSError):
+                date = ""
+        out.append({
+            "u": (c.get("userInfo") or {}).get("nickname") or "匿名",
+            "c": content[:200],
+            "likes": to_int(c.get("likeCount", "0")),
+            "ip": c.get("ipLocation", ""),
+            "d": date,
+        })
+    return out
+
+def fetch_note_detail_mcp(note_id, xsec_token, with_comments=False):
     """Fetch note detail via the logged-in MCP browser. Returns dict or None."""
     import requests as _rq
     try:
@@ -550,7 +574,9 @@ def fetch_note_detail_mcp(note_id, xsec_token):
         text = next((i.get("text", "") for i in content if i.get("type") == "text"), "")
         if not text:
             return None
-        note = json.loads(text).get("data", {}).get("note", {})
+        _payload = json.loads(text).get("data", {})
+        note = _payload.get("note", {})
+        cmts = _extract_comments(_payload) if with_comments else []
     except Exception:
         return None
     if not note:
@@ -564,7 +590,7 @@ def fetch_note_detail_mcp(note_id, xsec_token):
             pub = datetime.fromtimestamp(int(ts) / 1000).strftime("%Y-%m-%d %H:%M")
         except (ValueError, OSError):
             pub = ""
-    return {
+    result = {
         "desc": note.get("desc", ""),
         "images": images,
         "tags": tags[:8],
@@ -572,6 +598,9 @@ def fetch_note_detail_mcp(note_id, xsec_token):
         "pub": pub,
         "type": note.get("type", "normal"),
     }
+    if with_comments:
+        result["cmts"] = cmts
+    return result
 
 note_details = {}
 if os.path.exists(DETAILS_CACHE_PATH):
@@ -587,31 +616,49 @@ note_details = {k: v for k, v in note_details.items() if k in _current_ids}
 
 _fetch_ok = _fetch_fail = 0
 if not NO_DETAILS:
+    # 舆情笔记需要评论：评论只有 MCP 路径能拿到（匿名详情页无评论数据），
+    # 因此舆情一律走 MCP；缓存里缺 "cmts" 键的舆情详情也要补抓。
+    _sentiment_ids = {n["id"] for n in _sentiment_raw}
     _seen_todo = set()
     _todo = []
     for n in _all_report_notes:
-        if n["id"] in _seen_todo or n["id"] in note_details or not n.get("xsec_token"):
+        if n["id"] in _seen_todo or not n.get("xsec_token"):
+            continue
+        cached = note_details.get(n["id"])
+        if cached is not None and not (n["id"] in _sentiment_ids and "cmts" not in cached):
             continue
         _seen_todo.add(n["id"])
         _todo.append(n)
     if _todo:
         print(f"Fetching note details: {len(_todo)} to fetch ({len(note_details)} cached)...", flush=True)
-    for n in _todo:
+    for _ti, n in enumerate(_todo, 1):
+        is_senti = n["id"] in _sentiment_ids
         try:
-            d = fetch_note_detail(n["id"], n["xsec_token"])
-            if d is None and n.get("xsec_token"):
-                d = fetch_note_detail_mcp(n["id"], n["xsec_token"])
+            if is_senti:
+                d = fetch_note_detail_mcp(n["id"], n["xsec_token"], with_comments=True)
                 if d:
-                    print(f"  detail via MCP {n['id'][:12]} ({n['title'][:24]})", flush=True)
+                    print(f"  [{_ti}/{len(_todo)}] sentiment detail+cmts via MCP {n['id'][:12]} ({n['title'][:24]}) cmts={len(d.get('cmts', []))}", flush=True)
+            else:
+                d = fetch_note_detail(n["id"], n["xsec_token"])
+                if d is None and n.get("xsec_token"):
+                    d = fetch_note_detail_mcp(n["id"], n["xsec_token"])
+                    if d:
+                        print(f"  [{_ti}/{len(_todo)}] detail via MCP {n['id'][:12]} ({n['title'][:24]})", flush=True)
         except Exception as e:
             d = None
-            print(f"  detail fetch error {n['id'][:12]}: {e}", flush=True)
+            print(f"  [{_ti}/{len(_todo)}] detail fetch error {n['id'][:12]}: {e}", flush=True)
         if d:
             note_details[n["id"]] = d
             _fetch_ok += 1
+            # 每条增量保存：长批次中途取消不至于全丢（2026-09-21 教训）
+            try:
+                with open(DETAILS_CACHE_PATH, "w", encoding="utf-8") as f:
+                    json.dump(note_details, f, ensure_ascii=False, indent=1)
+            except IOError:
+                pass
         else:
             _fetch_fail += 1
-            print(f"  detail fetch FAILED {n['id'][:12]} ({n['title'][:24]})", flush=True)
+            print(f"  [{_ti}/{len(_todo)}] detail fetch FAILED {n['id'][:12]} ({n['title'][:24]})", flush=True)
         time.sleep(random.uniform(1.2, 2.5))
     try:
         with open(DETAILS_CACHE_PATH, "w", encoding="utf-8") as f:
@@ -709,6 +756,7 @@ for n in _final_notes:
         "comments": n["comments"], "shares": n["shares"],
         "desc": d["desc"], "imgs": d["images"], "tags": d["tags"],
         "ip": d["ip"], "pub": d["pub"], "vtype": d["type"],
+        "cmts": d.get("cmts", []),
     }
 _embed_json = json.dumps(_embed, ensure_ascii=False).replace("</", "<\\/")
 
@@ -826,6 +874,15 @@ html = """<!DOCTYPE html>
   .modal-tags { margin-bottom: 14px; }
   .modal-tags .htag { display: inline-block; color: #1565c0; font-size: 13px; margin-right: 10px; }
   .modal-stats { display: flex; gap: 18px; font-size: 12px; color: #999; border-top: 1px solid #f0f0f0; padding-top: 12px; flex-wrap: wrap; align-items: center; }
+  .modal-cmts { margin-top: 14px; border-top: 1px solid #f0f0f0; padding-top: 12px; }
+  .modal-cmts .cmts-title { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 8px; }
+  .cmt { padding: 8px 0; border-bottom: 1px dashed #f5f5f5; font-size: 13px; }
+  .cmt:last-child { border-bottom: none; }
+  .cmt .cmt-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+  .cmt .cmt-user { font-weight: 600; color: #555; font-size: 12px; }
+  .cmt .cmt-meta { color: #bbb; font-size: 11px; flex-shrink: 0; margin-left: 8px; }
+  .cmt .cmt-body { color: #333; line-height: 1.5; word-break: break-word; }
+  .cmt .cmt-likes { color: #ff2442; font-size: 11px; }
   .modal-stats span { color: #ff2442; font-weight: 600; }
   .modal-orig { margin-left: auto; font-size: 12px; color: #ff2442; text-decoration: none; }
   .modal-orig:hover { text-decoration: underline; }
@@ -1119,6 +1176,7 @@ html += """    </div>
     <div class="modal-desc" id="mDesc"></div>
     <div class="modal-tags" id="mTags"></div>
     <div class="modal-stats" id="mStats"></div>
+    <div class="modal-cmts" id="mCmts" style="display:none"></div>
   </div>
 </div>
 
@@ -1145,6 +1203,27 @@ function openNote(id) {
     document.getElementById('mStats').innerHTML =
         '点赞 <span>' + d.likes + '</span>　收藏 <span>' + d.collects + '</span>　评论 <span>' + d.comments + '</span>　分享 <span>' + d.shares + '</span>' +
         '<a class="modal-orig" href="' + d.url + '" target="_blank">去小红书看原帖（评论需登录）↗</a>';
+    const cmtsBox = document.getElementById('mCmts');
+    if (d.cmts && d.cmts.length) {
+        let ch = '<div class="cmts-title">💬 热评 Top' + d.cmts.length + '</div>';
+        d.cmts.forEach(function(c) {
+            const meta = [c.d, c.ip].filter(Boolean).join(' · ');
+            ch += '<div class="cmt"><div class="cmt-head"><span class="cmt-user"></span><span class="cmt-meta">' +
+                  meta + (c.likes > 0 ? ' <span class="cmt-likes">❤ ' + c.likes + '</span>' : '') +
+                  '</span></div><div class="cmt-body"></div></div>';
+        });
+        cmtsBox.innerHTML = ch;
+        const users = cmtsBox.querySelectorAll('.cmt-user');
+        const bodies = cmtsBox.querySelectorAll('.cmt-body');
+        d.cmts.forEach(function(c, i) {
+            users[i].textContent = c.u;
+            bodies[i].textContent = c.c;
+        });
+        cmtsBox.style.display = '';
+    } else {
+        cmtsBox.style.display = 'none';
+        cmtsBox.innerHTML = '';
+    }
     document.getElementById('noteModal').classList.add('open');
     document.body.style.overflow = 'hidden';
 }
