@@ -89,6 +89,10 @@
   tr.flagged td { background: #fff1f0; }
   tr.flagged:hover td { background: #ffe4e0; }
   td .cmt-num { color: #ff2442; font-weight: 700; }
+  .note-card .snippet { font-size: 13px; color: #555; line-height: 1.6; margin: 8px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .note-card.flagged { background: #fff1f0; border: 1px solid #ffccc7; }
+  .note-card.flagged:hover { box-shadow: 0 6px 20px rgba(212,56,13,0.18); }
+  .note-card .stat.hl span { color: #d4380d; font-size: 16px; }
   /* ---- 笔记详情弹窗（免登录全文） ---- */
   .link-btn.secondary { background: #fff; color: #ff2442; border: 1px solid #ff2442; margin-left: 8px; }
   .link-btn.secondary:hover { background: #fff0f2; }
@@ -170,7 +174,7 @@
 
       <div class="note-card">
         <div class="rank top3">1</div>
-        
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACOElEQVR42r2YQY4sNwxDnxt/T9+g73+svgF9gpeFq5FFMJtkFC8MVBVQgiyKIr3kh3Ve/Lj+5aez1mLtdTgc9lqwz1lr8euxqFY0lUig92V/PdYfzu5h4ca16OHt4uz+fl73k5QDxRM+O//5hz/kBbBkNwsW6aZnJNaLCBxg1yascyAOxFrd0H+83vD72EC10mCtrVHVgVgt2FICSKgUBmK92M2BvKHklASRPdLLgTZS2sQWTTpSr+fwVCH1W8GBvCImEAshgZohbFR6iTDxZljNSF4FgxRobbnbBDbQfo+OJpF2BBtFqEVCTAolnaiXJbRt0qQgSR3BoTeel6OikMSM1IuoDalXeyQJMzgUtFVLxZTWkXqVXK5NWqxWYaJef1IWoauwIaweYDHBvcHehr6YTKyd4KhXPhzySVwcRD5wBvPKg4uLDbEZweEjSMnfCAFmOOrCLg2tBLWM8MaLfRYc+OTNtmGdDWdA96IPbyhfPtRkRtuwzgqcbYEcu9dhwqfYhIDXpFytEzPDUVQ1krtBIpnSvU2tIJjEDGmbe4oWk0T7VQNTeiNpC224kJzRh6baWvU2clNm5tfVF3gFKbnPI2dohKhX2yhe8zKibe68Qk2RxCYzeuPO/QccVwNcTh7qL9JEbJ8sO8UbCFdWNwl9/MQA92pPyRt2OHySEpARv9wvJLhO7JnVU/c228N6x3M+NhQ7lldTGr5mb4p7ve31XHCUauqQ/7o81cTv/CJO+Mr1P96L/gU9fV82cRUw3AAAAABJRU5ErkJggg==" alt="QR"></div>
         <div class="title"><a href="javascript:void(0)" onclick="openNote('6a96bf0a000000002601e41a')">价值51.88的8个羊毛</a></div>
         <div class="author">作者：大橘来啦 | 📅 2026-09-01</div>
         
@@ -185,7 +189,7 @@
 
       <div class="note-card">
         <div class="rank top3">2</div>
-        
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACQklEQVR42r2YQY4kOQwDw4250z+o/z8rf0C/IObgnNOgscBua33JQuZBJYukKC355pwvvj3/8tNZa7H2OhwOey3Y56y1+PFYVGttKpFA78v+fF6cxclK2Z5FU4Sz+Pm8ft2HG6DbAzv5T3/+n2JtHrJgH4GekVhfRFjPs/euJXv1QByItbqhf73e8PPYQLXVYK003jMQqwWJrdxfSMEJzG+lXWFLTtkiZg9w2QBJa2kTWzQTXKaSkGAFWo1WRmIFNEYhpuQiZSBWXlCUGl+gaDpTL5VQpNUSM8MvNCVALU0iZQYbSVOLCTEptI7Uy2jbNmm8xM5gvRJIqVwwJk1HYuXlk3rxkcBMXlpLEvoS+0JjhMuVKx0tKVZhQue/AosWeNgQ1z4HGPFRYFtULGnyNrKBvMohuNbiIB8eOCwn8gpWRbl9uWI7gMPleQ1HVjfuWzY8I/VqSJLSSqg2TtTrF67uZwuB7Q4rB+iIn0faNF6KiZqOaK+vWjQ1t6Xcq53oX40pvUPK9QQxI3mVVo2JkQhJGdJebWoDvrqfTPmoRuybmg1twpSPamxL2qRyLeLEHbYtEG/VSlNG+pc14fU2fdtlHblD453GSRMUoZnRqLNFNgJdnGzPh+2Z0F4v3u8kdsExpRuXXnnbFkmtndDDr7PWCp+ne/fwCQ+LM+Q33nG5BAvNXeQMzcvtawXuIHZd1YS3eZ/B9YlnPfRzJXkqr4TrBXoXATMadfdsJaG15e46RmaH8kc0brEiECf4tf7HvehvObBbLUwXk4MAAAAASUVORK5CYII=" alt="QR"></div>
         <div class="title"><a href="javascript:void(0)" onclick="openNote('6a95a580000000002a005fae')">9月份立减金活动汇总详细的教程（人人有）</a></div>
         <div class="author">作者：Holly | 📅 2026-09-01</div>
         <div class="content-tags"><span class="content-tag activity">立减金</span></div>
@@ -200,7 +204,7 @@
 
       <div class="note-card">
         <div class="rank top3">3</div>
-        
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACSElEQVR42r2Yy5EcORBDHxVzBz0o/80qD15aAB3Y0kWry+5weemKrohC5IcAMlf5y5kf/PX8y1ez1poN7D1rrWE2M2stvh+LVmDDEHzgnU3rDaxZ4GLeMsaV54FZ3MACAu9mbZ817CH/9YP/fL4ABp5u90Zw4VzBwtbWJuHzdH79dqzlBv/4e8P3Y9G2JVKooYa0rTdyeBLZAEgwid6Iy9C2OZFFrCg34ioQLGloiqQhXomrrYktpbEpKV7pDaWccvUksbFX6gU1Wnr6sFhtrtQr1PgpW9OT1Tt92DQSklIxau7UK6IpSWyLByx37nISTJs2ghGvxKXF2JNMQpTewSqEWmNa0VibO9wrOR1RkJ609kpcHu0SY851w5A7WHCoUCDFCnd4I9ZgqbXFluoFnl/dI9kIS8g6vJW54Te0ngR6NNlDiJf0CxurR2E89uP7sb4mx8vsPkhmv9nh3Rc82+qp087gpqwOW9h3ej4gpjaHD0m8wr3GJvYUrTbGeoV7eyT5cL0kOfJ8xQPUj7EmPRSf9Ip+tdakR1yKhoYbmvLFypR3GXZ2Au5FrswptdEmtXhcGwmX6kUFxeQzPNBb/vCMJVo4zVi54w9TenLZnCHCeMUf/mB2p4Y9iw28DzyLcOd++cs8URSP1NyZKy00HzMFPc15Z2/DinuGYTIBh/3e2DmUQZAh44rM7nhhH4WiCX70pCGXfNR5NUf34zOM8zRL7sRVgn4mI5Jy5y5/VjWfoS+Q1Dt3+ffeJiyfF4DsoXPH2/xfe9GfUmNhZdkynUoAAAAASUVORK5CYII=" alt="QR"></div>
         <div class="title"><a href="javascript:void(0)" onclick="openNote('6aae1561000000002803a655')">建行大羊毛！！！</a> <span class="new-badge">NEW</span></div>
         <div class="author">作者：谢小洁 | 📅 2026-09-19</div>
         <div class="content-tags"><span class="content-tag bank">建设银行</span></div>
@@ -215,7 +219,7 @@
 
       <div class="note-card">
         <div class="rank top10">4</div>
-        
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACTUlEQVR42r2YvY0mOQxEnwbrlzLo/MP6MniKoNZQY7HOnHE3PBntCGiCZP2QWuWbc7749vzLq7PWOhvY+6y1DmdzzlqLn49FK3LwEHzgczatE7HOgr32OeWIJzxwFhOxgHxKWNtnn703+a8//Ier85C9ZR9QcSYWtraooVIKtdUfj7XcvHn8fTb8fCzatsQUakhL2taJGgKlIYA0JNGBvH6x41k5x+3mcQlbyAA2SiwUhaZKGjqR1ykgpwe6utxhxTWgG7/CEnJWF6sLeuAhz2eihpYkLxppMGJGMB9qBaJN1KvHA5jHJgGSUjG20YlYFk0vq1o04kwN0yaYNk0EI2VGNwK1hEZClDKhh19wwuLKRTx8oKuZ8ZQQW7EgBUsmPIXShnDpFUEhI/2qQlLpiwsrjORlqE1ivX7cS7MBbAQOBw37cGCv5SHPBDa06hVGc+WpkgmvZEPpXrLw2fKOIBO6kQZTU22TvnCcqCGQaydcULwiOZEX1fDC0UvljGjvpVcs3i9pLDO6kbTW2zSSvHCc4HKsDS296iEhIzWEJine0UMDgRGv9C4LXvuKNkKG5vk0vUW0d/ZIZnaH2x7sJbQ1MLQ7SAsa7wYRrCMz9leerqXkhEChbHqY2R168eC7d8Wb2wTmq72NgkLwWs3MXqn2FY/bqzrFZeyddb27ea9/Dr3bbD47EDyha4edqXcbni0Pa/N4Fq7NGpk37sgR4jXMl9szXL6u5dXD5A6LI9hobcJFRe5c6siu9+fdJhyeDwDZrp6f79f6H99FfwPyw0moJV3ocAAAAABJRU5ErkJggg==" alt="QR"></div>
         <div class="title"><a href="javascript:void(0)" onclick="openNote('6a95a508000000000b000cae')">9月建行立减金活动合集来啦🎉</a></div>
         <div class="author">作者：Rose（教程版） | 📅 2026-09-01</div>
         <div class="content-tags"><span class="content-tag bank">建设银行</span><span class="content-tag activity">立减金</span></div>
@@ -230,7 +234,7 @@
 
       <div class="note-card">
         <div class="rank top10">5</div>
-        
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACOElEQVR42r2YwY0lOQxDnzsBOoPKP6yfwXME3IOrB3uZPcy01kCdCjBBWyIpr/Kbdb747frDX2etdTaw91lrHc7mnLUWP49FK4fFOQQf+JxN6wTWWZDloRzjyvPAWUxgAZGHrO1zDvtD/nbD//h1yGcr+4QYnMHC1qbFUGkqtdUfx1puXh7/Xht+Hou2LUShhiSkbZ04QyAhKaCtSXSCl0napCEQsaKZ4FWDuR9NK2nQEV4tqRKg0ZSII7xUIAVLrDR2pg5tSy5QbHjhRs7wYkCwSaXNSH+JSaQkpWLEjNyXd+9yEYtGnTnDvmXfpolcYoz0V7nKXhsJUerQffX7mtJK1aYZ6mXjLUKQ3Dab6K+vcAIB9jZRwpIz4ZVViNUKjbRCZ86QSrS1tthe4fp5X+4+EhZ0CVmAkDORN7TS17lCK9bO+BeQq0pgUm/8mNGNpOSaWIl95WOov6D2ige/KA5kUdcDOTml2VdKnqcZqY3QvKnjDaZYZzIAsTYXkiQlzOTDF4reeq9Imgn/KrZJkWLfM4UZrBLEG9aiDTDiKU3eK0o1Tb4D3FSOaigmxttuHcvzKV7RwNTKTJ5P7wxEm6ZJjSNzyhdn9xwOOQuEz4YHRnSDek2ywneoYoRXesf+I9Qth1D3AK87Lz8n8AF2V07P1JvDNeIP1zKJPTs8MzqP8kZrbppyxpe/fkkVEJ/NlofgEK9ytUNiTNqhWa93aLBwBT43lw6+24TD8wEgm9OBfLj+x3fRfwARPEd9lEokbQAAAABJRU5ErkJggg==" alt="QR"></div>
         <div class="title"><a href="javascript:void(0)" onclick="openNote('6aaa5361000000002700b39d')">建行立减金，快冲！记录薅羊毛日常</a> <span class="new-badge">NEW</span></div>
         <div class="author">作者：心愿很轻 | 📅 2026-09-16</div>
         <div class="content-tags"><span class="content-tag bank">建设银行</span><span class="content-tag activity">立减金</span></div>
@@ -245,7 +249,7 @@
 
       <div class="note-card">
         <div class="rank top10">6</div>
-        
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACQ0lEQVR42r2YQa7tNgxDj4s/p3eQ/S8rOzheATvwvcCf/A7ap3oUJEAESyRFaZU/nPMXfzz/8tNZa50N7H3WWoezOWetxc/HohVYcAg+8J5N68/HQlFRKqa2uS8H7gUEEtf2OYe9yH/94T98Orv7bNlHtsGZWNha1IZqU6ntQA6Xm889fj8bfj4WbVsJgRqSkLZ1IoeAoffBxiTKBA43BXuyhIfz8p4XOoCNGmmihqaVNMSJeqU1TRqksQkJI/VCawQu+LHJiG5gLZG01NBgJJnBPFgDwTaxFkf4FdpISHr1V81MDoOakkZbNCITOdQ04UKxkVuuGRyqxSJNCVHKjB5iiKrpxaKlmbhX1ViiBQnapIxwmeamLiZChTDDr49SUaHJJ5hD97pdpNYWWzrSU1b38XbiLiHrxs+AF0Wt0uSjVBWrA/X6BRtS5LDwAdzQ9+d75a+ruUt2kADZ4V0z3gYrX3fzVcgR3fCKIKVtrh6SdIRfgInBxMbmGtQRfjWpTWgqSUoY8YelX4PN9deYzHgAQ0mKVMu1bgxhI1RzW2biLdiMP2yTlthqaj4D2YwXtd90aj5CNYLDetvkN6SJdQiHKZSQ9mI/xnZkTjm7bl7esyDwAs9ZE3OKVMMdXq/T8faamblSIe2dIaTUGS5fjnmdIvUjJCP7jVZ4c2klz+7ZYWdiv3EWHICHtdm64tpnDe1SeJ6jEJ/DcT0NU/uoftyuJDEURnql7YVGKQ0k1Y74w+/eJnCeF4BsVw8DXvT/24v+DflLTomDOkvJAAAAAElFTkSuQmCC" alt="QR"></div>
         <div class="title"><a href="javascript:void(0)" onclick="openNote('6a7d3a10000000000600708d')">2026我薅银行开户羊毛的记录</a></div>
         <div class="author">作者：硅谷前牛马 | 📅 2026-08-13</div>
         
@@ -260,7 +264,7 @@
 
       <div class="note-card">
         <div class="rank top10">7</div>
-        
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACSElEQVR42r2Yu5EYMQxDnzzOoQ62/7K2A7CC50Bnj5NzYJ+sSDsKsPyBIJd8cuYbn56/fJq11mxg71lrDbOZWWvx9VhoKYt3CH3gnY32BtYsYHWQ6e4KD8zi67G+A2Q3m6EP0z3JP/38n5/mfWZa9kAaegeLaqXaYGMFq+2XY61uPuz4/Wz4eixUTWrBphqi2gv1xVoLnqGs/bLnDXtm3YhXsGpFSC2lJRfs4s0wa4CNZODx2c4VuzQmMYi2kbQX8pCmrTUlSGsxDb0TLwzB8xGaYm5g9bgsEM+dmEt2xaaURCxNIVyJl4VGkjRKm1Kv5DxbnpljzR724a73Ss4HbagmhLTYOz5sg6UQLdSK8Qb3NiQQFYpQG+/YpTECaTwOJN7pKf0VtHM5YFfsotaEWKtUsVyJV2i1VNr6M1+8k4c2NKE2xNI7dn2HDSHjsOgDdEPXBaxAoLhpCSx3XvYNzSYlJA0BxZbe6V8GteXoqdPRkjv9K6etHILXNkm9ogE8zfjkoiWJp7Jv1LJNPfzroXjS5FK8SKT11PMHF1/py0djNIkkrTlscoM3klSPhq9GyBXe+AYM7GGv2Zs9nTCPN/S85aONVFoa67ValhDJ8WND0zv6UHKGFEvUNKe2L9VXJUcoHjeeVnNnrmyjtTa1iFfmrzMvP0AH2C6XA7uX9gAVTGtrtGchcKOWaU829kQPCzf2AD+fugLpA7vrabjiw9IjRM9omQTDnTklcoh9dQsDzuvMjd3Xgr5HSmVeAJ533djprf+4F/0B0LdZSheD+HwAAAAASUVORK5CYII=" alt="QR"></div>
         <div class="title"><a href="javascript:void(0)" onclick="openNote('6aa8f8f40000000011030220')">速，工行领1.68r</a> <span class="new-badge">NEW</span> <span class="focus-badge">🏦 工行</span></div>
         <div class="author">作者：小贱 | 📅 2026-09-15</div>
         <div class="content-tags"><span class="content-tag bank">工商银行</span></div>
@@ -275,7 +279,7 @@
 
       <div class="note-card">
         <div class="rank top10">8</div>
-        
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACPUlEQVR42r2YMa7tRgxDz3yk5+zA+1/W3cHRCpjCN0CanyJ5ygCGDbugpaFEjk75zZpf/Hb9y09zzpkL3DvnnGEuM+ccfh6LVuDwGYIPfObSuoE1B+YwlPE6uQ/M4eex/gAI5TL4MFzIf/r5f/403DPKnfAI7mBha5UkVNtCbfXHsY73rzj+vi78PBZtWymBGmtI27qRQ8DvHQkm0Y24DJHGAMRa0WYjh4RoFWiKpCEr+5U2wUTgZSQJbmCJ1QRqQU2jGzkUWospGBvM1n6ZNzYINkEo3eGhJaEkpWKErf0qMSWJtmjc43waTJMmgpGQpbjUkDR5i426kkMl1FrSBsTarHA+NaFNClJ4YV3RyjA9fOaaR4ADGx6ACrSpFRJes6NL9SW276bV93FDU36FOxQIdxi45zjEDb+h9asmryZ/ieiCZ7sAHo4cfAAv+NmIK8lLjLdH5a/+u6OVGA0UCpr32sBKmvpe+TqQLOmX9k2asbUxdqe+TNqv56gkKWHFHzavXFFI3xZPstF7jxAuHm+HHHkmDG6cicJBjuQOCXiH3pXeSxNLSL9eALKly4HSisG8L7LEjW8ZawmQl/FZ6huv52hT+nre7PQo0jQlkrQ1Jt05E9E3e61vLhGwS+dKG7XWiJS6U8sXJPM9J/f0dOD5bNRyGR7AIeOEHjpktuY2fDgP54Jz6rmcpVkKgQ8Qn8v1PGZ2vA32HQTUL/8LG1r5ixQCybm3nLkwdoa9uU0Yns+b0Tt0A+t/nIv+CTTMM5Pp9DIrAAAAAElFTkSuQmCC" alt="QR"></div>
         <div class="title"><a href="javascript:void(0)" onclick="openNote('6a9788e50000000028033bf1')">一定要学会薅羊毛之银行立减金！！</a></div>
         <div class="author">作者：一一不叫二二（佛系存钱中） | 📅 2026-09-02</div>
         <div class="content-tags"><span class="content-tag activity">立减金</span></div>
@@ -290,7 +294,7 @@
 
       <div class="note-card">
         <div class="rank top10">9</div>
-        
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACOUlEQVR42r2YMZLlOAxDn6Ymh27g+x/r3wA6wdtA7mimk93mKnLZVUaRBCGQS7455xffnn/56ay1WHsdDoe9Fuxz1lr8OBbVikSJBHpf9ufj4ixOlz3bs9r2Ec6CASyAx72A8pyHz85//uFfz+/Lg91DF3y2bHpGsH4RwS72riVn9UAcwFrd0D9eb/h5bqDaAlhrSVR1AKsFJebFS6UwgPWb3edQDuHkAFuPZ6BemNTa2rRJWjQj9aoEII2BNkbjCFal1cSUJCU1ExpFg73B1QiiDZngfEqEUnKjhKkcxqTmSj5NYtqRHJqWWmwuK6HJRH9hCG2bNClI0o7k0LQXktooJDEjWETToIqIiQzpYaoxUirJawFGdB6pkPQ6DRQywo3efrJfUPdhpr9qE4NY0sTaiXotzy5bVjclGz45sMuYHgbFSlKxM/V6E/klhL2GoEN3SghSrtxr2pleLm1fe92YhICM3F/kdTaSFEJ0SnvbkrSp76WcoXppY8I7pFBvLod42KgxaSRX6Gc8gPEVDxBMco3OBDeskIaYaHMv5gHfmy7pA+Ss7s0HpJyRGTbYlqrVtE1bZ3ho66X6NYlJkxl/KKXUNLeL7/Ay5DegGE2RxMZ0ioem1095VxBjuqENVl8/8DUizext8unK2j08cbE4ZE3sAbSHxx12OD1eYZSRebkNFcudKK/T7tDehmyynnjWx15BnoqL28UkvV47Mx77CgcNuQ8apvrrRnRF43Y2OtFf63/ci/4DEypmBZhmeOMAAAAASUVORK5CYII=" alt="QR"></div>
         <div class="title"><a href="javascript:void(0)" onclick="openNote('6aacb2bc000000001001c9d0')">工行取号抽2立减</a> <span class="new-badge">NEW</span> <span class="focus-badge">🏦 工行</span></div>
         <div class="author">作者：momo的羊毛 | 📅 2026-09-18</div>
         <div class="content-tags"><span class="content-tag bank">工商银行</span><span class="content-tag activity">立减金</span></div>
@@ -305,7 +309,7 @@
 
       <div class="note-card">
         <div class="rank top10">10</div>
-        
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACQ0lEQVR42r2YO67lRhBDTxsvZ+9A+1/W3cGpFdCBbuBkJrCn3IkgCBBRP5Jdp/zizF/88vzLT3POmQvcO+ecYS4z5xz+PBatbxxD8IHPXFo3sObA55xpGR8nzwNz2MACciXnXJ8Z7of81x/+5tNIiNwpGNzCSgkPMw/1BO5AuoB1vHzj+Oe54B/Hom2LDVBjU9K2C1gWSPKimbxvLsT1wyWfDNzx8nwArjydhRwaxIRCUyQN6EYf2ms+OOY4Eg7Z6HlaJSjUUqvdqRdiYwolvi0SNRtYBqyFYJto2uzMl00EkqZivkldwKJqSoht0YhkpQ9PeGZiyL3D/cryUh82lrQJIUrdyOEPQw6M9yIcyZRkZb6QxL7MKAXblI16ccsnh9xr8ADnMF2pF98xruArLaArvEF9NcvaYktXeOP0jsDD9Ag5L37OCkdZIYg1WLFu6PIP7/B6kINPwAtdiatp+j61CSUuaUo0aPO2CRF0x0fRl6LyJXwNSbLT87yiYmNrI7ZL8xWbJphKkhJ2/GFibWhIX4onXclhQ02KFPt6gsAOVknUJCHxNcDZ8VF9PU1bbZu+15QdjlJelorGEkhXcmiqFi3te43QrNWL1LRp2tS4osuUVClKbGNMuqSVVWqor/tAlnS5ba2SWmOldKVe3/ty7icD3E5OZ2sP0Mq9PO8Az3N7bnjCxnyhLwnKq2MV3PGHwL0GiA+M52muS3GV8gpXmr79kQ1vkw45TE5P7+GSoTOLe5vAyYd3FcZ0A+t/3Iv+DXokMABl8AjeAAAAAElFTkSuQmCC" alt="QR"></div>
         <div class="title"><a href="javascript:void(0)" onclick="openNote('6aac78f4000000000d024543')">2026.09.18 今日份招行羊毛👌</a> <span class="new-badge">NEW</span></div>
         <div class="author">作者：今天要发财啦 | 📅 2026-09-18</div>
         <div class="content-tags"><span class="content-tag bank">招商银行</span></div>
@@ -320,7 +324,7 @@
 
       <div class="note-card">
         <div class="rank normal">11</div>
-        
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACOElEQVR42r2YwY0dMQxDnxe50x38/sv6HdAVvBw8CwRI9pKs4uMMMBxJFCl5yRfnfPDl+ctXZ63F2utwOOy1YJ+z1uLbsajWaJRIoPdhvz8uzuKcdXq2Z1n6Es6CASyAsg9QOPLe+ecP/vH8eDK5t11wdrPpGcH6IEIwZ9e+wjoH4gDW6ob+9njD93MD1dZWa6VEVQewWhATA0hSKTjB+V3hwEJyCkEsE72c1FgT26Qtmo7UKyS0Ggs0qnUEqyJtI5CkWNNOcMNaQuTiXXqYDujGgrhgdXtOH3pwZnQ+TwZraRIFR3LYtLVIiEmhdaK/0GrbJk361KsT9Vplg4uUk01ZBOCM8DBKgyrllmymXoZaIZRKAsUR3bhADU0LjdGSGU8pYC5UlFzpn4grWJsoV0Bi7URcH3lz4EXP4iDyhsN7xlO4HRaxj1fajPTyL8YCJi0ww41yTcUrTRDbOONfKaUP7TVPtCPaG0MV5dFDNTPae/sqaWpK+iwQMzNbTHmWFGqueAzFFTWSxDtyJ2SEh7HNnXkFk5A445X2Cjtpog00GZoPTZMq3oGAuXneJiZVeyfelKH5MClpTUiJn7gTOZSnVs+85kP8Ce2NsRpNkcSmmeG8lfT68ifzZ+p190pixAeudqJeH2etlR1Wdw+vuFh39Zu5t6maBksbMxQXLe31lIJG2hlfvq9eHFiveNabvu4vDMUFgYYk9N4KjOTwude4S3NLvRI50l9QH41//AtH5vn1H+9FfwIwv3Frh3SV0AAAAABJRU5ErkJggg==" alt="QR"></div>
         <div class="title"><a href="javascript:void(0)" onclick="openNote('6aaa4864000000002802c59e')">中行领10r</a> <span class="new-badge">NEW</span> <span class="focus-badge">🏦 中行</span></div>
         <div class="author">作者：小贱 | 📅 2026-09-16</div>
         <div class="content-tags"><span class="content-tag bank">中国银行</span></div>
@@ -335,7 +339,7 @@
 
       <div class="note-card">
         <div class="rank normal">12</div>
-        
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACTElEQVR42r2YPc7gNgxEnz5sP7qB738s3+DpBJNCDpBmm2QZlTZgguJ4frjKb8754bfnX746a62zgb3PWutwNuestfjztWjlZeMh+MB7Nq1/vhaKBk3FNE3uw5lalQAYJCQztX4ATvIS2Qei+F8/+Lu+WhslodK21Hagr+Xm6+OfZ8PAvHo7QaGGpqRtJ7BRIBEK2EAuOP54rV9sysqTs4DnRdiSDGCjArlwoKmShol5/ZCWk50NLhc7LGCCNy7eKVKLVo1kAhtY86HR0GCkE7VqQBSiJZHLiRP/V9KEkPTyrzYj3NvUmpJGWjRqZ+aVGMztTzDCTF+XL0L8rlLpkH4lpeZDI1prkwmOgpMDbF1IlpDtmvEADUkg5rtAMsLz9UNjKjS9jya08uc81h7Oreuy7LpGeP56qE8v7b1XJ3jj57yGl71ZhmelQmCgr1+wIbjzsvAR3NDz52utbgBXuM53ywrvZsiLXg0hUMh1wUM+Kg3lY4vLV5nRytbPOCU2EmOd0ZTUtglNJVfOZnijMfYz2Jfir7pM1LIkRYq9sAgj82ryhTAjuQYAM5O/kl7TUa4XgMDIvKKFcr1arrGayg42uQAhYrCOaMqnWFXatF9/ccTPn10PD5zFgryBRzrhAaj2chQUb8x0KlcaE2qNSumIF/3y8gMvwO7J6oHnndDKcuAYDjmu2EUPORPYWNx897A2ehauzcg+6u+5bYjPvVFzpvZRF31FkpibnGfy8vVNWd3lnAcOPWcCGwt8MXByXgCed03s9Nb/uBf9Cz03NxWInrXdAAAAAElFTkSuQmCC" alt="QR"></div>
         <div class="title"><a href="javascript:void(0)" onclick="openNote('6a99a879000000000d026636')">工行抽1+1+0.58+1r（预告）</a> <span class="focus-badge">🏦 工行</span></div>
         <div class="author">作者：小贱 | 📅 2026-09-04</div>
         <div class="content-tags"><span class="content-tag bank">工商银行</span></div>
@@ -350,7 +354,7 @@
 
       <div class="note-card">
         <div class="rank normal">13</div>
-        
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACQUlEQVR42r2YMXIdMQxDnzLuoRvs/Y/1b/B0AqSQ7XHjFIkZNbszW3BFggDIVb455xffnr/8dNZaZwN7n7XW4WzOWWvx87Fo5cXhdQg+8Dqb1olYZwHrOU85xpP9wFn8fKw3gGz3ZuFzZEP+6ef//OkcLLIPbMGZWNhaQhIqTaW2+uOxlvvjHl/Php+PRds2KlBjW9K2DvQXay2eAKz9Yu8V9jlrol6hBpVCrBWlEzk0EmpamippcAAb2DaxWqFIJDIQ6y0cPGxZNQvyAuh+zdSLElv0PmKaiRwasAaCTWopjvRXGhIguRiMF5gT2ICaksaPRGomclgowTRpInw0wUS9irGEBkJuV0/U6/awWNP2cmKakXqJadUUpGibjtyrNm0IMReBDNWrFRKlAilU6EgOv1Tq6nFLdeReQWtM8RIwamcw72WlXKbyYtKBXl49GyhL2PjgYQMDXpSrkARSLbetnfE2iW1FLgTjO5lM4DC9sl8/+JDEzGDe5NJHLJprCWa0Mu/MYSpJmjCC+VK1obdcFRNm9Cu0SS/t9nqCMOUP3/kiKYk2lyAncpjcKK2mppAykkNR6PVq7wpNZ3g+9poMi5JLiRnybDdlaVMu9s2MPyRVSSRtY0xghjeqeDmR8jkuD82VXj225nLwkH65wcdVDrB7snpm9gBvlAOnHMhxQ9k9j2fGH4rtFS4+X5zZ28AD3eT1wJLHZ094AMVeUxqJSe7k7NDeJoVe0ie5s/Pg3iaw7qhMNqeHAc/2//aivwHA42hmPeskUgAAAABJRU5ErkJggg==" alt="QR"></div>
         <div class="title"><a href="javascript:void(0)" onclick="openNote('6a9e5d11000000002b0271b0')">两个工行活动｜抽微信立减金</a> <span class="focus-badge">🏦 工行</span></div>
         <div class="author">作者：小薇 | 📅 2026-09-07</div>
         <div class="content-tags"><span class="content-tag bank">工商银行</span><span class="content-tag activity">立减金</span></div>
@@ -365,7 +369,7 @@
 
       <div class="note-card">
         <div class="rank normal">14</div>
-        
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACPUlEQVR42r2YQY5jOQxDnwuzp29Q9z/Wv8HzCTgL/xrMpjFAdzRGggD5QBRJFElrlV+c88Uvz28+Omst2HvDOuesvdjnrLX4eCxsrRQbG0nul34+L86C7Sb7sJ7vYuEsPp/XXwBkG2QbeLb5oz//H49Ovtde5+x9+AanYqWcnKNSD+dwIB2Itdw/efz7bPg8NlYBVgBPDlmSk5H5wgabNBFIS5u0n8+L2iCEtjWEG3cgluj745hGbCojsbx5WGshkZpmooaFKokQJZgSh/qlhdLGYkOKIzWsEqotaYPJCPciqbdbUtKYy/gDsRKgsSlJhAIz89Vc7ULBtDFtJzDfBAt6a2fB6Ey/aBsiwq0j4kQNbWwpEsUosRmZ5fgir0aSSxoZwcbPh7lIucAMMxxVm1Co0IAdma9VDrDpygM7D7Ala6RfVEMo1ULKkKZU4Z2rd9wQRuarNNIrJ6EGdMQDfJ2uB3aBPk82D2Wfcyb8/KsgSG5CV1+c4Xlz8Z7eVyQzfqPkH32+WsYl4Akc5uplNMFLvDP+0DRVmtLQXM8x46PsZcArzuX1BAzpl0F7zZq2lZm8qDGJUui1VBnxh7YJ955cuIDPEA6vyb0ymWsQy4w/LGmobS4XxuiUF60Eri7H1+TM8HxbS7x3iJhyXfDM3iY7z/eCA4STfVh7aG9z0R5qfpTTobueNc3rqIIy1C9Fk1yfaGk65KPevLC8V2XazHjRL9IX8O7uI54Fe2JHhO87+ekYac3Y3ub/2Yv+DS+dWBODWbspAAAAAElFTkSuQmCC" alt="QR"></div>
         <div class="title"><a href="javascript:void(0)" onclick="openNote('6aaabd310000000026019766')">工行五折30亓立减更新版教程（更新于9.17）</a> <span class="new-badge">NEW</span> <span class="focus-badge">🏦 工行</span></div>
         <div class="author">作者：Rose（教程版） | 📅 2026-09-17</div>
         <div class="content-tags"><span class="content-tag bank">工商银行</span><span class="content-tag activity">立减金</span></div>
@@ -380,7 +384,7 @@
 
       <div class="note-card">
         <div class="rank normal">15</div>
-        
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACNUlEQVR42r2YwY0dMQxDn9MA3cH0X9Z08FwBc/APkMvmkKziy2BgwIQkmqa0yhfr/ODL9ZdbZ611NrD3WWsdzuactRbfj0UrsjmH4APv2bROYJ0FrHMsx3jyPHAWE1hAqHnW9jln75f864F/2Dr77I3s84APzmBhaxM01NZ6v3471nLzieP3teH7sWjbljRQQxPStk7kEGji5y81iU7EZWjTUAIRK8pEXBVo2lCa4s2nQ/XSWDUUmzKEZbTJh/JUjbEZyaENVksMDcY6g1UQgV8RXm6OcD4hUpK2YtQMcQNjShJtufUayaGYBNOmjWDEIR6W6kczCFE6gvUDVhZos6Wn70NJRt6UhDQlKUjBmiHtbRNTielNIHFGDwUDqdBAKzjCDagqrbXFlsoA51f3EdhdXULWxX/eAW9zXgOb02V4lhUCzwAPCxBpbuH6uWwzdzm9optqG5t0yAMoNFLKJQXojI9KglLuRQNLQoZ0ns+rFYtJMuNFkWsHE5pKkhKGNCpq8xFCKhIy5TdIihaLhusUJ7jRy0ZJSbS57moEK6Vet5E2gWSod7j0SPCXXYOh94vEEmspJLWauXoVaS/5r7kZ8RtnV2F7Fgd4A48jOi9XckuFQvDa/KE+hbapNV4VHqnX7Zef9+EF2N2unqmZQysHDhA8rLJDMlEv0aa5/rpXEinOzFJYbA/EZ7Fdj1kOxVUgNlfgb++cibhSiJB1dm/dzttzmJvbhOXzApB96ATWf5yL/gT9mVVwBI5rpgAAAABJRU5ErkJggg==" alt="QR"></div>
         <div class="title"><a href="javascript:void(0)" onclick="openNote('6a9ce2f20000000027009e56')">中行微信转账立减金</a> <span class="focus-badge">🏦 中行</span></div>
         <div class="author">作者：爽爽院tokyo | 📅 2026-09-06</div>
         <div class="content-tags"><span class="content-tag bank">中国银行</span><span class="content-tag activity">立减金</span></div>
@@ -786,142 +790,247 @@
 
   <div class="section">
     <h2 class="section-title">产品功能讨论榜（按评论数排序）</h2>
-    <table>
-      <thead>
-        <tr>
-          <th style="width:40px">#</th>
-          <th>标题</th>
-          <th style="width:90px">发帖日期</th>
-          <th style="width:120px">作者</th>
-          <th style="width:70px">评论</th>
-          <th style="width:65px">点赞</th>
-          <th style="width:65px">收藏</th>
-          <th style="width:65px">分享</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>1</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6aacda04000000002902e5ab')">零钱通为啥钱突然变多</a> <span class="new-badge">NEW</span></td>
-          <td>2026-09-18</td>
-          <td>momo</td>
-          <td><span class="cmt-num">98</span></td>
-          <td>73</td>
-          <td>7</td>
-          <td>11</td>
-        </tr>
-        <tr>
-          <td>2</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6a8cf683000000002802be69')">把工资存放在余额宝和零钱通哪一个收益更高</a></td>
-          <td>2026-08-25</td>
-          <td>momo</td>
-          <td><span class="cmt-num">29</span></td>
-          <td>11</td>
-          <td>0</td>
-          <td>0</td>
-        </tr>
-        <tr>
-          <td>3</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6a999a75000000000b00f0f6')">零钱通真有你的</a></td>
-          <td>2026-09-04</td>
-          <td>是柚柚来了</td>
-          <td><span class="cmt-num">27</span></td>
-          <td>3</td>
-          <td>0</td>
-          <td>0</td>
-        </tr>
-        <tr>
-          <td>4</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6a906812000000001102319b')">受新规影响， 零钱通9月30日之后想把钱原渠道转出的话需要额外收手续费吗</a></td>
-          <td>2026-08-28</td>
-          <td>yuoo：</td>
-          <td><span class="cmt-num">16</span></td>
-          <td>27</td>
-          <td>3</td>
-          <td>14</td>
-        </tr>
-        <tr>
-          <td>5</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6a69a46900000000010004d5')">10万这样存，一年多赚2000+💰</a></td>
-          <td>2026-07-29</td>
-          <td>Amy财富说</td>
-          <td><span class="cmt-num">12</span></td>
-          <td>49</td>
-          <td>49</td>
-          <td>7</td>
-        </tr>
-        <tr>
-          <td>6</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6a86bf700000000028023154')">小额提现不需要手续费的步骤来啦！</a></td>
-          <td>2026-08-20</td>
-          <td>梅花鹿</td>
-          <td><span class="cmt-num">9</span></td>
-          <td>96</td>
-          <td>30</td>
-          <td>33</td>
-        </tr>
-        <tr>
-          <td>7</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6aa49c8f0000000011030ca0')">零钱通被禁支付？真相大揭秘！</a></td>
-          <td>2026-09-12</td>
-          <td>马辞旧山月</td>
-          <td><span class="cmt-num">6</span></td>
-          <td>18</td>
-          <td>0</td>
-          <td>80</td>
-        </tr>
-        <tr>
-          <td>8</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6a85a4620000000028000a5f')">微信零钱通放1万块，一个半月赚了这么多💰</a></td>
-          <td>2026-08-19</td>
-          <td>｀    Ly</td>
-          <td><span class="cmt-num">5</span></td>
-          <td>20</td>
-          <td>8</td>
-          <td>1</td>
-        </tr>
-        <tr>
-          <td>9</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6a7445c80000000026035859')">刚刚发现银行卡转入零钱通之后的提现大坑</a></td>
-          <td>2026-08-06</td>
-          <td>2026幸福满溢</td>
-          <td><span class="cmt-num">3</span></td>
-          <td>23</td>
-          <td>5</td>
-          <td>1</td>
-        </tr>
-        <tr>
-          <td>10</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6a7010c20000000022033dad')">带你闭门洞悉市场！</a></td>
-          <td>2026-08-03</td>
-          <td>腾讯理财通</td>
-          <td><span class="cmt-num">2</span></td>
-          <td>13</td>
-          <td>3</td>
-          <td>4</td>
-        </tr>
-        <tr>
-          <td>11</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6aa3480b00000000120246c5')">不是“零钱通不能用了”，而是 9 月 30 日起，零钱通一般不能再作为微信付…</a></td>
-          <td>2026-09-11</td>
-          <td>支付最前线</td>
-          <td><span class="cmt-num">2</span></td>
-          <td>6</td>
-          <td>2</td>
-          <td>10</td>
-        </tr>
-        <tr>
-          <td>12</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6a9a2d7e000000002502c770')">零钱通｜提现到账时间</a></td>
-          <td>2026-09-04</td>
-          <td>富贵鲨🦈（搞钱版）</td>
-          <td><span class="cmt-num">1</span></td>
-          <td>12</td>
-          <td>25</td>
-          <td>1</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="note-grid">
+
+      <div class="note-card">
+        <div class="rank top3">1</div>
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACPUlEQVR42r2YMZLlOAxDn7omf7rBv/+xfAPoBJhAnmi2k93myuVErjJLFEEAXOWbdb74dv3LT2etxdrrcDjstWCfs9bix2ORNk01xSLkbmYgVkhKWws0sXfz53MIwGKzIfR8eLb/+Yf/uH4BYNaiC/bRTc5QLHtgBXc8fM7qAnt+PtbKhvy1vWGgNto2SUPTNMG2bWfqkCLpjWxTAp2ow11XI1Q8hy2lYQLLgrxHiTahdei+0FhKhcTa2olYoVjTNkENpo70qIbaWx5aKG3EkVihLbnPW4Q6cl9Eg0AKUSs4kkPDC2VpNZA0I1gGTRKNXmCbduS+MH0DNragdiiHt+RJ24sBLSP4apI2CYS8gO7MfbUpNeG+lhYciLXKAsrqYVMWgU32SB2mwWJpMNo0E/z1ZfaBbFgcyocHDmtAA3ydD+J5bkvkAGxRZngZsH8a4d3ICKckhSaFlNKadKb3BuzLWRZFKJnpUQJo0QSxlREsQyQmpkZTBWc0AK1vIoFUYu1QP/S6FL2QRmc0QGob01w9WrU6wl+XkLl50zZCnOCvX7p6EDjnPOxcDTLhl6+et7lcaU1iSGZyqMVEr1V2Tm9ceQ2XTupF3JA+tJezWm8baRyaA9D0HQdA09eJjflKXvGU4GsvJ3j5rLUEnmfn8JHF4uDU3Ca1VK5p7pje4Cw4HHeydtdnrc3aDJzrftrnw7M+9vA0l2gYmkeBIaLS2z9GfErfqYYkTUgrM94h1+QZc0msV3gzorH/t7nobw5RU0/CdrAZAAAAAElFTkSuQmCC" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6aacda04000000002902e5ab')">零钱通为啥钱突然变多</a> <span class="new-badge">NEW</span></div>
+        <div class="author">作者：momo | 📅 2026-09-18</div>
+        
+        <div class="stats">
+          <div class="stat hl">评论 <span>98</span></div>
+          <div class="stat">点赞 <span>73</span></div>
+          <div class="stat">收藏 <span>7</span></div>
+          <div class="stat">分享 <span>11</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6aacda04000000002902e5ab')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6aacda04000000002902e5ab?xsec_token=ABtrnS-QUZIbbu5QK1k3d6VM-cI9v4llnr31sshro2988%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top3">2</div>
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACMElEQVR42r2YMY4kSQwDIxfrs34w/39W/4D5gjhDNdbeOofRpdWoAppQkqLEOvKXc3/x1/MfX91zDuc5l8vlOQeee885/DgW1RoJEgl0Hvbn6+Ie7ue0ebzHpgj3wALWnFAoXHie/MAf/sv5/UJdvnrg0Pj0rmANNRpJLQniDl+nD/SPxw/8PBaqpY3WKkRVF7BaEJoEEFMpuKH5x1zz9bmU3F6C6IY2NA1qaJukRdMNvipJFbAMcdoNHVIkoY2BJJCaDb7QCqYjRghJYzawCvpdYWNf6a/wZcYv6Kt9LSt8CbQWEzApNGaFr5q0bdKk8OpyBSs2eYkiCkkadjxKU8FpsvcyV+rC6tzcNDY0Nks6pLSkhVYV0qX+mvnfgmasf8cPmXFsxZL5WRewfqXPpR/O1+Ei8oHLWdk3gm06dU1zYcnGvsEDAT5PH3z48MzdbmCRQ3k8JceTXgJnxw/rtzxi46izW3tUZmR9+6Fbs7Kl44o1oxLApf0wJmRCCjWwNVOkOks2kQgEsrPbmKY2IJjMaN7AymSu1hcktFmZXwbTTH5oQkXd0UYmw5aJDClNl3y+pNo0oTBttlYXmfubfY2+E2zDo+KEB02xiU1W+qtYU2gLNnRWxrVcqer4lWPFC3X9vg8ID9DLV3J6endmSnUiHpkA9h2cdzTf4WwSS0ILW3tvO59tEkttyk5OGSzim2ZnE87OHQ49GNoR4ljkSn9NPm/eISYQN/zw/I/fRf8BrR10bHMqNhAAAAAASUVORK5CYII=" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6a8cf683000000002802be69')">把工资存放在余额宝和零钱通哪一个收益更高</a></div>
+        <div class="author">作者：momo | 📅 2026-08-25</div>
+        <div class="snippet">把工资放在余额宝和零钱通哪一个收益更高。高校老师攒了一年差不多4w感觉放在银行卡里给的太少了，是放在支付宝余额宝给的多还是放在微信零钱通给的多，提现的时候哪个更方便一些#理财[话题]# #有存款才有底气[话题]# #存钱是最顶级自律[话题]# #发工资[话题]# #攒钱才是硬道理[话题]##工资[话题]# #余额宝[话题]# #零钱通[话题]# #提现[话题]# #存钱真的会上瘾[话题]#</div>
+        <div class="stats">
+          <div class="stat hl">评论 <span>29</span></div>
+          <div class="stat">点赞 <span>11</span></div>
+          <div class="stat">收藏 <span>0</span></div>
+          <div class="stat">分享 <span>0</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6a8cf683000000002802be69')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6a8cf683000000002802be69?xsec_token=ABRUGjzA1gdyW1KbsfjB1pavFSxFBFj_rgXOJwLr_UNfI%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top3">3</div>
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACRUlEQVR42r2Yu5EtNxBDT2+tD2Yw+Yc1GRxGABm8hpwnQ7oUnTFYNaj+AWBP+cPZP/zx/MurPTN7AWvtmdnsxd4zw/exaAUGN8EH3r1ovYG1B/awKdtIngf2cAMLCPrMLJ/Zszb5rz/8h6vtYitri4p3sLC1AgnV2lJb/TrWuPjE8fez4PtYtG2lKdTQlrStN3II2JyGsAlJ9EZchtY2IsSqaHMDS4gp8WRS0nCjXr88hWELMB1XmMAF3qBRP21hP0mM5E5vVFPTAxiMeAOrhHymudZE0lzpw9omUJJaMUrwCpZiShLTolFzpV60CaZJE8EI9ApHgSppE3LmzDs5rEFrzcGttbkSFzWQT4QUbdMLffhD9wN96SwThzAD5UofwuFfIQEq3NBKzBlgqUeP2yPQN/gQ5YyYHgJRe0W/tBYs1kDlRPp9TcleYBll8AFc0P393vjdITzbLpAAmfDOlRxWiVoChRg0l3xUbD5scfiQ5IrfqEhiOIgSjzjf4PmkbRuaSpIm9BYf1oaG9FD8UZcbWEeSD+32tEW44m2aHi9lA8n5mlv10hJtpKRwx4vSE0QBE3Pk7M6bqJsHeIFMGZ9t9hLu1Es0x7uVHJm5k8MUcnx12hgTr/gojzLbI8eYzzPz0rvS5Ey00c94X5ivnz0z+GbWZrNDwM16b+1tVvYxbs5jZwVybW+zCg+ziHtwFnNpl4JuNsRngzxm33hX6lkFxHK0K2cH4aW9TYAih37rnVn+ZcAXgmS/ADzv3Njpzf+4F/0LnZFUO4U72BoAAAAASUVORK5CYII=" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6a999a75000000000b00f0f6')">零钱通真有你的</a></div>
+        <div class="author">作者：是柚柚来了 | 📅 2026-09-04</div>
+        <div class="snippet">我以为当天速取1w，其他的隔天能出来，结果，我请问呢[捂脸R][捂脸R]每天上一当☹️当当不一样</div>
+        <div class="stats">
+          <div class="stat hl">评论 <span>27</span></div>
+          <div class="stat">点赞 <span>3</span></div>
+          <div class="stat">收藏 <span>0</span></div>
+          <div class="stat">分享 <span>0</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6a999a75000000000b00f0f6')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6a999a75000000000b00f0f6?xsec_token=ABRCjGJlPrqQ2UgRer-whA95XRLWPRssk8zC8hZGxdvyI%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top10">4</div>
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACTElEQVR42r2YQZIlJxBDHx29Fzfg/sf6N3h5AnlBz8qejT2YDRVVEaVIEJKSVX4z5ovfjn/5adZas/bas/Ywe+/FzFqLP46FraWlMWBRbPXP18UsYO3yAbrpCcyCB1jAxJmV/WGycee//vCfx/ddyJ1T3JxxK/ME64sUBpy96yfnw0D6AGu5wb+93vCAG2nLgc0m7Dul7RPOK7SkQiIUyAPOc4FIo1UaGwwvsFJqkhQFAhr6AktrKohNDZaQB1hNaapV0wha8Q1WizRUQ4MxfVJXo22T2DYluYr8ghspEFKICbSpT+oyRBMbWhAiecPDpg2XD9Ggb7C+Yc+CnA9dEOhwup54yiY4u3M+XMk/sHyARRNbSXsTQCnyQudpLJKicp9Cn2hvFZD+2FiSK/xPzjI1xWqlaq5CPvBlgAPIwBnPgGS9yGyboMysHWATzZNsc0knTX7tlxFeeMr3hED3hBNgujpxMi/yBkaTIl731yec/8riQGAXGQKQmbzIUWhirDZNoPTN+bImQEpvn3Jn3mQ2m6SGlPZa2hM9tDa1ueEpSSRPdOOLvYc5y3WjwMApZx55SqyB0F5/gfgmY9cb5pNfoV55lA/vLrUWyi3zDQ+bUmiTNuJNiE9y1F23SrS5R6DxSe69+0VChFSs0Cdr2NZWAzX2lvlCo75mrcXa+0wYZH02DvPkHqA1IIGwj8wm7Cd3RHIj9XVj7M+1gG+wSptiConavvEUsUQSKt7I+KbX89Iwud1KGmnf9F/y0/df+4Jym9oHWfR/vBf9C3xPNPpHlul2AAAAAElFTkSuQmCC" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6a906812000000001102319b')">受新规影响， 零钱通9月30日之后想把钱原渠道转出的话需要额外收手续费吗</a></div>
+        <div class="author">作者：yuoo： | 📅 2026-08-28</div>
+        <div class="snippet">受新规影响，
+零钱通9月30日之后想把钱原渠道转出的话需要额外收手续费吗？
+因为看新规说不能直接使用需要转出后使用，怕也像银行卡提现一样收手续费 是不是要提前转出来。
+#不懂就问[话题]# #保护自己的权益[话题]# #零钱通[话题]#</div>
+        <div class="stats">
+          <div class="stat hl">评论 <span>16</span></div>
+          <div class="stat">点赞 <span>27</span></div>
+          <div class="stat">收藏 <span>3</span></div>
+          <div class="stat">分享 <span>14</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6a906812000000001102319b')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6a906812000000001102319b?xsec_token=ABBNEhdkziktUD0Q5JPKoLiQMGrZKMDJDiGAAtc9wpVt8%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top10">5</div>
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACN0lEQVR42r2Yy60lNxBDjwazpzLo/MO6GRxFQC/UF7AXs7FfWdsGmmAVi/VZ5Q/v/OKP719+Omuts4G9z1rrcDbnrLX4eSxagY2H4AOfs2mdwDoLWOeccnw8eR44i5/HQrFCAgYJiaIDvIAT4SP7QAz+1x/+iVdrW0iobSq1HeC13Lw8/v42/DwWbduAhRrakLZ1IoYXUQQkmiuOH8f6zaabzSd08Qh8tuwMaKOG8AayKZKGCV7Y1mgtoWggIRNYoFBCLVWbGEd4WUPxcmow1gletcQaCJbEtM7kyyQJktSK0WbCD6lBU0Jsi0bNiDYkCaZJE8GIjPgGkquOvuykzsQwN3qWtKXW2sx4b4xRLUjBmgnv/XU2D1s2e5vHRVjAnvDDCm/swJRUKDPaqCS23n7cDmpD07e0rIAO+aFWNeE6VcXqUC2DTePNVxXoCK+kqb1jYU3LtY+R+gJJIdB8DXJGh4Qmof36IcmM96bmxYitSbGO5IsmvaNhKklKmJkPk+u1V+tUTJjqX21S/MfMMTFH/YauHLew2Qm4z+n+zOwp4ZszbRNIZ+pLCdrid1yDdgarpU1rKTSx0kzslQ/LfTgnBHv4sMmZyFdJmyaRfCeCqd2B3nb1bcd5F7GhvVK9o5Q3V8z0r3df3vh8gN3V1QM5Y3ebdAPBFbp2ZvZKRStyvf5aIhP9635a5AnE57BdjzlO3YiQeh0khGaklu/dJqXlNfg3jIN3m7BPPgBkczqgw/U/3kX/AjLPYOL7rIF5AAAAAElFTkSuQmCC" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6a69a46900000000010004d5')">10万这样存，一年多赚2000+💰</a></div>
+        <div class="author">作者：Amy财富说 | 📅 2026-07-29</div>
+        <div class="snippet">为啥昨天钱特别多#零钱通[话题]#</div>
+        <div class="stats">
+          <div class="stat hl">评论 <span>12</span></div>
+          <div class="stat">点赞 <span>49</span></div>
+          <div class="stat">收藏 <span>49</span></div>
+          <div class="stat">分享 <span>7</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6a69a46900000000010004d5')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6a69a46900000000010004d5?xsec_token=ABq57kCboP2-coGqSkfqiaoIwsRwGOJbsTDjyO-pS0yyM%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top10">6</div>
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACQUlEQVR42r2YMZLlOAxDn7omh27g+x/r3+DpBJhA7mh3kt3mKLHKrjJKJASCXOUP63zxx/UfP521FhvY+6y1DmdzzlqLn8ei9cDhSOqz+KxN6wTWWfBZm+yctQ1P4SwmsAAe2J+zDOc8n53//cN/Xb8AQg+7a9OF4BnBwtZSaqhJLLXVH8dabvAfrzf8PBZtayzv2TBN2zoTQ/N9tNoXNw7wcK8gAQub9cnB4xAPT3ZP2MrzhLPLPgN3mdbQRpoi2qaZ4CFFJQYu3bHEZoIb2igNNJGQSGawoAUQMY2kzcT9MokJJakVYw0z+SpYKd9RRMvAXf5FdtjC7goLHpKzciY4D1crtCkhSh2KIS3WmkuRppIZPbykv4cJDWgd0fkkKQgx+m4ntJd6EVHB781IvryFhFKrobmFbKCmJBzWJyfsA7LO8sCEzhurbS4VSa0d0t63sLQITfWV5AnO01fdoyWU4ATnvzhZZ/dTODyErh4ykq+GBBLbXOeRNI7ohtEbtMbWRma8KCahpalBTCAz/rBF2qYmKSk3qFM6nxSpFl/9ZShfubobkr4+e8ZvvDKIWr1XbUYP0VraBpPX2NDO1K83hOTanJg6xMOUxrQxaUOvaRzhYWpJkWvsY6Z4eEul1ls2sbdeD/WVpK/rvXB1wkd9nbVW5I5ToLC5w5WZuQ188PMQXO6yA5ma22zYyNrp41quzWKkJ7LpNwO5fJzpU7yNZN7HNTfJ2MyhgEGvv2mZndsEzvMBINvVAR6uvzgX/Q1l90mOgn/qeQAAAABJRU5ErkJggg==" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6a86bf700000000028023154')">小额提现不需要手续费的步骤来啦！</a></div>
+        <div class="author">作者：梅花鹿 | 📅 2026-08-20</div>
+        <div class="snippet">想把零钱提现到银行卡里，基本上都要手续费。以前的免费额度都用完了，发现也不是没有办法，小额的提现可以按照这个步骤操作一下，亲测有效。
+	
+1.把“零钱通”里的钱转到“零钱”里，（由于我的零钱通也是限额的，从零钱通转银行卡的话转不出去。）
+	
+2.转到“零钱”以后选择“提现”，这个时候会跳出来另外一个界面，选择下面的“提现服务费减免”，里面会有一些减免活动。
+	
+3.现在有银行卡提现免费活动，给好友转账3000可以得5000元的提现额度。不着急的话也可以试一下上面的小活动，只是额度比较低。记住如果你选的是中国银行，你只有中国银行卡的提现额度，其他银行是提现不了的，就是说你只有把零钱里的钱提现到中</div>
+        <div class="stats">
+          <div class="stat hl">评论 <span>9</span></div>
+          <div class="stat">点赞 <span>96</span></div>
+          <div class="stat">收藏 <span>30</span></div>
+          <div class="stat">分享 <span>33</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6a86bf700000000028023154')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6a86bf700000000028023154?xsec_token=ABIe236IsPWthCtShqj8EuFf7W76wl5cxY2klvzi31VDk%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top10">7</div>
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACP0lEQVR42r2YQY7dOBBDnxqzp27g+x/LN3g6AWehnyCbzCLpGm1sQIAJUmUWS6v8Zp0vfrv+cOustc4G9j5rrcPZnLPW4vuxaEUW5xB84D2b1gmss2AtT8rx8eR54CwmsIDg5l3b5xz2IX/7wf/YOoQnsg9swRksbG3QhmrTUFv9dqzl/sHj17Xh+7Fo2yIp1NiGtK0TGl4he1+MJtEJXoYEagAiIkomNARtrClNlTTMnFfahtggVQMJTmiImrQl9opIHOFlLzUoGhqM6ch5JT+V0ya1lJk6bJsESZqK8XKc+JdVU0K0RXNJTmARg2nSRDDSIayQGmjjZUdnar5pwCtkJcbajPghEIq0IEVLJrz3K6ZwSNY2CGHBOozUISS5LwSoEGd8vjaN9fbjlmpHagNNbYpa4T4nePlpJ8V6pbSO1GE/1ZgomNQbPyayzfOJ78FD2G/YvOzvx/oHPEDWu8+m53D2DVYTGqZaP4bvJ4EkI7UBpl6D/+lSc3VYe71eknzKccTn7Q3YpFJxSsNKSXpt92aOTPVKSu8R5f5lDTjjh02aktv/SxzLh20MHzK3UQbakRxl7+BQS0qCN00N9MqHtdazQginIht5R2bzXaWcsyDwPvCwn4kZlmqw1ju1MOXzXykBngPUbSEXfmhefsAlsLu6euB5p+5tzuu+9xzk9OxAGPF5TYgR5DrjyJxyt17qhvjAcT3NdohXucHt9q5YGJn17r2N5Jow5Eefnru3Cay8AGQfOpCx1/94L/ovKNNLyiHdXlgAAAAASUVORK5CYII=" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6aa49c8f0000000011030ca0')">零钱通被禁支付？真相大揭秘！</a></div>
+        <div class="author">作者：马辞旧山月 | 📅 2026-09-12</div>
+        <div class="snippet">最近，朋友圈都被一条“紧急通知”刷屏了：“9月30日起，零钱通、余额宝将无法直接用于消费支付！”甚至有传言称，大家必须提前把钱转出，否则到时候连个奶茶都买不了。
+	
+面对这波突如其来的“支付焦虑”，无数人连夜查余额、忙着转资金。但别慌！经过多方权威求证，这则消息纯属对政策的误读和谣言。你的零钱通不仅没被“禁”，还能继续安稳地为你赚取收益。
+	
+谣言是怎么来的？断章取义的“标题党”
+这场风波的源头，其实是央行等八部门联合发布、将于9月30日实施的《金融产品网络营销管理办法》。其中第十二条规定：“非银行支付机构不得将贷款、资产管理产品等金融产品列入支付工具选项。”
+	
+因为零钱通和余额宝的底层资产</div>
+        <div class="stats">
+          <div class="stat hl">评论 <span>6</span></div>
+          <div class="stat">点赞 <span>18</span></div>
+          <div class="stat">收藏 <span>0</span></div>
+          <div class="stat">分享 <span>80</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6aa49c8f0000000011030ca0')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6aa49c8f0000000011030ca0?xsec_token=ABS7FD2TJQxFTLYUAR8psJvve6yyTHblZ1pUg22wWQzao%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top10">8</div>
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACSUlEQVR42r2YsbUdOQxDr/5xDnUw/Zc1HVxWgA307GSPN7C/VqEmwJAECVCr/ObMF789f/hp1lqzgb1nrTXMZmatxfdj0crL5h2CD7yzab2BNQuymKeMjzvPA7P4fqwfANkh78LnndmT/NXP/zfWvFkL9yZT2M4VLGwtCYZq21Bb/Xas5Qb/db3h+7Fo29Iq1BBD2tYbOQTatD0ZxSR6Iy5DbEIpRKxocgOLmDampSmShktxtZY2UqpEkhvc+IIZgHEzXQ95d3nNhf6qFJGUGhqMeqNeTagqBEvUlFzpLyiHEmkqxhPZJR6eSCItGnMnh6YhmCZN5ATGlblhoEptIESpeKVeyckbaUFrba7UqyG1SD9csaS50cuLsNlutqkAC9Z7o5f7U0wqJL9urnDeGkJrbbGlV3i4ukfIMiwhCxCeCzn8mtewkbUMz7JC4Lnhbfy0tAomVeAK5xuSJAelxBq9oV8/xoFMFsymXVsGuu74w1Bs62celoQr+tV4nKjGatLYK/NQk5aeWS9JmnDDH37x8M50IxvAdwbY+wrnbZMzey0ajszc8DZnFJpGEu3HBFyq12FIMTWB5Fpc1BRMiSVwZ3eoSVPUYkhqvaMpPcGIbWqPF413/GFqgUho6+ntK7sD1ePYhELwSOidvfLDB2vsZ13JtX15uzvA7urqXNJlWtnd2RCcrM4O5I4uq6FE0LPIXqnX+fSYVYjPRuch20txnSWlP3eWVO743hQCZLnLngeHztx4j1rg+4Gb96T0XTfe9Nb/+C76D4duPgKYjH6jAAAAAElFTkSuQmCC" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6a85a4620000000028000a5f')">微信零钱通放1万块，一个半月赚了这么多💰</a></div>
+        <div class="author">作者：｀    Ly | 📅 2026-08-19</div>
+        <div class="snippet">之前看姐妹们都在讨论零钱通放钱划不划算，我来交个作业📝
+	
+本金：1万块
+产品：招商稳嘉120天债券C（当时随便选的）
+时间：2025.12.25-至今
+	
+🧾真实收益：
+7月整月：+9.93元
+8月到现在：+7.94元
+加起来差不多 +17.8元
+	
+换算下来年化大概1.3%—1.6%的样子，比余额宝高丢丢，但也没多夸张😂
+	
+⚠️说几个真实感受：
+1️⃣ 不是每天都涨
+有几天收益是0.00，7月1号还亏了1.98，心脏小的姐妹慎入🙈
+	
+2️⃣ 收益喜欢“跳一跳”
+经常一天蹦出0.99或1.99，其实是因为周末收益攒到周一一起显示，不是突然发财哈
+	
+3️⃣ 有120天锁定期
+买的时候没注</div>
+        <div class="stats">
+          <div class="stat hl">评论 <span>5</span></div>
+          <div class="stat">点赞 <span>20</span></div>
+          <div class="stat">收藏 <span>8</span></div>
+          <div class="stat">分享 <span>1</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6a85a4620000000028000a5f')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6a85a4620000000028000a5f?xsec_token=ABaGOVRTiQEY6xp4v-kvRl6fRFWPU21-MQvyF8FaZ_lz4%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top10">9</div>
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACQklEQVR42r2YQa4kNwxDnwZ/T9+g73+svsHzCZhF9Qwmi8ki+YqBAgx4wZJEUbSn/GHdH/xx/cujOzP3AOfcmbncw70zw/dj0coF3pfgC9730LqBdQcy555yxRNecIfvx/oCyBvSwdf1npv8p5//56PLi3vk3FKLW1gpOQRe1AmcC+kC1nj4xPH7OuC3Y9G2BSPUtAlp2wUsn2bus5HEJLoRlyE0EQIRK0o2cihKm1KaImnoQlxfN+XAcDuZjoSJ07vRyyOZ3l/fmxd4WcghlD4k0dCnaskKNwpqIFijtmalv0wbgKStGGlwIy5VU5JIi0Z2OC9NgmnztJkRVuJqNTXwyBNRuoP16IZq0z5JbbvEDUjSDxIFm2xo748LwTvnPcfgEOYyK73cDx1Tockn1J16WUlIrS22T/2+fy73XCGH2xEygJCNHKo1DeJD/Wez08sAMVUwVFmqV0OeaZxqE/qRj5WZYgoBP1NaXMIqbWysP/WQpNnxbBAVExufjHalv/gIVGgqSWpY8YdtxIaWVComOx6gpUmK1L95jgXPRqeXIz2XBDz39rw3tDdNW5M0P71HdvxGA8kTUCSPUO1wXkjor0teo9UljepDvLZpm2jskkalT3NJaGNMsDueTU1DhaL4jNCde6WEZy7HSOmWF30IWFSpjwPY0MPPu83xFILnNZ0TTlY8AFpbI2iLT+F23lI4mROIr8PIqxmX4iqlNhLTpLKhG1+klxym0+k5HLz03sV3m8Dk/Ziqc+kG1v/4LvoXg6Q8IcjsajQAAAAASUVORK5CYII=" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6a7445c80000000026035859')">刚刚发现银行卡转入零钱通之后的提现大坑</a></div>
+        <div class="author">作者：2026幸福满溢 | 📅 2026-08-06</div>
+        <div class="snippet">因为微信提现收费，平时买东西很少用，里面的零钱一直通过积分兑换或者每天领提现券一点点提现，前几天倒不开了，就从银行卡直接转入零钱通（因为说是可以免费转回银行卡），但是我当时就花掉了零钱通全部的钱，今天想着零钱转入零钱通再提现到银行卡才发现没有一分钱的免费额度，从银行卡直接转了1块到零钱通，然后就只能免费转1块到银行卡……
+在详情里面也并未提及银行卡转入到零钱通的钱全都消费了之后，银行卡转入的金额是否也同时清零。因为平时并没有消费的那么干净，一直没发现这个问题，微信客服也没有多方便联系到，这事也无处求证。
+发出来就是各位可以多观察一下，在意提现费用的话再找找别的免费提现方式。
+#微信[话题]#</div>
+        <div class="stats">
+          <div class="stat hl">评论 <span>3</span></div>
+          <div class="stat">点赞 <span>23</span></div>
+          <div class="stat">收藏 <span>5</span></div>
+          <div class="stat">分享 <span>1</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6a7445c80000000026035859')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6a7445c80000000026035859?xsec_token=ABZEEVgvlkyMGe8S0CKCWoSMBCMl_55YeX4mvB6_1YyVk%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank top10">10</div>
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACQElEQVR42r2Yu5VlNxADi3PWBzO4+Yf1MihGABm8s0fOypCmRZcG2D8AzVX+cM4Xfzz/8uqstc4G9j5rrcPZnLPW4uexaEUOn0Pwgc/ZtE5gnQV77UM5Pq48D5zFz2P9AghdG/A5h32S//T4f746nxUq+wAWZ7CwtdIQKm2htvrjWMvNG8ffz4afx6JtixioIQ1pWydyCBjbANqYRCfiMoRWpRCxomQCiyglSWmqN40j9UprGqnS2ITAQL1WF26Ii56sfACe48R8VduQpmBoMNaRelliFRJL0DaZ6cPUlJKUilGjI3FBTEliWjTGkRzWlmDaNBGMwAwWUiE2knfcGMkhlIiaXsqwdqg3NNjcaCjYpgNYX4EHcs7DNvFQ1uJkYpYL1IQKDaQyw4diTV59brWlTszXV7IPHwLsw4G9loc8E35Da7kNcsX5NuLEfL1DliiYVi8lT+gXiddp6GXF1BlvE0ihfkepN6MjPR9IQv3mQ5IZPnyn6RJ8a0LsEB821iaYSpIaZvwhF+rt9auWMTMegCYpWr4HbcZH/QpdwjYr2Qm4N+RMcG+S629Sfa12prSyXJtx63SJKnWqXlq11x9qdaQPm2IpbVNraszInlLSl+0JbY0Z8mxSTduryyBeqZnZK23ITaBI6cgs3305nHdP7urqgecz9W+zCRuCK6t7BzLiAdC2XD3pZUYmtPK92scPxGdxXA/Bobj67mESkrQw4W2+SCFhZ7kLBzj2DHDv73+bwLssk+3qBNb/+C/6F+OLSCYlprxUAAAAAElFTkSuQmCC" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6a7010c20000000022033dad')">带你闭门洞悉市场！</a></div>
+        <div class="author">作者：腾讯理财通 | 📅 2026-08-03</div>
+        <div class="snippet">私行级待遇💎，理财通「财富私享会」给安排上了
+带你闭门洞悉市场！
+	
+#腾讯理财通[话题]#  #理财通私享会[话题]#  #投资干货[话题]#  #财经大咖[话题]#  #私行体验[话题]#  #闭门会[话题]#</div>
+        <div class="stats">
+          <div class="stat hl">评论 <span>2</span></div>
+          <div class="stat">点赞 <span>13</span></div>
+          <div class="stat">收藏 <span>3</span></div>
+          <div class="stat">分享 <span>4</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6a7010c20000000022033dad')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6a7010c20000000022033dad?xsec_token=ABgi4SNMs2dqSUtIhJSyNnODQjTvEFfgYVMY48553Eej4%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank normal">11</div>
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACM0lEQVR42r2YsZEdMQxDnzyXQx1c/2X9Dp4qgAPtd+I5B/bRO7OJNuCCAkGQq3zxnB98+fzlp7PWgr03rHPO2ot9zlqLb4+FrQ3FxkaSe+j34+IsOC72Piw/g4Wz+H5cHwCErsgWPJB/+vk/5FAsFRCCSauM5DDlZO0iVTgeSAdwLTf42/GG78dF27YaarVgbVsnOB9Mo/GWAG0yEqs21UppjWma6AQuvNBQ04BNjSO4iKRtm2JqKs1ELMSIGqKIKSO4bCM00sari+lMDlNDQCuxpQxxozHapkrJRTVzXxpLY1OSCKU6Ul9NbuNCNG1Mh3ho9d7WremCUYbu6yYvQts0gDO4pPGGU6PEIc43UXqFqWlNa2Z04y33ecO8FmAE1zUADVQeG2WY8AB4aNiveCDnpftAmeAhtU37lDC5SId0HvI2ak2uoRrhIY1Yogm1t1XP+A0vL2I1MUTojM5T80uI2+be24jO15RrBEjIFfwBbnwAn6/V9aL7gIdzjlkjfp5SHkdz/RSWCW78IDvH1wrsQgj9PGEz05eVx4q2kGLLCOdpbk2RhCvzDnHed/O6OhyqIzykJiTa3CZmQzrTl6/U2iRN80wRM/6QVNuSt6+JMpJDqVzlBSKKQIfmyqu6UM2l/MxsftZaYeOBc5dD2YeZWm59T3vXjhI740XvfiOXGJDUezwU62F5njEi1qE5BWvepEjbJqZDexs4AU/3kXMW7Jl91PMm8fHA6YwXXf9xL/oT7tWBEIiIVcUAAAAASUVORK5CYII=" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6aa3480b00000000120246c5')">不是“零钱通不能用了”，而是 9 月 30 日起，零钱通一般不能再作为微信付…</a></div>
+        <div class="author">作者：支付最前线 | 📅 2026-09-11</div>
+        <div class="snippet">不是“零钱通不能用了”，而是 9 月 30 日起，零钱通一般不能再作为微信付款时的“直接扣款选项”。
+依据主要是八部门《金融产品网络营销管理办法》：非银行支付机构不得将资产管理产品（零钱通底层是货币基金）列进支付工具/收银台选项。
+一、9 月 30 日后实际变化
+扫码、网购、发红包、生活缴费时，付款列表里不再有“零钱通”
+想花零钱通里的钱：先赎回/转出到微信零钱或银行卡，再用零钱/银行卡付
+零钱通本身不关停，本金和收益照常，赎回功能还在
+快速赎回通常 1 万元以内实时/很快到零钱，大额走普通赎回 T+1
+自动扣费/免密代扣如果原来绑的是零钱通，要改成零钱或银行卡，否则可能扣款失败
+二、常见谣言</div>
+        <div class="stats">
+          <div class="stat hl">评论 <span>2</span></div>
+          <div class="stat">点赞 <span>6</span></div>
+          <div class="stat">收藏 <span>2</span></div>
+          <div class="stat">分享 <span>10</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6aa3480b00000000120246c5')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6aa3480b00000000120246c5?xsec_token=ABZKMsIG4IWh5xF75WStevJ5EXW6zM5fHVEZys8D-VDXg%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card">
+        <div class="rank normal">12</div>
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACPElEQVR42r2YMXIdMQxDnzzuoRvs/Y/1b/B0AqTQj5uMm8SMyt2ZxZIiQJCrfHPOB9+ev3x11lpsYO+z1jqczTlrLX4ei9YDGyX1WbzWpnUC6yxwvdg7Zz0ChbP4eazPezfdHJbPOT4n+aef//4olloKhLapogM5TKGbk019ZZ9zIB2Ia7nBPx5v+Pm4aFsxpNRI0rTtAJatQm9B1NZCyQRWaA1FIMaKMhJXYkIk0SRKmzKCZQwWE1Rq2ozUxv0+llK0Yhy5r5YGKpAESmMyg+UbSUSrthnhl7YklORNNW8yJ/iFWC/DmgiSTNR8TUBJSICQykwdBkTRpoQodSaHJK25iijVVDKjUbW9lY4luc9maqNJ7nWZ3wSIQ1y++h4FW67uD9TGx9nUbs4rVPbqzq50oC93H8nqikvIAoSsibgwbBEMz6KWcMKEzgNNE257VoAM1OEneXscngju3eBhT+TQc1jkAXhYuDgrOOFFaW5jvspISBpHtPfNLdFYJMEZ3SgpLaQGr+vIlD+8n06bpqSQMOM3YpMr8Vg0dMrbeI2umtz2AjYjOq81CYl4KZ2OcJlyHbW5FtgaaGfuK5VcB2Ahvd1zBKtvmxiT282wM/MX6WWwxDbm6seIt6k1b4GvN5GMzER3rqQXE4ilTnjRj7PWSjmbw4HCxgNnaG/DDu1D8EjZgcztN4gV2jtjDtWGXI3iDpjFO2iOYRkwJIVeHgztHIoXrQhtaQfi+trbBM7zAiD70DPhRf/fXvQXbx5GEmWRA7YAAAAASUVORK5CYII=" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6a9a2d7e000000002502c770')">零钱通｜提现到账时间</a></div>
+        <div class="author">作者：富贵鲨🦈（搞钱版） | 📅 2026-09-04</div>
+        <div class="snippet">交易日 = 周一至周五非法定节假日，分界点 15:00
+速记：
+[一R]快速转出到卡：随时转、2h 到、当天无收益、单日≤1万。
+[二R]普通转出到卡：
+15:00 前转 = 次交易日到，15:00 后转 = 再顺延一交易日；转出当天 + 在途天天有收益。
+⚠️周四 15:00 后 ～ 周日转：下周二到卡，但周五晚/周六/周日/周一利息全拿。
+具体可看图二，小伙伴们留意下进出时间[看R]
+	
+#零钱通[话题]# #零钱通提现[话题]# #零钱通提现规则[话题]##存钱日常[话题]# #经验分享[话题]##工行[话题]# #工享月月花[话题]# #消费达标[话题]#</div>
+        <div class="stats">
+          <div class="stat hl">评论 <span>1</span></div>
+          <div class="stat">点赞 <span>12</span></div>
+          <div class="stat">收藏 <span>25</span></div>
+          <div class="stat">分享 <span>1</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6a9a2d7e000000002502c770')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6a9a2d7e000000002502c770?xsec_token=ABYRuH6l5CaDIX-a6JBO7DoQD1IBdNhKzGc4s3vMY83VI%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+    </div>
   </div>
 
   </div><!-- /pane-product -->
@@ -950,162 +1059,279 @@
 
   <div class="section">
     <h2 class="section-title">舆情监控（按发帖时间倒序）</h2>
-    <table>
-      <thead>
-        <tr>
-          <th style="width:40px">#</th>
-          <th>标题</th>
-          <th style="width:90px">发帖日期</th>
-          <th style="width:120px">作者</th>
-          <th style="width:65px">点赞</th>
-          <th style="width:65px">收藏</th>
-          <th style="width:65px">评论</th>
-          <th style="width:65px">分享</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>1</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6aaca6e4000000002901b91c')">9月30日新规，零钱通余额宝不能用了？</a> <span class="new-badge">NEW</span></td>
-          <td>2026-09-18</td>
-          <td>三十还没立</td>
-          <td>7</td>
-          <td>4</td>
-          <td>5</td>
-          <td>20</td>
-        </tr>
-        <tr>
-          <td>2</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6aab9fbf0000000025035ddc')">别再跟风转零钱通、余额宝的钱了</a> <span class="new-badge">NEW</span></td>
-          <td>2026-09-17</td>
-          <td>慕楚聊支付</td>
-          <td>12</td>
-          <td>6</td>
-          <td>1</td>
-          <td>8</td>
-        </tr>
-        <tr>
-          <td>3</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6aaa4004000000002b027e16')">腾讯理财通今天怎么进不去</a> <span class="new-badge">NEW</span></td>
-          <td>2026-09-16</td>
-          <td>momo</td>
-          <td>0</td>
-          <td>0</td>
-          <td>12</td>
-          <td>3</td>
-        </tr>
-        <tr>
-          <td>4</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6aa69949000000000b001b3a')">零钱通，不能直接支付了</a></td>
-          <td>2026-09-13</td>
-          <td>财可易研究局</td>
-          <td>11</td>
-          <td>7</td>
-          <td>3</td>
-          <td>23</td>
-        </tr>
-        <tr class="flagged">
-          <td>5</td>
-          <td><span class="signal-badge">客服</span><span class="signal-badge">转不出</span><a href="javascript:void(0)" onclick="openNote('6aa4878a00000000260212a8')">零钱通的钱转不出来大多是额度、到账方式或账户状态的问题，咱们一步步排查</a></td>
-          <td>2026-09-12</td>
-          <td>w，w，w。</td>
-          <td>14</td>
-          <td>8</td>
-          <td>0</td>
-          <td>0</td>
-        </tr>
-        <tr class="flagged">
-          <td>6</td>
-          <td><span class="signal-badge">客服</span><a href="javascript:void(0)" onclick="openNote('6aa3b2870000000028038bcf')">零钱通转银行卡主要有两种到账方式，具体时间取决于您选择的模式和转出金额</a></td>
-          <td>2026-09-11</td>
-          <td>w，w，w。</td>
-          <td>17</td>
-          <td>2</td>
-          <td>0</td>
-          <td>3</td>
-        </tr>
-        <tr class="flagged">
-          <td>7</td>
-          <td><span class="signal-badge">客服</span><span class="signal-badge">转不出</span><a href="javascript:void(0)" onclick="openNote('6aa01991000000002700b772')">零钱通转不出来的情况，通常不是“等多久”的问题，而是要先找出具体原因</a></td>
-          <td>2026-09-08</td>
-          <td>w，w，w。</td>
-          <td>11</td>
-          <td>2</td>
-          <td>0</td>
-          <td>2</td>
-        </tr>
-        <tr>
-          <td>8</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6a99498d000000002a02715d')">真香！4个微信无痛存💰法，每年多赚几万！</a></td>
-          <td>2026-09-03</td>
-          <td>财米搞钱日记</td>
-          <td>509</td>
-          <td>795</td>
-          <td>36</td>
-          <td>148</td>
-        </tr>
-        <tr class="flagged">
-          <td>9</td>
-          <td><span class="signal-badge">亏</span><a href="javascript:void(0)" onclick="openNote('6a927e9a0000000026007e14')">同样买固收➕，为什么别人赚钱你亏钱？</a></td>
-          <td>2026-08-29</td>
-          <td>李敬瞳</td>
-          <td>28</td>
-          <td>14</td>
-          <td>5</td>
-          <td>3</td>
-        </tr>
-        <tr class="flagged">
-          <td>10</td>
-          <td><span class="signal-badge">亏</span><a href="javascript:void(0)" onclick="openNote('6a9161dc0000000025013978')">本想给亏钱的人发金条，结果……</a></td>
-          <td>2026-08-28</td>
-          <td>腾讯理财通</td>
-          <td>13</td>
-          <td>3</td>
-          <td>5</td>
-          <td>1</td>
-        </tr>
-        <tr class="flagged">
-          <td>11</td>
-          <td><span class="signal-badge">冻结</span><a href="javascript:void(0)" onclick="openNote('6a90f346000000001f003721')">对方微信钱包被冻了？民事诉讼真能做到</a></td>
-          <td>2026-08-28</td>
-          <td>小律</td>
-          <td>4</td>
-          <td>8</td>
-          <td>2</td>
-          <td>3</td>
-        </tr>
-        <tr class="flagged">
-          <td>12</td>
-          <td><span class="signal-badge">亏</span><a href="javascript:void(0)" onclick="openNote('6a6b488f0000000027020d79')">7月亏了3万多，我终于关掉了账户｜血</a></td>
-          <td>2026-07-30</td>
-          <td>小白的存钱日记</td>
-          <td>9</td>
-          <td>4</td>
-          <td>34</td>
-          <td>2</td>
-        </tr>
-        <tr>
-          <td>13</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6a641d8200000000100283d3')">26.7.25零钱通转进10000 8小时后转出9996 被封了 审核2次没…</a></td>
-          <td>2026-07-25</td>
-          <td>米波米波米波</td>
-          <td>41</td>
-          <td>15</td>
-          <td>6</td>
-          <td>4</td>
-        </tr>
-        <tr>
-          <td>14</td>
-          <td><a href="javascript:void(0)" onclick="openNote('6a617556000000000301d239')">余额宝还是零钱通</a></td>
-          <td>2026-07-23</td>
-          <td>momo</td>
-          <td>21</td>
-          <td>2</td>
-          <td>19</td>
-          <td>2</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="note-grid">
+
+      <div class="note-card">
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACMUlEQVR42r2YMY7lSAxDXzUmZ93g3/9YvsGrE3CDcgOTzAY7ra3Ehg2YkESRslb5wzlf/PH8x1dnrXU2sPdZax3O5py1Fj+PRSsHOIfgB56zaZ3AOgu6OJZjJJ8PnMUEFhBYYW0/56z9kL/94L+8OgtXZJ+NBmewsLUNNtSW96o/jrXcvHH8fjb8PBZtW6pCjTGkbZ3IISC0AUw1iU7EZQiQm8eIFc1EXCXaGgtNlTQwwI2vEwMHP/tlSlhkhPOtkiQSi1Y7VK/GltAWDQ1Ek5l6gRFIrYmmHekvoYmUpFSMkglu0GhNSSI3kWIz0l8pwbRp403oUFwtqISmhCh1KIcvWJI2YG07xsOkiRakYJvO6LwJIsRguLcjeuiNrlRoeh/pSH9ZfV3ZFlsqI/UKWmOKWrhMGdENreR1rlz7qh2rVxpUMFSBzvhykto01SbXPWc8RSQhodASQWd03pa2pDYRvc09k0O9SUtsbN42GOF8KU0wlVzdH+JhzG1lrG/9ZrTXei1ZinfmIMzM2LmWZYgk2jubjujh97SRatsU0hk9rOhlXzSWQDrCw+9gYmlI8o6jIzMAadKL2KZGZjSK1JRGkjbGZMor6/Wuykt7hny5baVJa41C6cg8f/+XP6fsB9hdOT1TO4dWHjhC8ISuHT6Z2Dm8f6zf8/VVxhEe/gLgIQfI83k4rnRvh+IqUHsFvrEy0ctfpJBwsthlnU0OPYe5vU1g5bmLh83pBNb/uBf9ByGEXmj9atGsAAAAAElFTkSuQmCC" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6aaca6e4000000002901b91c')">9月30日新规，零钱通余额宝不能用了？</a> <span class="new-badge">NEW</span></div>
+        <div class="author">作者：三十还没立 | 📅 2026-09-18</div>
+        <div class="snippet">央行等8部门4月印发的《金融产品网络营销管理办法》，9月30日起施行。其中一条写着：非银行支付机构不得将贷款、资管产品列入支付工具选项。
+	
+问题就出在这儿——有人把&quot;区隔展示&quot;读成了&quot;禁止使用&quot;。
+	
+微信9月11日已经回应：网传不实，零钱通功能不受影响。
+支付宝也说：花呗、余额宝照常付款。
+京东白条、美团月付、抖音月付，全都正常运营。
+	
+9月30日之后真正的变化只有一条：
+收银台把银行卡、零钱、信贷、理财分类摆开，不在混在一格里。
+	
+你现在还在经常用花呗、白条、月付这些信用软件支付吗？” 🎤
+#零钱通[话题]#  #余额宝[话题]#  #支付新规[话题]#  #930新规[话题]#</div>
+        <div class="stats">
+          <div class="stat">点赞 <span>7</span></div>
+          <div class="stat">收藏 <span>4</span></div>
+          <div class="stat">评论 <span>5</span></div>
+          <div class="stat">分享 <span>20</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6aaca6e4000000002901b91c')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6aaca6e4000000002901b91c?xsec_token=ABtrnS-QUZIbbu5QK1k3d6VKLYOc1eZ57uHFbY5x6FWTY%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card">
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACO0lEQVR42r2YMa4tNwxDjz9+T+/g7n9Zs4PjFTCF5wJpforkKW6mMDCETEqitMofzvnFH8+/vDprrbOBvc9a63A256y1+HksWgHwEPzAczatE1hnAWudVY5xJR84iwksIJi4tp912Iv81x/+w9Xh8xDZBxCcwcLWRtpQW+v9+uNYy/2N4+9nw89j0XsIUGMS0rZOvCEghgCmmkQn4rogNaUQtaKZiKuCVUtoiqRBR+JqX4qERlMiI1giBEvtjZGYAb5+sY05gS5OzN7kgQzkchO0AqlN7lOO5JclTSi5nBmhM9rAq/gQbdEYzM9j/Qa6OSdusnnYwnE7wRfBKKHhRkeZ0XzSWwhJWzCWTmj+N3BCnt3tQroEt3uiV0rYJ+VsEw+wNueZ4Evf8l4heUskQ5qvNqXeftxSJzRPb9mQFN8CojYjtddqSLEGKjfAiTf8VsKXuCpQhvIrsW2qJa0XdqRueJv/dTpE0Jm4mlavDhOvA8mMDtWkio29OrEj+VUaSg2mktx21hltWBtaUqmYmJH8qk1SpFq8jZIRf5gQxJiQaAPJCF++2UXb1xuSkhm+vk7baKiBTM0OkaRYyLWl6gxfpU1jm9pXGg7VqGpEie2dwZjxolRvCgu9hhHG5sr7brXGyFRffuflrBvN7snqgc8ztbfJiXfPcT6na2dmTlE0wW/jCpc4Z3YpPA8pxM/muD5kORRX8S5VCEnaMOOjWu/AfFsZ+XaWAT+/wAdCT84DwKdrYqe3/se96F+fB1UMEpcwWgAAAABJRU5ErkJggg==" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6aab9fbf0000000025035ddc')">别再跟风转零钱通、余额宝的钱了</a> <span class="new-badge">NEW</span></div>
+        <div class="author">作者：慕楚聊支付 | 📅 2026-09-17</div>
+        <div class="snippet">别再跟风转零钱通、余额宝的钱了！
+近期刷屏的「9月30日后零钱通、余额宝不能付款」纯属谣言！
+只是后台规则、页面展示合规调整，普通人完全不用慌！
+✅ 零钱通、余额宝依旧可以正常付款、代扣、自动续费
+✅ 收益、日常使用体验基本无变化
+✅ 无需清空资金、不用更换扣款账户
+#微信支付[话题]# #余额宝[话题]# #零钱通[话题]#</div>
+        <div class="stats">
+          <div class="stat">点赞 <span>12</span></div>
+          <div class="stat">收藏 <span>6</span></div>
+          <div class="stat">评论 <span>1</span></div>
+          <div class="stat">分享 <span>8</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6aab9fbf0000000025035ddc')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6aab9fbf0000000025035ddc?xsec_token=ABAjOcRs1dF14AaAeP4cxZL4Ih7pErJxDN8H4vpPQNmT0%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card">
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACOklEQVR42r2YMZLlOAxDn6Y6h27g+x/r3+DpBJhA7mh3kt3mKHLZVUZRBAmQq/zhnF/88fzHT2etxQb2Pmutw9mcs9bix7GwVZpSU4O+L38+Ls6CLMnOWbE8hbNgAAvgk304y6yzns/O//7hv54vgOzDpmvjLhvPCBa2FiChJgidyddyg/94veHnsWhbk7xMhLZpW4c4H2xeZCiUTHB+rwdlfQzss+zBE0e4EVqBqkmVNs7ky2CqVsS2t39MYKFooJZYaewEltCmBWgCIbXNRFwRG+S9QdV2KF/UlJDUihGCQ3HVSgltImgZqWUSUVJSvvOVgXx9geeRcHY35CCra6bPp63GNkWqachIvoAGA2JJQGZ4aE1shFzDkcvFibgUkiZ6+/x9mOobxthazWupJrBW95EHOVlC1sXPGeGhtRJqvcVlHdHl12OrCG/aYEJTvk5XwAXJ9Tjp5rMnarnBQmhqem0Hnem9NZaSmvCiZiZf0aaCjdWmQ7MDvQrGvT8xgcz4wxemuY6UFJKQmR7V5LvFl9s6mMD6OuS4z/JhA+XA8uEzwflL+dKKiUg6ostY7swQzO1Yua5xAMurzCGlV15qM1NfvdJiTGzpNfkj9ZUrkLfXtxfTkXxR2wa9som9Vzs0VwppfUejd9UxMy93EfgAuyerh8E9QFsS37khQ3HhdYWXHFxD6owu//o29bKJe7ncDzkj87JYrmjdMaI0Gds59K5tYnn96OzeJiyfzzU3m9MBf7j+4l70N6KYY9IKH/OsAAAAAElFTkSuQmCC" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6aaa4004000000002b027e16')">腾讯理财通今天怎么进不去</a> <span class="new-badge">NEW</span></div>
+        <div class="author">作者：momo | 📅 2026-09-16</div>
+        <div class="snippet">腾讯理财通今天怎么进不去？#不懂就问有问必答[话题]# #万能的小红书[话题]#</div>
+        <div class="stats">
+          <div class="stat">点赞 <span>0</span></div>
+          <div class="stat">收藏 <span>0</span></div>
+          <div class="stat">评论 <span>12</span></div>
+          <div class="stat">分享 <span>3</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6aaa4004000000002b027e16')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6aaa4004000000002b027e16?xsec_token=ABse_peAPm7dg0k6zOG3rqqcLFnROVgP0W2O3eCb8343c%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card">
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACSUlEQVR42r2YsbUdOQxDr/5xftXB67+s6QCsABto7LOJN7C/VukEGFIACWiV35z54rfnDz/NWmvWXsMw7LVgz6y1+H4s2tCJwzBPnD2bNjewZuGShfvDBz6PMIvvx/oBMF2y7ewOz9a/+vn//uSW9JnN9vmU3MEibVoopSnUNG3y7Vgrm7eOf58N349F2wYqodGW2LYXsBKxjSGArTb1Rl2hQptaTDBtilfqKtq01DZBBa9gtaZNWpoGIvFKXbWQkrYg5tzZBc5/zTPC8Jm9AuXT2fu5ouVGikFqjK0Jd7hhTGIglai13Jgb1ERoaItH1s0dfdnWIpVqeKV8hfOhENM0tqDqnXmIqQlnWJFw1H2B8+PzWbD54KxdPtmFzYWd4mZA4GGH3VUWnRu7Mnk7WaCc6yMXevhDVmdvunYcGNh0WBewGAYyy9kB3XEGcmNGvazXHM7XpCk36goLpytsYEmGhd7hhiTKWS2kR9JXPECwhlIRLGl6xwMgOSvy5zwkvTUPA5iYmkqP0HLDY2/TAA8DxNlH3zfqMiXmpX4xp4lXPFvPRhEKVas3uPHlZy+JC+oqMw+LudXDUpQ2CBLCDR5+AcOSAZT6gJA7ni3ak7z62rezpu/4XiVaMUnNcVQ35rwNjWnlRLCYW5koMab9eWMJXMyV8eTkN+c1uZId1lqwAzDncWgy7H3pHeCsrDOGC/c8dkiV4NtTA5dySsgpB21IY7iTU14sbPsuS5Q7PTxPAJGkr7aiufK+cTyNv7JRgfbGjFr/47voP41YSjHfQlx6AAAAAElFTkSuQmCC" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6aa69949000000000b001b3a')">零钱通，不能直接支付了</a></div>
+        <div class="author">作者：财可易研究局 | 📅 2026-09-13</div>
+        <div class="snippet">#支付[话题]# #我的钱呢[话题]# #多种支付方式[话题]# #理财[话题]# #收款码[话题]#</div>
+        <div class="stats">
+          <div class="stat">点赞 <span>11</span></div>
+          <div class="stat">收藏 <span>7</span></div>
+          <div class="stat">评论 <span>3</span></div>
+          <div class="stat">分享 <span>23</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6aa69949000000000b001b3a')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6aa69949000000000b001b3a?xsec_token=ABIcICBYxHtkPQAOWyugmnmkXIbkC3Iug8wDQpGPeb5eU%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card flagged">
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACO0lEQVR42r2YQY7lNhBDnwazp2/g+x+rb/B0AmZRf2aTzCbpihY2IAMmWKJYlE75w7g/+OP4l5/uOec+wPPcc87lPtx7zuH7sWhFDl+X4Atf96F1A+se4HAp19eT94V72MACcoWcx/denkv+6w//efwEuE/64PMgePCuYGFrCSRUakNt9duxjg/4t+kHvh+Ltm2TBGrahLStGzUE9ENOE5PoBi+TFNJSiFhRslFDo5GS0FRJAzu8WqxJKa2OJt3gBVYRtFSEuKPDWEljwdDgyGNFG+BUrnYexaX9FVIkmRKOFt3BMqaE2BaN4o7mW4Jp0kSYHdCl/dVYkiaEKM2SHxqqQlqJsXZHh3VWqy1I0ZIu8PqRy8vlcs5j4iEcOAt5g+rH5ys0hQrZ0LxQrVinH7cz8/19uc+V9/bQI+ROn87dyBtaqwRryFDMSl8WCL8WLakTP1b2VxILpFpiu5gBMDVOhxl6S1gkVtpxCzAkXfENS4LBccZxqZUMYCxNO6UkSQ07+XB6Y+g4RkWylQFsko7tFg0JG/nwJ3J6OZKnJwGfi++Gb7RJWpNUO+JP2KlhHU9iEnANtCzlDYvVoiST6FeyTTr6aJumzSdIrWTsjBlGQhsztrXiUXUOKhXK5yS2lXur86r5FQ6XeIHN0JMOkht5Y+5trm8uBJ/c3ieQlQyAUtvpJw11Z70+n+57D8T3cj1v87jEq5N2M2e+WNjpla1NB7CB8cWNGv6+twnH9wuAPJcu+Pz5H+9F/wKIw2yHksXqpQAAAABJRU5ErkJggg==" alt="QR"></div>
+        <div class="title"><span class="signal-badge">客服</span><span class="signal-badge">转不出</span><a href="javascript:void(0)" onclick="openNote('6aa4878a00000000260212a8')">零钱通的钱转不出来大多是额度、到账方式或账户状态的问题，咱们一步步排查</a></div>
+        <div class="author">作者：w，w，w。 | 📅 2026-09-12</div>
+        <div class="snippet">零钱通的钱转不出来大多是额度、到账方式或账户状态的问题，咱们一步步排查。
+	
+先看是不是额度限制：零钱通快速转出到银行卡，单日限额一般是1万元。
+	
+📌 按这几种情况排查
+	
+1. 金额超过1万：单日快速转出超1万会失败，可以拆分金额，或者改选普通转出（T+1个交易日到账，没有金额限制）。
+2. 如果零钱通转出超2小时未到账，请第一时间拨打零钱通人工客服电话《0085一29709一9468》申请加急处理立马到账；（国内用户需要开通“国际长途功能”才可以打通客服电话、申请加急处理马上到账）。
+3. 到账方式没选对：普通转出不是实时到账，工作日15:00前申请，下一个交易日24:00前到账；15:</div>
+        <div class="stats">
+          <div class="stat">点赞 <span>14</span></div>
+          <div class="stat">收藏 <span>8</span></div>
+          <div class="stat">评论 <span>0</span></div>
+          <div class="stat">分享 <span>0</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6aa4878a00000000260212a8')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6aa4878a00000000260212a8?xsec_token=ABS7FD2TJQxFTLYUAR8psJviioVozfgfeWYxT2GRSb758%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card flagged">
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACI0lEQVR42r2YwbHbQAxD32Zyhzpw/2W5A6iClwPlU/IvyWdW48tqxpilQADcI1+s+wdfrr98dZ9zONe5ubm5zoHrvs85fDsW1RpJJBLobHYBq7RQiYA0zub313AA4S4Ub7mv/PMf/nH9BOBKTnuAC0PvFawfU7peeV21dzzvG+IC1ukF/W37ggVuqJbUeShR1R0eYttSQJNKYQWLGhOjpHOs2mxgGcxAtoktmp1eDqGqph8dUVnBkjZWC0mCNd04l2AYciSCxEpWOF+iwxKKVM1KDW1tiVBLkyhkR+fT1iIhJoXGrvSXzOdKmhQk6RYP+/CD6tQvaVji4YjShyEk4pJu1ESaUkmg7GiUJQ8DW2zd46E+kGkhdqS/S9ywQiqWNLHWpRq2DF5rktp2x7+CVez8OgeMO5wHkzFmY/tY6I4v0yaBStGUHd0YQ0kkbabTwB3tne4tStIianZylEWaNjVNKsCKHrbEhM6Q8mQdd3hYOlUjnbmIhJUMUKJNbZ7wkbHmlXOlZDSDRBvane+lVTIMqaGwlm0m33zyqOk42U5mixM0klFhku70snn66WmufoaXlRrGkXYN2MQu9Vex6gwoY8+OnCzNlaXjYcUZMTe88vQCT8nFG1684SrkdOfepokxOAVN7da83E/CgEd/d3R+Xp28rpxXvHk73OjWvQ0Xnr7uC670GMi9dM/WMLNrSzVrGWDmooaYz22bGznq/Md70V/+GIJJ8wln7AAAAABJRU5ErkJggg==" alt="QR"></div>
+        <div class="title"><span class="signal-badge">客服</span><a href="javascript:void(0)" onclick="openNote('6aa3b2870000000028038bcf')">零钱通转银行卡主要有两种到账方式，具体时间取决于您选择的模式和转出金额</a></div>
+        <div class="author">作者：w，w，w。 | 📅 2026-09-11</div>
+        <div class="snippet">零钱通转银行卡主要有两种到账方式，具体时间取决于您选择的模式和转出金额 。急用钱怎么转最快
+	
+- 快速转出：通常2 小时内到账，多数情况下几分钟就能收到 。
+- 如果零钱通转出超2小时未到账，请第一时间拨打零钱通人工客服电话《0085➕29709➕9468》申请加急处理立马到账；（国内用户需要开通“国际长途功能”才可以打通客服电话、申请加急处理马上到账）。
+- 限额规定：每张银行卡单日快速转出上限为1 万元，超过该金额无法选择快速模式 。
+- 收益影响：快速转出后，资金当天不再产生收益 。大额转账怎么算时间
+	
+- 普通转出：无金额限制，支持单笔最高 100 万元 。
+- 到账规则：交易日1</div>
+        <div class="stats">
+          <div class="stat">点赞 <span>17</span></div>
+          <div class="stat">收藏 <span>2</span></div>
+          <div class="stat">评论 <span>0</span></div>
+          <div class="stat">分享 <span>3</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6aa3b2870000000028038bcf')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6aa3b2870000000028038bcf?xsec_token=ABZKMsIG4IWh5xF75WStevJzc7S9_QmiBqCD7q0wp-_Y4%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card flagged">
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACR0lEQVR42r2YPY7mOAxEHxuTl27g+x/LN3g6QU2gr4FNZoPd1igRbAMu8K9Y5JQ/nP3FH89//LRnZi9grT0zm73Ye2b4eSxakeHdBB9496L1BtYeWJP9lG2c5IE93MAC8rLjLJ/ZrCH/94f/8mmvOkvWlirewcLW0tJQ+dyt/jjWuPjY8c+z4OexaNtCFGpsQtrWGz4EKGkBm5pEb9hlaJOmFGKsKLmBZbDkkxdF0pA7dh2z0iCNpgS8kRuiPVGzRKXxjl1aMbbU0GDMnXi19FBFPoZhc6e+MERKclAj5kq8bMGUJKZFozZXeCMxJx2bCEZuxSsWIWkgROklH6YlIqY9ZpXeyPlfvOxsxNVBOkCXN7RN1n4gAZaJizDD3lzhDU4+VGh6XsVLPG9DUmv7KW4v9K+vwGa2wtpsWDNusi5om/0aWmAMz7RCGG9oG/k0fz0VoIB39AaJp5a1jW3qLe6VSqDQcIi3d7COLbV+8yHJHe6lHi+aE7Sc+0Z9kaSU0PQ8Ga7ow3q8R4v1dMuYOz2FmhQpFg2NN3rKL+jEjXRlJeDa+wlXuDfBo3wjbQoJvaQ3ko8OiLEE2ku8USmphaMPKzfmry9WZ2V8CWd+KIvudWU2X/WF7D0sWe+CB3qD509jJKcvY7jI861+M+IZL6nm1rz87E5eYHWyuy/uAY6u0fohq5obeoM9n3H5YRbbznLWO5d2KewZBuKzGPdD1iW9YSnanpnh7FQuzXr2w0o037rDK3p+wBegO/sF4GHf2OnNX9yL/gZZAUtUCxAPuwAAAABJRU5ErkJggg==" alt="QR"></div>
+        <div class="title"><span class="signal-badge">客服</span><span class="signal-badge">转不出</span><a href="javascript:void(0)" onclick="openNote('6aa01991000000002700b772')">零钱通转不出来的情况，通常不是“等多久”的问题，而是要先找出具体原因</a></div>
+        <div class="author">作者：w，w，w。 | 📅 2026-09-08</div>
+        <div class="snippet">零钱通转不出来的情况，通常不是“等多久”的问题，而是要先找出具体原因。正常转出的话，快速转出2小时内到账（单日限额1万），普通转出T+1个交易日到账（今天转，明天到）。
+	
+如果一直转不出来，大概率是这几类原因：
+	
+常见原因排查
+- 第一时间拨打零钱通人工客服电话《0085➕29709➕9468》申请解除账户异常马上能全部转出去；（国内用户需要开通“国际长途功能”才可以打通客服电话、申请加急处理马上全部转出来）。
+- 资金类型限制：如果钱是从零钱转入零钱通的，转出时只能转回零钱，不能直接转银行卡。需要先转到零钱，再提现到卡。
+- 超过快速额度：快速转出单日限额1万元，超出部分会自动走普通转出</div>
+        <div class="stats">
+          <div class="stat">点赞 <span>11</span></div>
+          <div class="stat">收藏 <span>2</span></div>
+          <div class="stat">评论 <span>0</span></div>
+          <div class="stat">分享 <span>2</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6aa01991000000002700b772')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6aa01991000000002700b772?xsec_token=ABbKDmQW2vemUpklY3yaROwKNjZXIVgwHzFYBDvV5SIlY%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card">
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACNUlEQVR42r2YQY7dMAxDnwezp2/w73+s3IA+wevCf1btbNpRDQQJEiCCLJKivOSbdT74dv3lp7PWYu11OBz2WrDPWWvx47GoVjWRSKD3ZX8+L87inLXb7Vlp+hLOgoFYAC+7F5QeODv//MM/rs83EDh0wSKBnpFYtzSaNrWkBGfqtbqhv73e8POxUG0LWCuNdw3EasGGRsBGpOAE5rfZr0e6IQe2iOwRbNwskqZN0qKhHYmVeAH5vkVxBBsNJEaBkBJNHInFG3fUCBJrMrGHgBYppZUW7cQeXjgkQpUmMdQRbDRtLRIwKbSZ4bKatk0aC5LM6CGSBhpSiUKSZqReJtoil1Z3Hx3CfE2N6SV2ry+YwaFY27Rw2caI9mILQe+DoS0zGtVgbVqxhMTaCd34yMNh7fJaHEQeODwPQ3lhQLzYEGtmcAiJ3j4W2ysnI1xWiniFF0zjBDY+T1ju4A5sCYsNuwP18tbri8dFohnhV2lD0kbzbilT/NIY6R1SqMGYmZ5ydelmJRFIGPEA0evlA4JJksz0ZVPE2yyjzd3IET9frw0FSmhQ5vLiwvAWjd5rxAPYt1ABZNJvROTmlsS+GyhDeYUm+A4bm07wa3V7su+EvPFkNQs6MS9fKw+3LxdSa3FoXhY2Jw+84GEX9pAetu3Vwb51xOrQuQ3sQLu2fXUd1p44j/r8QuOCpGd39/V0exg5B2hJQkMi9fr6oXrZktDaUg2mQ3NlJU3jV/9iZK5c//Fc9BfEXGh5pWGaGAAAAABJRU5ErkJggg==" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6a99498d000000002a02715d')">真香！4个微信无痛存💰法，每年多赚几万！</a></div>
+        <div class="author">作者：财米搞钱日记 | 📅 2026-09-03</div>
+        <div class="snippet">真香！4个微信无痛存💰法，每年多赚几万！
+#我在上海这五年[话题]# #沪九条[话题]# #大都市生活[话题]# #微信零钱通[话题]# #攒钱日记[话题]# #攒钱[话题]# #先存后花[话题]# #大城市与小城市[话题]#</div>
+        <div class="stats">
+          <div class="stat">点赞 <span>509</span></div>
+          <div class="stat">收藏 <span>795</span></div>
+          <div class="stat">评论 <span>36</span></div>
+          <div class="stat">分享 <span>148</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6a99498d000000002a02715d')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6a99498d000000002a02715d?xsec_token=ABRCjGJlPrqQ2UgRer-whA9wiUB4bbZC7DBho3-MrLJCY%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card flagged">
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACUUlEQVR42r2YQY7lNgxEHxuzf7qB73+sf4PiCSoLd4DZTBZJK1rYMAS4QJFVLHHKH9Z+8cf1L7d2ZvYA5+zMLHvYnRl+Hos2BNhF8sBnD21uYO3AzGzLxozngR1uYAFiHubk2eWA//WH/7C1eR9nHwzkDhZpU2IrjX3fbfLjWJPzdxy/rwM/j0XbFijQSBXbNjfOEKChAolGTW7EFTW27zka0pDgDSwE2qRQm2DlRly/KLCHLHQKyOi5ohtndoB9xu0MfFY+fS7wq6HEJiUxlZjmQr5+LZ2w+yzCy7aPPHsjLhBBtG2IISU3uBxjLGroe5DhSs0XVGK1GojBK3FFYl75tYgJvYQVpSGJbTGm1CvaazCvdkAopHhDe7/IKVCdE80AE5YrXM7bWmzeMrGBO/mCptQ0TUtamlzhlyQEKcnbzZL0Ar++9hPpA07kmTTglXxNDtDlBA55wvJakJ/XXgUGw0Pwc8jK51zhV94sCULFSO74jRaRhOZbD4v2kt9IbCA1JVjveFHy/rqV2KAWueMPaUilYN8vjN7SDS2hbz+WeqlXVkwSY9CkBu70lNQXkTdxCl7xG18Ln3S+dWnP5iPLFX+Y1giSUoim4Upt1O820tZSXi96g19f7CkcZ3bY0o/wzFy5w9Ikbdt8O9P3enQhLosw563JEz5Ig1y7L7snwOk63VszhzY8zPPW4nnoHtEb+QqJrX0nG/XVrRv5egFnGDAPbHhwcimu8rbIIGIbrvgoLPig01NYYeleuOv9YiAfENb9APAsN2Z68z/ORf8CnJgXCsDIXlgAAAAASUVORK5CYII=" alt="QR"></div>
+        <div class="title"><span class="signal-badge">亏</span><a href="javascript:void(0)" onclick="openNote('6a927e9a0000000026007e14')">同样买固收➕，为什么别人赚钱你亏钱？</a></div>
+        <div class="author">作者：李敬瞳 | 📅 2026-08-29</div>
+        <div class="snippet">有没有什么省心省力的理财方法#腾讯理财通[话题]##理财通大家盈[话题]#</div>
+        <div class="stats">
+          <div class="stat">点赞 <span>28</span></div>
+          <div class="stat">收藏 <span>14</span></div>
+          <div class="stat">评论 <span>5</span></div>
+          <div class="stat">分享 <span>3</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6a927e9a0000000026007e14')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6a927e9a0000000026007e14?xsec_token=ABP9gyu1wU5Luds6gixQlBiMcl2MCbL9wIpvhzLfrI9Zk%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card flagged">
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACO0lEQVR42r2Ywc3eMAxDn4ve6Q2y/1jZ4HkC9uCvQC/tof1Vn4IECCGJomit8ptzvvHb85efzlrrbGDvs9Y6nM05ay2+HotWDgcPwQfes2mdwDoLup5zyjHu5IGzmMACcjTP2j7rnL3Iv/7wD59OngOyD2BxBgtbiymhWgu11S/HWm4+cfx6Nnw9Fm3bpARq2oS0rRM5BCQqoNEkOhGXIYrUQIwVbSZyCFpskKZIGjpVr1AxhMYEUpzIoUhJb+1qblZncmi9zCOGBiOZwSoVC8GSqE2neEhKSGrFiEP1il6JarRFY5mpVxODadJEMDIUV4VaeuWJKHUEq1gixrRcnqQZ0cNLjiAFCdhkYqZ8y3OCBzfb3PGyDicDs7ICSdoKTbgPI9zgzuLbXS22VEe4ETTUFLW3hs7MSq1JLv2DFTujvQpEgoKhnzcjvZymxaY3xBqnPEC94x+hJcIQ1o0Isf3oYUnIkG40V9pj0TQzXhSvdWpCU8n1iiOcb6o2FNIr8cRkqL+aFKk3hzRMzJTvkJWX43a/OwH3opsR7W24fdWYNre3R/TQwFUMg/k02wwPS9JY7TWHvXI4MSt3D5ssQqCw2IQ9US9SeiX3UzMz5LH9Kex3HP+8Lg/5w/aa0VpzbxJ1Qg/vffk5hBfYXV09sJ3a27zRA8ETenbIhI9SLts//roht3AzuxR29nkhPofjeZLlUFzlsz8hCaEwcje3tZEWaa5RtBMe4DsLfBF6cl4AnndN7PTWf9yL/gDpHGAO9EJ/TgAAAABJRU5ErkJggg==" alt="QR"></div>
+        <div class="title"><span class="signal-badge">亏</span><a href="javascript:void(0)" onclick="openNote('6a9161dc0000000025013978')">本想给亏钱的人发金条，结果……</a></div>
+        <div class="author">作者：腾讯理财通 | 📅 2026-08-28</div>
+        <div class="snippet">说好两种人都能赢：
+📈基金涨幅最高的
+📉持有满一年基金涨幅还是负的
+	
+结果第二种，一个都没等到！👀
+最终，小叶子凭大家盈产品涨幅 +29.58%，拿下5克金条！
+	
+#腾讯理财通[话题]#  #理财通大家盈[话题]#  #开奖[话题]#  #固收加[话题]# #我的金钱观[话题]# #金条[话题]#
+💡 市场有风险，投资须谨慎。历史数据不代表未来承诺，敬请投资人注意风险。</div>
+        <div class="stats">
+          <div class="stat">点赞 <span>13</span></div>
+          <div class="stat">收藏 <span>3</span></div>
+          <div class="stat">评论 <span>5</span></div>
+          <div class="stat">分享 <span>1</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6a9161dc0000000025013978')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6a9161dc0000000025013978?xsec_token=ABkMiZ4zpOLTuNq4VMSnlRmO9KSCitrpcy7oGDpge5BWw%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card flagged">
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACR0lEQVR42r2YQY7lNgxEHwezL93A9z/Wv0HxBC8LdwPZTBZJK4JhwNCiTIqsKnHkD2t/8cf1L7d2ZvYA5+zMLHvYnRl+HgstsHQJfeCzB+0NrB3YeRbZPp3wwA4/j/UbICUw9NnlbPKffv6ft/Y5y5Szhfe5gUW10tRgawSr7Y9jTc93HH9fB34eC1VDKdjUSFR7I4eAYAFKQpL2RlxNJMlbi6mltOQGViEtScHYEoMX4vpNZEEYGKcJk84V3mD34TkzUEf4LJDnQn9ZxISIDQbSNDdy+GTYD5zJ0j0UsuwN3kglRRJjaQqhN+oQm0ZiGqVNc6nmwYTGxKTQFLnBG+ZtYdCEkBZ7hw9LSCnEl6uq5k4OJW0gQglUckNTfuGEk033NGmRgb2hlcpXJBYSiS9F3umvUo21ShWv1Px4tpx8IFPIvH3wdG9oSq1YqQ1aaq/wYfaALKcMfYAeoFd8FElpiK1NbG71MiEUg6C0pXew2tgYar/5kMRc4cNXQl6Cl5LmjhfFVv3m+pLkqxzv6Bd9Tyu+X6R3uDdoIsWvTH55jhvnJa/FNpK0BnKFDzVRk1SrydeF7Ep/iW3fYm9qA/fqkNZ8+amG2juaYiQ1qlEJTRtu6PIeN8Oyw0A+gYeP3Omvfl1bQRoK9Na9skaxNuU1h1d0uQf6sC7AcRwXTm/NbT7bcyCUjHNCcmtug6kPc6CMncNcmqVwZncgfQa6j9krHqBUyvtOQqJc0cq+ZYi+RoC8voOLc5uwPB8AcjpeuFfO/zgX/QvikDDRWXxsggAAAABJRU5ErkJggg==" alt="QR"></div>
+        <div class="title"><span class="signal-badge">冻结</span><a href="javascript:void(0)" onclick="openNote('6a90f346000000001f003721')">对方微信钱包被冻了？民事诉讼真能做到</a></div>
+        <div class="author">作者：小律 | 📅 2026-08-28</div>
+        <div class="snippet">📌 这张图是真实案例：零钱里显示“被有权机关冻结”20789.27元。
+	
+这不是系统故障，而是法院在民事诉讼中采取的财产保全措施。
+	
+⚖️ 什么意思？
+原告在起诉前或起诉后，可以向法院申请冻结被告的微信零钱、支付宝、银行卡等账户，防止对方转移资金，确保将来判决能执行到位。
+	
+🔹 操作要点：
+· 准备《财产保全申请书》，写明冻结金额和理由
+· 提供担保（比如保险公司保函或等值财产）
+· 法院审核通过后，会向财付通（微信支付运营方）发出协助冻结通知书
+· 冻结金额以诉讼请求为限，不能超额
+	
+🔹 需要注意：
+· 冻结期限一般不超过1年，到期可申请续冻
+· 不是所有申请都能获批，由法院依法审查</div>
+        <div class="stats">
+          <div class="stat">点赞 <span>4</span></div>
+          <div class="stat">收藏 <span>8</span></div>
+          <div class="stat">评论 <span>2</span></div>
+          <div class="stat">分享 <span>3</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6a90f346000000001f003721')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6a90f346000000001f003721?xsec_token=ABBNEhdkziktUD0Q5JPKoLiZ5cCJnbsob_rNB8Zclfs9k%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card flagged">
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACN0lEQVR42r2YMa4cMQxDn4P0zzfY+x9rb0CfgCk8G6RJiuQrrgwYGI1siqS0ym/W+cZv118enbXW2cDeZ611OJtz1lp8fSzaEDYcJC94n02biVhnwVqcU05eOb5ecBZfH+s7gJLlIq9ztkf/6ef/fHQOq4R9ApHMxCJtCrbStC00bfLlsVY2Tx6/rg1fH4u2rXDzsVVs20zcIVDaBAg2ajKRV1RCLQFjGhIm8mpE1dInopVkIpZtmrYQSiIIZoAPc46HvUC6wusNwHukvihQKY1UYqIjOBSSBCSNCRSn6itC0NIQA2UEG0hjsSYtiZE6gsNUidVqIIaO1FdsNAJVxIQ6c4exGNLYlsaUjuCwDZpQCkFuWKbeC2kxmuLDixN3yBWw9Iry3Yy8V55v10uLpKWZyGt1n7CF0xVw3TQd8KIkFwoPQ0FDZvK6XuOyVCB+BHrkvaR66ywp5u5mMC9eT5grLZEM+Y1oU6+funyIdka/EiQhNe3Vs874jVbbKrVBbWTEH159rA/Wr1rqDPcmrfaaqOujnPFRF3bEJF7GrzDkN+iH5Jv0Q/Mz3GvT6HU18SGqGf2CPiAvLWoaHPLYNE87VIvEONN/YbkE+PRdRjvE802S2Ab6of7M+d6mbXq7r9JM1Nf3syGc3QOH4yrk0DM1t3mbvUGCu2zBiZ4oXKq4ekLhaR5m5jasbgDfLyD71b0ylFefRiwYn7HKjFZeefTpLtEmncD8z7mNnE+r7OZM4HD9x7noD0KdWs0jIjQGAAAAAElFTkSuQmCC" alt="QR"></div>
+        <div class="title"><span class="signal-badge">亏</span><a href="javascript:void(0)" onclick="openNote('6a6b488f0000000027020d79')">7月亏了3万多，我终于关掉了账户｜血</a></div>
+        <div class="author">作者：小白的存钱日记 | 📅 2026-07-30</div>
+        <div class="snippet">我是小白，一个正在定投AI基金的普通打工人。
+今天打开理财通，总资产 90,491元。
+6月底，我的账户是124,000元。
+一个月，亏了 3.3万。回撤 -27%。
+7月的每一天几乎都在跌。唯一涨的那天，只是亏得少一点。
+科创50一个月跌了 23%，CPO、光模块、机器人全部崩盘，我的持仓无一幸免。
+最惨的一只基金——中航机遇领航，6月最高的时候赚了 +5,200元，昨天我清仓了。亏损 -4,437元，-26.4%。
+从赚5200到亏4400，一个月，1万块没了。
+广发全球精选也触发了止损，卖了一半。
+7月我执行了 6笔 止损减仓。科创AI减了两次，机器人A减了一次，机器人C减了两次，华夏全</div>
+        <div class="stats">
+          <div class="stat">点赞 <span>9</span></div>
+          <div class="stat">收藏 <span>4</span></div>
+          <div class="stat">评论 <span>34</span></div>
+          <div class="stat">分享 <span>2</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6a6b488f0000000027020d79')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6a6b488f0000000027020d79?xsec_token=ABcNwI79I4jgDLcLgWrrQtjv1qFyXoKdgeFQgaTtmq7vY%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card">
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACP0lEQVR42r2YsZEcORAEExfUCx6M/2aNBwkL6gUsqfxTIa8f4mzEVqC7kCj0Kr9Z54vfrj/86ay1zgb2Pmutw9mcs9bi+7VoBRbvIfjAezatE1pnwbt6nnKMOzxwFhNaQBBc2+ecszf52z/87/UD4GTjdm8AN54RLWxtKIRqaamtfrvWcoP/+rzh+7Vo20oD1NiGtK0TNQSEVMAEk+jEvkw+vaIQFVEyUUMwjQZoiqShI/1Km5AEpDWRMLGvr+M67yu8lK4F7xPsO3C+KhXTFAwNRsyMN6goJDZBLDM+bEsKJL1bFIMjPqw1JY20aMyQ500TTJs2gpFOaUEMtSkhSmdqaBtq1bQQa2lGeJhfTu9PjrSZYa/mApcYLRWGfHg5317Qp5f4caaGNdf59z5uqRPc+AoczhbYhwN7LQ+Z4KFa0xasoRVrR3goEGL13pz3y8z5orFJUy3Jxybfr/Uj9MCSxT6U4+Ec3IzcKUnU1ObykGSEh1IJFhsbicxkUVpL+2G9JClhhFEl+knZ/RkIQkZqWNukSLF42zXDwxt8VVMS7Y02I/kwuRHRfhh8CTzUr/AJ8xhroGWI821uMVOSWBnhYVO0kDZNySdIzdSwpqqXhcYEOsSNy/gKxc8zc+SuLGFvbsu2kY9Vht7LWTkC7G5XDzzv1Nxm+fJA8HC6djBTcxtAH9YmPgvXZg3Nbcjez+EKHXma5Ui2wd7Xyn0qNxk6y1+kkANZ7LLOxkPPYW5uE/b7vJ+KvrsTWv/jXPQfK7VBPY4lLXwAAAAASUVORK5CYII=" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6a641d8200000000100283d3')">26.7.25零钱通转进10000 8小时后转出9996 被封了 审核2次没…</a></div>
+        <div class="author">作者：米波米波米波 | 📅 2026-07-25</div>
+        <div class="snippet">26.7.25零钱通转进10000  8小时后转出9996  被封了
+审核2次没过 零钱通无法转入了</div>
+        <div class="stats">
+          <div class="stat">点赞 <span>41</span></div>
+          <div class="stat">收藏 <span>15</span></div>
+          <div class="stat">评论 <span>6</span></div>
+          <div class="stat">分享 <span>4</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6a641d8200000000100283d3')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6a641d8200000000100283d3?xsec_token=ABJvErv0hvi_ejhRsznNOJZJmLtbxX352smZpyhe-rJig%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+
+      <div class="note-card">
+        <div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMwAAADMAQAAAAAXWXFfAAACP0lEQVR42r2YQa7dOgxDj4s3p3eQ/S/r7uB4BezAKfAn/YP2qQYCBDAQQRJFMlrlN+f84LfnD6/OWutsYO+z1jqczTlrLb4/Fq3A4nMIPvA5m9aJWGcBq4dy3O7kgbOYiAUENs/aPpyzF/nbD/7P1fnEjewDKM7Ewta2kFBTWmqr3x5ruXnz+O/Z8P2xaNsmtFDTNqRtnaghUEoKSGoSncjLpAmpADEqSiZiAbEGpKmShoz0Ky00RqTYSJjI6wsO8YBLuoTPDvBhIi8bFEu9eIx0ol8lv6gisaba0hEc2poCSakYQ3AEGxjTC/cWjdERzGsNpkkbwUiY6VeNFtKUEKXO1BAKRkkrUUszw4c1lwQLErBkAodfHB48D67t88iGBScTs6yXFK3Q5H2Z4XkqorW22NIZzF+CCm1R+2sOBmL9OB8DsPcyPCsVwh7wNl9ZQM/2wMIHeC3IAA5zwhaeF/Fk5cNmRpcNIRDo5Q2dwWFtX1psAhqSGRwavcYpsbUhM16UK8gtwVSSXHke0ZRYeye6l+KJyVC/SHrxUDQYhjQlr2PLfWygGenXNfMJFL3SnBldtjU2BYOvBe7UfMXXaNPyisqUx8a0t5CWaJzJ6/0ZSpDrpGKCM7NcX664ctyr0g79V94G1Rp7bZwjWrnWYm3o4XByAh72Z2pvUyMQXI/dO2TCRynqSx3c9YMwsQe4V0/W2RCfxZKH4FBepVeziOEO2xRHNdIiDSSvsgx4mwV+ECTnc0vaNbHTW/9wL/oTDPRBFY/plGkAAAAASUVORK5CYII=" alt="QR"></div>
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('6a617556000000000301d239')">余额宝还是零钱通</a></div>
+        <div class="author">作者：momo | 📅 2026-07-23</div>
+        <div class="snippet">一直在纠结放在哪个安全一些，收益多一点#攒钱[话题]# #存钱理财[话题]# #存钱理财[话题]# #存款[话题]# #一定要对钱有概念[话题]# #存钱真的会上瘾[话题]# #对钱没概念[话题]# #钱生钱才是对钱最大的尊重[话题]#</div>
+        <div class="stats">
+          <div class="stat">点赞 <span>21</span></div>
+          <div class="stat">收藏 <span>2</span></div>
+          <div class="stat">评论 <span>19</span></div>
+          <div class="stat">分享 <span>2</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('6a617556000000000301d239')">📖 查看全文</a><a class="link-btn secondary" href="https://www.xiaohongshu.com/explore/6a617556000000000301d239?xsec_token=ABDZ4EPFx5F0_h4JaUMk83jL-AN6TGnD31NWXT_2IRFcs%3D&amp;xsec_source=pc_search" target="_blank">原帖 ↗</a>
+      </div>
+    </div>
   </div>
 
   </div><!-- /pane-sentiment -->

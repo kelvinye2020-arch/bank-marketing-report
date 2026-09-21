@@ -785,6 +785,10 @@ html = """<!DOCTYPE html>
   tr.flagged td { background: #fff1f0; }
   tr.flagged:hover td { background: #ffe4e0; }
   td .cmt-num { color: #ff2442; font-weight: 700; }
+  .note-card .snippet { font-size: 13px; color: #555; line-height: 1.6; margin: 8px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .note-card.flagged { background: #fff1f0; border: 1px solid #ffccc7; }
+  .note-card.flagged:hover { box-shadow: 0 6px 20px rgba(212,56,13,0.18); }
+  .note-card .stat.hl span { color: #d4380d; font-size: 16px; }
   /* ---- 笔记详情弹窗（免登录全文） ---- */
   .link-btn.secondary { background: #fff; color: #ff2442; border: 1px solid #ff2442; margin-left: 8px; }
   .link-btn.secondary:hover { background: #fff0f2; }
@@ -989,43 +993,36 @@ html += """  </div>
 
   <div class="section">
     <h2 class="section-title">产品功能讨论榜（按评论数排序）</h2>
-    <table>
-      <thead>
-        <tr>
-          <th style="width:40px">#</th>
-          <th>标题</th>
-          <th style="width:90px">发帖日期</th>
-          <th style="width:120px">作者</th>
-          <th style="width:70px">评论</th>
-          <th style="width:65px">点赞</th>
-          <th style="width:65px">收藏</th>
-          <th style="width:65px">分享</th>
-        </tr>
-      </thead>
-      <tbody>
+    <div class="note-grid">
 """
 
 for i, note in enumerate(product_notes, 1):
+    rank_class = "top3" if i <= 3 else ("top10" if i <= 10 else "normal")
     new_badge = ' <span class="new-badge">NEW</span>' if note["is_new"] else ""
-    title_cell = f'<a href="javascript:void(0)" onclick="openNote(\'{note["id"]}\')">{esc(note["title"])}</a>{new_badge}'
-    html += f"""        <tr>
-          <td>{i}</td>
-          <td>{title_cell}</td>
-          <td>{note['publish_date']}</td>
-          <td>{esc(note['author'])}</td>
-          <td><span class="cmt-num">{fmt_num(note['comments'])}</span></td>
-          <td>{fmt_num(note['likes'])}</td>
-          <td>{fmt_num(note['collects'])}</td>
-          <td>{fmt_num(note['shares'])}</td>
-        </tr>
+    snippet = (note.get("desc_snippet") or "").strip()
+    snippet_html = f'<div class="snippet">{esc(snippet)}</div>' if snippet else ""
+    html += f"""
+      <div class="note-card">
+        <div class="rank {rank_class}">{i}</div>
+        {f'<div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="{esc(note["qr_data_uri"])}" alt="QR"></div>' if note.get("qr_data_uri") else ""}
+        <div class="title"><a href="javascript:void(0)" onclick="openNote('{note["id"]}')">{esc(note['title'])}</a>{new_badge}</div>
+        <div class="author">作者：{esc(note['author'])} | 📅 {note['publish_date']}</div>
+        {snippet_html}
+        <div class="stats">
+          <div class="stat hl">评论 <span>{fmt_num(note['comments'])}</span></div>
+          <div class="stat">点赞 <span>{fmt_num(note['likes'])}</span></div>
+          <div class="stat">收藏 <span>{fmt_num(note['collects'])}</span></div>
+          <div class="stat">分享 <span>{fmt_num(note['shares'])}</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('{note["id"]}')">📖 查看全文</a><a class="link-btn secondary" href="{esc(note['url'])}" target="_blank">原帖 ↗</a>
+      </div>
 """
 
 if not product_notes:
-    html += """        <tr><td colspan="8" style="text-align:center;color:#999">本周暂无入选笔记（周一全量更新后展示）</td></tr>
+    html += """      <div style="color:#999;padding:24px;text-align:center">本周暂无入选笔记（周一全量更新后展示）</div>
 """
 
-html += """      </tbody>
-    </table>
+html += """    </div>
   </div>
 
   </div><!-- /pane-product -->
@@ -1054,45 +1051,36 @@ html += """      </tbody>
 
   <div class="section">
     <h2 class="section-title">舆情监控（按发帖时间倒序）</h2>
-    <table>
-      <thead>
-        <tr>
-          <th style="width:40px">#</th>
-          <th>标题</th>
-          <th style="width:90px">发帖日期</th>
-          <th style="width:120px">作者</th>
-          <th style="width:65px">点赞</th>
-          <th style="width:65px">收藏</th>
-          <th style="width:65px">评论</th>
-          <th style="width:65px">分享</th>
-        </tr>
-      </thead>
-      <tbody>
+    <div class="note-grid">
 """
 
 for i, note in enumerate(sentiment_notes, 1):
     flag_badges = "".join(f'<span class="signal-badge">{esc(w)}</span>' for w in note["flags"][:3])
     new_badge = ' <span class="new-badge">NEW</span>' if note["is_new"] else ""
-    title_cell = f'{flag_badges}<a href="javascript:void(0)" onclick="openNote(\'{note["id"]}\')">{esc(note["title"])}</a>{new_badge}'
-    row_class = ' class="flagged"' if note["flags"] else ""
-    html += f"""        <tr{row_class}>
-          <td>{i}</td>
-          <td>{title_cell}</td>
-          <td>{note['publish_date']}</td>
-          <td>{esc(note['author'])}</td>
-          <td>{fmt_num(note['likes'])}</td>
-          <td>{fmt_num(note['collects'])}</td>
-          <td>{fmt_num(note['comments'])}</td>
-          <td>{fmt_num(note['shares'])}</td>
-        </tr>
+    card_class = "note-card flagged" if note["flags"] else "note-card"
+    snippet = (note.get("desc_snippet") or "").strip()
+    snippet_html = f'<div class="snippet">{esc(snippet)}</div>' if snippet else ""
+    html += f"""
+      <div class="{card_class}">
+        {f'<div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="{esc(note["qr_data_uri"])}" alt="QR"></div>' if note.get("qr_data_uri") else ""}
+        <div class="title">{flag_badges}<a href="javascript:void(0)" onclick="openNote('{note["id"]}')">{esc(note['title'])}</a>{new_badge}</div>
+        <div class="author">作者：{esc(note['author'])} | 📅 {note['publish_date']}</div>
+        {snippet_html}
+        <div class="stats">
+          <div class="stat">点赞 <span>{fmt_num(note['likes'])}</span></div>
+          <div class="stat">收藏 <span>{fmt_num(note['collects'])}</span></div>
+          <div class="stat">评论 <span>{fmt_num(note['comments'])}</span></div>
+          <div class="stat">分享 <span>{fmt_num(note['shares'])}</span></div>
+        </div>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('{note["id"]}')">📖 查看全文</a><a class="link-btn secondary" href="{esc(note['url'])}" target="_blank">原帖 ↗</a>
+      </div>
 """
 
 if not sentiment_notes:
-    html += """        <tr><td colspan="8" style="text-align:center;color:#999">本周暂无入选舆情笔记</td></tr>
+    html += """      <div style="color:#999;padding:24px;text-align:center">本周暂无入选舆情笔记</div>
 """
 
-html += """      </tbody>
-    </table>
+html += """    </div>
   </div>
 
   </div><!-- /pane-sentiment -->
