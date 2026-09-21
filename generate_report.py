@@ -733,6 +733,8 @@ html = """<!DOCTYPE html>
   .note-card .qr-wrap { position: absolute; top: 12px; left: 12px; padding: 4px; background: #fff; border: 1px solid #eee; border-radius: 6px; line-height: 0; cursor: help; }
   .note-card .qr-img { display: block; width: 56px; height: 56px; image-rendering: pixelated; }
   .note-card .qr-wrap:hover { transform: scale(1.5); transition: transform .2s; z-index: 10; box-shadow: 0 4px 16px rgba(0,0,0,0.2); border-color: #ff2442; }
+  .note-card.has-qr .title, .note-card.has-qr .author { margin-left: 76px; }
+  .note-card.has-qr .title { min-height: 40px; }
   .content-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
   .content-tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 500; }
   .content-tag.bank { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
@@ -890,7 +892,7 @@ for i, note in enumerate(top_notes, 1):
     if tag_items:
         tag_html = f'<div class="content-tags">{"".join(tag_items)}</div>'
     html += f"""
-      <div class="note-card">
+      <div class="note-card{' has-qr' if note.get("qr_data_uri") else ''}">
         <div class="rank {rank_class}">{i}</div>
         {f'<div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="{esc(note["qr_data_uri"])}" alt="QR"></div>' if note.get("qr_data_uri") else ""}
         <div class="title"><a href="javascript:void(0)" onclick="openNote('{note["id"]}')">{esc(note['title'])}</a>{new_tag}{focus_tag}</div>
@@ -1002,7 +1004,7 @@ for i, note in enumerate(product_notes, 1):
     snippet = (note.get("desc_snippet") or "").strip()
     snippet_html = f'<div class="snippet">{esc(snippet)}</div>' if snippet else ""
     html += f"""
-      <div class="note-card">
+      <div class="note-card{' has-qr' if note.get("qr_data_uri") else ''}">
         <div class="rank {rank_class}">{i}</div>
         {f'<div class="qr-wrap" title="用小红书App扫码查看原文"><img class="qr-img" src="{esc(note["qr_data_uri"])}" alt="QR"></div>' if note.get("qr_data_uri") else ""}
         <div class="title"><a href="javascript:void(0)" onclick="openNote('{note["id"]}')">{esc(note['title'])}</a>{new_badge}</div>
@@ -1058,6 +1060,8 @@ for i, note in enumerate(sentiment_notes, 1):
     flag_badges = "".join(f'<span class="signal-badge">{esc(w)}</span>' for w in note["flags"][:3])
     new_badge = ' <span class="new-badge">NEW</span>' if note["is_new"] else ""
     card_class = "note-card flagged" if note["flags"] else "note-card"
+    if note.get("qr_data_uri"):
+        card_class += " has-qr"
     snippet = (note.get("desc_snippet") or "").strip()
     snippet_html = f'<div class="snippet">{esc(snippet)}</div>' if snippet else ""
     html += f"""
