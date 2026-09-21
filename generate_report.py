@@ -876,7 +876,7 @@ html = """<!DOCTYPE html>
   </div>
 
   <div class="xhs-tip">
-    💡 <strong>使用提示</strong>：点击「📖 查看全文」在报告内直接阅读完整笔记（正文+图片，<strong>免登录</strong>）；「原帖 ↗」跳转小红书（可能弹登录框）；卡片左上角二维码可用 App 扫码互动
+    💡 <strong>使用提示</strong>：点击卡片或「📖 查看全文」在报告内直接阅读完整笔记（正文+图片，<strong>免登录</strong>）；弹窗底部「去小红书看原帖」可跳转小红书 App/网页查看评论（需登录）
   </div>
 
   <!-- ==================== TOP 热门笔记 ==================== -->
@@ -917,7 +917,7 @@ for i, note in enumerate(top_notes, 1):
           <div class="stat">评论 <span>{fmt_num(note['comments'])}</span></div>
           <div class="stat">分享 <span>{fmt_num(note['shares'])}</span></div>
         </div>
-        <a class="link-btn" href="javascript:void(0)" onclick="openNote('{note["id"]}')">📖 查看全文</a><a class="link-btn secondary" href="{esc(note['url'])}" target="_blank">原帖 ↗</a>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('{note["id"]}')">📖 查看全文</a>
       </div>
 """
 
@@ -1028,7 +1028,7 @@ for i, note in enumerate(product_notes, 1):
           <div class="stat">收藏 <span>{fmt_num(note['collects'])}</span></div>
           <div class="stat">分享 <span>{fmt_num(note['shares'])}</span></div>
         </div>
-        <a class="link-btn" href="javascript:void(0)" onclick="openNote('{note["id"]}')">📖 查看全文</a><a class="link-btn secondary" href="{esc(note['url'])}" target="_blank">原帖 ↗</a>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('{note["id"]}')">📖 查看全文</a>
       </div>
 """
 
@@ -1085,7 +1085,7 @@ for i, note in enumerate(sentiment_notes, 1):
           <div class="stat">评论 <span>{fmt_num(note['comments'])}</span></div>
           <div class="stat">分享 <span>{fmt_num(note['shares'])}</span></div>
         </div>
-        <a class="link-btn" href="javascript:void(0)" onclick="openNote('{note["id"]}')">📖 查看全文</a><a class="link-btn secondary" href="{esc(note['url'])}" target="_blank">原帖 ↗</a>
+        <a class="link-btn" href="javascript:void(0)" onclick="openNote('{note["id"]}')">📖 查看全文</a>
       </div>
 """
 
@@ -1144,7 +1144,7 @@ function openNote(id) {
     document.getElementById('mTags').innerHTML = (d.tags || []).map(t => '<span class="htag">#' + t + '</span>').join('');
     document.getElementById('mStats').innerHTML =
         '点赞 <span>' + d.likes + '</span>　收藏 <span>' + d.collects + '</span>　评论 <span>' + d.comments + '</span>　分享 <span>' + d.shares + '</span>' +
-        '<a class="modal-orig" href="' + d.url + '" target="_blank">去小红书看原帖 ↗</a>';
+        '<a class="modal-orig" href="' + d.url + '" target="_blank">去小红书看原帖（评论需登录）↗</a>';
     document.getElementById('noteModal').classList.add('open');
     document.body.style.overflow = 'hidden';
 }
@@ -1152,7 +1152,7 @@ function showImg() {
     const imgs = _curNote.imgs;
     const img = document.getElementById('mImg');
     img.src = imgs[_curIdx];
-    img.onerror = function() { img.onerror = null; img.alt = '图片加载失败，可点底部「去小红书看原帖」'; };
+    img.onerror = function() { img.onerror = null; img.alt = '图片加载失败'; };
     document.getElementById('mIdx').textContent = (_curIdx + 1) + ' / ' + imgs.length;
     const multi = imgs.length > 1;
     document.getElementById('mPrev').style.display = multi ? '' : 'none';
