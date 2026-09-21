@@ -436,6 +436,43 @@ for n in bank_notes:
 NO_DETAILS = "--no-details" in sys.argv
 DETAILS_CACHE_PATH = os.path.join(BASE_DIR, "note_details.json")
 
+def _img_url(o):
+    """Robust image URL extraction: fileId first (long-lived ci.xiaohongshu.com),
+    then direct url fields, then infoList entries. Fixes 2026-09-21 degradation
+    where 55/62 details had empty images because only fileId was recognized."""
+    if not isinstance(o, dict):
+        return None
+    fid = o.get("fileId")
+    if fid:
+        return "https://ci.xiaohongshu.com/" + fid
+    for k in ("url", "urlDefault", "url_default", "original", "urlScoped"):
+        v = o.get(k)
+        if isinstance(v, str) and v.startswith("http"):
+            return v
+    for k in ("infoList", "info_list"):
+        for info in o.get(k) or []:
+            if isinstance(info, dict):
+                v = info.get("url")
+                if isinstance(v, str) and v.startswith("http"):
+                    return v
+    return None
+
+def _extract_images(note):
+    urls = []
+    for img in (note.get("imageList") or [])[:9]:
+        u = _img_url(img)
+        if u:
+            urls.append(u)
+    if not urls:
+        for cand in ((note.get("cover") or {}),
+                     (note.get("video") or {}).get("cover") or {},
+                     (note.get("video") or {}).get("image") or {},
+                     (note.get("video") or {}).get("videoCover") or {}):
+            u = _img_url(cand)
+            if u and u not in urls:
+                urls.append(u)
+    return urls
+
 def fetch_note_detail(note_id, xsec_token):
     """Fetch note detail anonymously. Returns dict or None."""
     import requests as _rq
@@ -454,15 +491,7 @@ def fetch_note_detail(note_id, xsec_token):
     if not entry:
         return None
     note = entry.get("note", {})
-    images = []
-    for img in note.get("imageList", [])[:9]:
-        fid_img = img.get("fileId")
-        if fid_img:
-            images.append("https://ci.xiaohongshu.com/" + fid_img)
-    if not images:
-        cov_fid = (note.get("cover") or {}).get("fileId")
-        if cov_fid:
-            images.append("https://ci.xiaohongshu.com/" + cov_fid)
+    images = _extract_images(note)
     tags = [t.get("name", "") for t in note.get("tagList", []) if t.get("name")]
     ts = note.get("time")
     pub = ""
@@ -526,15 +555,7 @@ def fetch_note_detail_mcp(note_id, xsec_token):
         return None
     if not note:
         return None
-    images = []
-    for img in note.get("imageList", [])[:9]:
-        fid_img = img.get("fileId")
-        if fid_img:
-            images.append("https://ci.xiaohongshu.com/" + fid_img)
-    if not images:
-        cov_fid = (note.get("cover") or {}).get("fileId")
-        if cov_fid:
-            images.append("https://ci.xiaohongshu.com/" + cov_fid)
+    images = _extract_images(note)
     tags = [t.get("name", "") for t in note.get("tagList", []) if t.get("name")]
     ts = note.get("time")
     pub = ""
