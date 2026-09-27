@@ -436,10 +436,23 @@ for n in bank_notes:
 NO_DETAILS = "--no-details" in sys.argv
 DETAILS_CACHE_PATH = os.path.join(BASE_DIR, "note_details.json")
 
+def _sns_to_ci(url):
+    """sns-webpic 签名 URL（约3天过期403）→ 提取 1040g 文件 ID 改写成
+    ci.xiaohongshu.com 长效链接。MCP get_feed_detail 的 imageList 只有
+    urlDefault/urlPre 签名 URL 没有 fileId（2026-09-27 实测），必须改写。"""
+    if not isinstance(url, str):
+        return None
+    if "sns-webpic" in url or "xhscdn.com" in url:
+        m = re.search(r"(1040g[0-9a-z]+)", url)
+        if m:
+            return "https://ci.xiaohongshu.com/" + m.group(1)
+    return url
+
 def _img_url(o):
     """Robust image URL extraction: fileId first (long-lived ci.xiaohongshu.com),
     then direct url fields, then infoList entries. Fixes 2026-09-21 degradation
-    where 55/62 details had empty images because only fileId was recognized."""
+    where 55/62 details had empty images because only fileId was recognized.
+    All direct-url fallbacks pass through _sns_to_ci (2026-09-27)."""
     if not isinstance(o, dict):
         return None
     fid = o.get("fileId")
@@ -448,13 +461,13 @@ def _img_url(o):
     for k in ("url", "urlDefault", "url_default", "original", "urlScoped"):
         v = o.get(k)
         if isinstance(v, str) and v.startswith("http"):
-            return v
+            return _sns_to_ci(v)
     for k in ("infoList", "info_list"):
         for info in o.get(k) or []:
             if isinstance(info, dict):
                 v = info.get("url")
                 if isinstance(v, str) and v.startswith("http"):
-                    return v
+                    return _sns_to_ci(v)
     return None
 
 def _extract_images(note):
@@ -472,6 +485,64 @@ def _extract_images(note):
             if u and u not in urls:
                 urls.append(u)
     return urls
+
+# --- 图片本地化（2026-09-27）：sns 签名 URL ~3 天过期 403，老图床 ID
+# (1040g3k) 连 ci 域名都 404，唯一可持续方案是抓详情时立刻下载到 imgs/
+# 随报告一起部署。缓存 images 字段存本地相对路径（imgs/xxx.jpg）。
+IMGS_DIR = os.path.join(BASE_DIR, "imgs")
+
+def _download_one_img(note_id, idx, url):
+    """下载单张图到 imgs/，返回本地相对路径；失败返回 None。"""
+    import requests as _rq
+    os.makedirs(IMGS_DIR, exist_ok=True)
+    fname = f"{note_id}_{idx}.jpg"
+    fpath = os.path.join(IMGS_DIR, fname)
+    if os.path.exists(fpath) and os.path.getsize(fpath) > 1000:
+        return f"imgs/{fname}"
+    # ci 域名默认给 heic（浏览器不认），加参数转 jpeg
+    dl = url
+    if "ci.xiaohongshu.com" in url and "imageView2" not in url:
+        dl = url + "?imageView2/2/w/1080/format/jpg"
+    # WorkBuddy 沙箱拦截 sns-webpic:80，换 https 443 绕行（2026-09-27 实测）
+    if dl.startswith("http://sns-webpic"):
+        dl = "https://" + dl[len("http://"):]
+    try:
+        r = _rq.get(dl, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/126.0"},
+                    timeout=25)
+        if r.status_code == 200 and len(r.content) > 1000:
+            with open(fpath, "wb") as f:
+                f.write(r.content)
+            return f"imgs/{fname}"
+    except Exception:
+        pass
+    return None
+
+def _localize_images(note_id, images):
+    """把远程图片 URL 列表本地化；下不动的保留远程 URL 兜底。"""
+    out = []
+    for i, u in enumerate(images or []):
+        if isinstance(u, str) and u.startswith("imgs/"):
+            out.append(u)  # 已本地化
+            continue
+        local = _download_one_img(note_id, i, u)
+        out.append(local if local else u)
+    return out
+
+def _prune_imgs_dir(valid_note_ids):
+    """清理 imgs/ 里已滚出报告窗口的笔记图片，防止仓库无限膨胀。"""
+    if not os.path.isdir(IMGS_DIR):
+        return
+    removed = 0
+    for fn in os.listdir(IMGS_DIR):
+        nid = fn.split("_")[0]
+        if nid not in valid_note_ids:
+            try:
+                os.remove(os.path.join(IMGS_DIR, fn))
+                removed += 1
+            except OSError:
+                pass
+    if removed:
+        print(f"imgs/ 清理过期图片: {removed} 张", flush=True)
 
 def fetch_note_detail(note_id, xsec_token):
     """Fetch note detail anonymously. Returns dict or None."""
@@ -648,6 +719,7 @@ if not NO_DETAILS:
             d = None
             print(f"  [{_ti}/{len(_todo)}] detail fetch error {n['id'][:12]}: {e}", flush=True)
         if d:
+            d["images"] = _localize_images(n["id"], d.get("images"))
             note_details[n["id"]] = d
             _fetch_ok += 1
             # 每条增量保存：长批次中途取消不至于全丢（2026-09-21 教训）
@@ -667,6 +739,25 @@ if not NO_DETAILS:
         print(f"  警告: note_details.json 写入失败: {e}", flush=True)
 print(f"Note details embedded: {len(note_details)}/{len(_current_ids)} "
       f"(fetched {_fetch_ok}, failed {_fetch_fail})")
+
+# 存量缓存本地化兜底：已缓存详情里仍是远程 URL 的图片补下载（签名过期前救回）
+if not NO_DETAILS:
+    _loc_changed = 0
+    for _nid, _d in note_details.items():
+        _imgs = _d.get("images") or []
+        if any(isinstance(u, str) and u.startswith("http") for u in _imgs):
+            _new = _localize_images(_nid, _imgs)
+            if _new != _imgs:
+                note_details[_nid]["images"] = _new
+                _loc_changed += 1
+    if _loc_changed:
+        print(f"存量图片本地化: {_loc_changed} 条笔记", flush=True)
+        try:
+            with open(DETAILS_CACHE_PATH, "w", encoding="utf-8") as f:
+                json.dump(note_details, f, ensure_ascii=False, indent=1)
+        except IOError:
+            pass
+    _prune_imgs_dir(_current_ids)
 
 
 # =====================================================
