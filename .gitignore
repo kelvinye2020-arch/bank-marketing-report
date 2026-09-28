@@ -44,3 +44,7 @@ cn10y_kline.json
 
 stale_imgs.json
 check_imgs.py
+
+bench_*
+note_sample.json
+mcp_bench.log
