@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小红书银行营销报告 — 项目迭代历程</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f7fa;
+    color: #333;
+    line-height: 1.6;
+    padding: 24px;
+  }
+  .container { max-width: 960px; margin: 0 auto; }
+
+  /* 标题区 */
+  .header {
+    text-align: center;
+    margin-bottom: 36px;
+    padding: 32px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    color: #fff;
+  }
+  .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .header p { font-size: 15px; opacity: 0.9; }
+  .header .stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 20px;
+  }
+  .header .stat-item { text-align: center; }
+  .header .stat-num { font-size: 32px; font-weight: 800; }
+  .header .stat-label { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+
+  /* 阶段卡片 */
+  .phase {
+    background: #fff;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    overflow: hidden;
+  }
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 22px;
+    cursor: pointer;
+    transition: background 0.2s;
+    user-select: none;
+  }
+  .phase-header:hover { background: #fafbfc; }
+  .phase-badge {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 800; color: #fff;
+    flex-shrink: 0;
+  }
+  .phase-info { flex: 1; }
+  .phase-title { font-size: 17px; font-weight: 600; color: #1a1a1a; }
+  .phase-meta { font-size: 13px; color: #888; margin-top: 3px; }
+  .phase-count {
+    background: #f0f0f0;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+  }
+  .phase-body {
+    padding: 0 22px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.3s;
+  }
+  .phase.open .phase-body {
+    max-height: 3000px;
+    padding: 8px 22px 22px;
+  }
+  .phase-toggle { font-size: 20px; color: #bbb; transition: transform 0.3s; }
+  .phase.open .phase-toggle { transform: rotate(180deg); }
+
+  /* 时间线 */
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 9px; top: 0; bottom: 12px;
+    width: 2px;
+    background: #e8e8e8;
+    border-radius: 1px;
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 14px;
+    padding-left: 4px;
+  }
+  .timeline-dot {
+    position: absolute;
+    left: -25px; top: 6px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px currentColor;
+  }
+  .item-date { font-size: 12px; color: #999; font-weight: 500; }
+  .item-desc { font-size: 14px; color: #444; margin-top: 2px; }
+  .item-tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 1px 8px;
+    border-radius: 10px;
+    margin-right: 4px;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  /* 阶段颜色 */
+  .phase-1 .phase-badge { background: linear-gradient(135deg, #f093fb, #f5576c); }
+  .phase-1 .timeline-dot { color: #f5576c; }
+  .phase-1 .item-tag { background: #fef0f2; color: #d63384; }
+
+  .phase-2 .phase-badge { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+  .phase-2 .timeline-dot { color: #00b4d8; }
+  .phase-2 .item-tag { background: #e8f7fc; color: #0891b2; }
+
+  .phase-3 .phase-badge { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+  .phase-3 .timeline-dot { color: #2dd4bf; }
+  .phase-3 .item-tag { background: #ecfdf5; color: #059669; }
+
+  .phase-4 .phase-badge { background: linear-gradient(135deg, #fa709a, #fee140); }
+  .phase-4 .timeline-dot { color: #f59e0b; }
+  .phase-4 .item-tag { background: #fffbeb; color: #d97706; }
+
+  /* 底部总结 */
+  .summary {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .summary h2 { font-size: 18px; margin-bottom: 14px; color: #1a1a1a; }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .summary-card {
+    background: #f8f9fb;
+    border-radius: 10px;
+    padding: 16px;
+    border-left: 3px solid #667eea;
+  }
+  .summary-card h3 { font-size: 14px; color: #555; margin-bottom: 6px; }
+  .summary-card p { font-size: 13px; color: #777; line-height: 1.65; }
+
+  /* 技术栈标签 */
+  .tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 16px;
+    justify-content: center;
+  }
+  .tech-tag {
+    background: #ede9fe;
+    color: #6d28d9;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  @media (max-width: 600px) {
+    .header .stats { gap: 16px; }
+    .header .stat-num { font-size: 24px; }
+    .summary-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- 头部 -->
+<div class="header">
+  <h1>📊 小红书银行营销活动搜索报告</h1>
+  <p>项目迭代历程 · 2026.03 — 2026.07</p>
+  <div class="stats">
+    <div class="stat-item"><div class="stat-num">41</div><div class="stat-label">Git 提交</div></div>
+    <div class="stat-item"><div class="stat-num">4</div><div class="stat-label">演进阶段</div></div>
+    <div class="stat-item"><div class="stat-num">~5</div><div class="stat-label">个月</div></div>
+    <div class="stat-item"><div class="stat-num">16+</div><div class="stat-label">覆盖银行</div></div>
+  </div>
+</div>
+
+<!-- 阶段一：产品成型期 -->
+<div class="phase phase-1 open" onclick="togglePhase(this)">
+  <div class="phase-header">
+    <div class="phase-badge">1</div>
+    <div class="phase-info">
+      <div class="phase-title">🎨 产品成型期 — 从零到可用的看板</div>
+      <div class="phase-meta">2026年3月 · 13次提交 · 最密集的探索阶段</div>
+    </div>
+    <span class="phase-count">13 commits</span>
+    <span class="phase-toggle">▼</span>
+  </div>
+  <div class="phase-body">
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">03/15</div>
+        <div class="item-desc">项目初始化，创建基础搜索+生成脚本骨架</div>
+        <span class="item-tag">初始化</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">03/15 ~ 03/18</div>
+        <div class="item-desc">UI 快速迭代：best1 格式定型，卡片布局、配色方案确定</div>
+        <span class="item-tag">UI设计</span> <span class="item-tag">多次重构</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">03月中</div>
+        <div class="item-desc">百度搜索方案试错 → 数据质量不达标 → 回退到小红书 MCP 直搜</div>
+        <span class="item-tag">试错</span> <span class="item-tag">方案选型</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">03月下</div>
+        <div class="item-desc">GitHub Pages 上线，首次实现线上访问</div>
+        <span class="item-tag">部署</span> <span class="item-tag">Pages</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">03月下</div>
+        <div class="item-desc">封面图加减、点赞阈值调整、数据过滤规则打磨</div>
+        <span class="item-tag">数据质量</span> <span class="item-tag">交互优化</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">03月底</div>
+        <div class="item-desc">产品形态基本稳定：HTML 看板 + 每周手动更新流程跑通</div>
+        <span class="item-tag">里程碑</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 阶段二：功能精修期 -->
+<div class="phase phase-2" onclick="togglePhase(this)">
+  <div class="phase-header">
+    <div class="phase-badge">2</div>
+    <div class="phase-info">
+      <div class="phase-title">⚙️ 功能精修期 — 体验优化与功能补全</div>
+      <div class="phase-meta">2026年4月 - 5月 · 13次提交 · 稳步完善</div>
+    </div>
+    <span class="phase-count">13 commits</span>
+    <span class="phase-toggle">▼</span>
+  </div>
+  <div class="phase-body">
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">04月初</div>
+        <div class="item-desc">滚动 7 天窗口逻辑奠基：只保留近 7 天内活跃内容，过期自动淘汰</div>
+        <span class="item-tag">核心逻辑</span> <span class="item-tag">时间窗口</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">04月</div>
+        <div class="item-desc">增加"复制链接"按钮，方便运营同学直接取笔记 URL</div>
+        <span class="item-tag">交互</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">04月</div>
+        <div class="item-desc">PC 端受限提示：非移动端访问时给出友好引导</div>
+        <span class="item-tag">兼容性</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">04 - 05月</div>
+        <div class="item-desc">卡片标签系统上线：银行名 / 活动类型 / 金额区间 三维标签</div>
+        <span class="item-tag">标签系统</span> <span class="item-tag">信息架构</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">05月</div>
+        <div class="item-desc">趋于稳定周更节奏，手动更新流程成熟</div>
+        <span class="item-tag">稳定运行</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 阶段三：自动化改造 -->
+<div class="phase phase-3" onclick="togglePhase(this)">
+  <div class="phase-header">
+    <div class="phase-badge">3</div>
+    <div class="phase-info">
+      <div class="phase-title">🤖 自动化改造期 — 从手动到全自动</div>
+      <div class="phase-meta">2026年6月 · 5次提交 · 技术攻坚</div>
+    </div>
+    <span class="phase-count">5 commits</span>
+    <span class="phase-toggle">▼</span>
+  </div>
+  <div class="phase-body">
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">06月初</div>
+        <div class="item-desc">version safe update 自动化起点：WorkBuddy automation-3 创建</div>
+        <span class="item-tag">自动化</span> <span class="item-tag">定时任务</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">06月</div>
+        <div class="item-desc">MCP 攻坚开始：小红书 MCP 对接，解决浏览器启动 / cookie / 搜索链路</div>
+        <span class="item-tag">MCP集成</span> <span class="item-tag">浏览器自动化</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">06月</div>
+        <div class="item-desc">Chrome 兼容性问题暴露（系统 Chrome 149 太新），引入独立 Chromium</div>
+        <span class="item-tag">环境适配</span> <span class="item-tag">踩坑</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">06月底</div>
+        <div class="item-desc">端口占用根因定位并修复（taskkill MCP 本体）</div>
+        <span class="item-tag">排障</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 阶段四：稳定性与数据质量 -->
+<div class="phase phase-4" onclick="togglePhase(this)">
+  <div class="phase-header">
+    <div class="phase-badge">4</div>
+    <div class="phase-info">
+      <div class="phase-title">🛡️ 稳定性与数据质量期 — 生产级打磨</div>
+      <div class="phase-meta">2026年7月 · 10次提交 · 密集修复与增强</div>
+    </div>
+    <span class="phase-count">10 commits</span>
+    <span class="phase-toggle">▼</span>
+  </div>
+  <div class="phase-body">
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">07月初</div>
+        <div class="item-desc">Windows 计划任务修复：删除两个废弃旧任务，新建 XHS_MCP_Weekly</div>
+        <span class="item-tag">计划任务</span> <span class="item-tag">运维</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">07/13</div>
+        <div class="item-desc">数据事故教训：自创关键词导致仅 4 条结果 → 固化 SEARCHES 必须从 update_report.py 复制</div>
+        <span class="item-tag">事故复盘</span> <span class="item-tag">关键词规范</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">07/13</div>
+        <div class="item-desc">数据质量看门狗上线：推送前自检 unique≥150 / 银行相关≥25 / 新增≥8 / 重点银行≥2</div>
+        <span class="item-tag">质量保障</span> <span class="item-tag">看门狗</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">07/20</div>
+        <div class="item-desc">check_login_status 超时陷阱发现：cookie 过期重扫码后应跳过登录检查直接搜索</div>
+        <span class="item-tag">超时处理</span> <span class="item-tag">流程优化</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">07/27</div>
+        <div class="item-desc">quick_update.py 一键全流程脚本诞生：探活→登录→搜索→生成→自检→push 全自动</div>
+        <span class="item-tag">一键脚本</span> <span class="item-tag">全流程</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">07/27</div>
+        <div class="item-desc">标题去重功能：normalize_title 去日期前缀归一化，38 → 34 篇去重</div>
+        <span class="item-tag">去重</span> <span class="item-tag">数据清洗</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">07/27</div>
+        <div class="item-desc">动态摘要替换硬编码："热门银行/主流玩法"从 bank_notes.tags 统计频次 Top N</div>
+        <span class="item-tag">数据驱动</span> <span class="item-tag">动态统计</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">07/27</div>
+        <div class="item-desc">PAT 过期更换：classic token → fine-grained token（github_pat_... 格式）</div>
+        <span class="item-tag">DevOps</span> <span class="item-token">认证</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">07/27</div>
+        <div class="item-desc">automation-3 看门狗通知优化：MCP 未启动时直接给 CMD 命令而非 bat 双击</div>
+        <span class="item-tag">告警优化</span> <span class="item-tag">用户体验</span>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="item-date">07/27</div>
+        <div class="item-desc">SOP 固化为 Skill（xhs-bank-report-update），后续周更一句话触发</div>
+        <span class="item-tag">Skill固化</span> <span class="item-tag">SOP</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 总结区 -->
+<div class="summary">
+  <h2>📋 关键成果与经验沉淀</h2>
+  <div class="summary-grid">
+    <div class="summary-card">
+      <h3>🎯 覆盖范围</h3>
+      <p>覆盖 16+ 家银行（工行/招行/中行/建行/中信/交行/浦发/民生/兴业/平安/广发/邮储/华夏/光大/宁波/北京等），每周追踪 30-40 条银行相关营销笔记。</p>
+    </div>
+    <div class="summary-card">
+      <h3>🔄 自动化水平</h3>
+      <p>从纯手动更新进化为 WorkBuddy 定时任务 + Windows 计划任务双保险。唯一人工点：MCP cookie 每 2-3 周需扫码续期。</p>
+    </div>
+    <div class="summary-card">
+      <h3>💡 核心经验</h3>
+      <p>① 搜索关键词必须从已验证来源复制，禁止自编 ② 静默类自动化必须端到端验证真实命中 ③ 数据质量看门狗比功能开发更重要</p>
+    </div>
+    <div class="summary-card">
+      <h3>🔮 后续方向</h3>
+      <p>P0：start_mcp.bat 闪退根治；P1：cookie 续期提醒前置；P2：更多维度标签（客群/渠道）；P3：趋势对比（周环比变化）</p>
+    </div>
+  </div>
+
+  <div class="tech-stack">
+    <span class="tech-tag">Python</span>
+    <span class="tech-tag">小红书 MCP</span>
+    <span class="tech-tag">Chromium</span>
+    <span class="tech-tag">GitHub Pages</span>
+    <span class="tech-tag">WorkBuddy Automation</span>
+    <span class="tech-tag">Windows 计划任务</span>
+    <span class="tech-tag">企业微信 Webhook</span>
+    <span class="tech-tag">Fine-grained PAT</span>
+    <span class="tech-tag">HTML/CSS</span>
+    <span class="tech-tag">Skill SOP</span>
+  </div>
+</div>
+
+</div>
+
+<script>
+function togglePhase(el) {
+  el.classList.toggle('open');
+}
+// 默认展开第一个
+document.querySelector('.phase-1').classList.add('open');
+</script>
+</body>
+</html>

@@ -25,3 +25,22 @@ mcp_stderr.txt
 # Local debug helpers
 _get_qr.py
 
+
+# 2026-09-28 追加：cookies / 日志 / 一次性探针与中间产物
+*cookies*.json
+*.log
+mcp_err*.log
+mcp_out*.log
+mcp_stdout_new.txt
+mcp_stderr_new.txt
+probe_*
+missing_tokens.json
+refetch_ids.json
+imgs_prune_list.txt
+*_log_*.txt
+run_log_*.txt
+report_log_*.txt
+cn10y_kline.json
+
+stale_imgs.json
+check_imgs.py
