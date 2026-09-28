@@ -85,7 +85,7 @@ def download(nid, idx, url):
 
 # 同进程拉起 MCP
 log = open(os.path.join(BASE, "mcp_headless.log"), "w")
-p = subprocess.Popen([r"D:\AI agent\xiaohongshu-mcp-windows-amd64\xiaohongshu-mcp-windows-amd64.exe", "-headless=true"],
+p = subprocess.Popen([r"D:\AI agent\xiaohongshu-mcp-windows-amd64\xiaohongshu-mcp-windows-amd64.exe", "-headless=true", "-bin", "D:/AI agent/chromium/chrome-win/chrome.exe"],
                      cwd=r"D:\AI agent\xiaohongshu-mcp-windows-amd64", stdout=log, stderr=subprocess.STDOUT)
 h = {"Content-Type": "application/json", "Accept": "application/json, text/event-stream"}
 ready = False

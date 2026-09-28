@@ -18,6 +18,12 @@ import os
 import time
 import random
 import argparse
+import threading
+
+try:
+    import mcp_pool  # 2026-09-28：并发补跑（与正式流程同一套实例池）
+except Exception:  # pragma: no cover
+    mcp_pool = None
 
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -46,15 +52,20 @@ def find_keyword(kw):
     return None
 
 
-def do_search(session, headers, keyword, filename, idx):
+def do_search(session, headers, keyword, filename, idx, worker=None):
     outpath = os.path.join(ur.BASE_DIR, filename)
-    print(f"\n  [{idx}] 重试搜索: {keyword}", flush=True)
+    tag = f"[w{worker.idx}]" if worker is not None else ""
+    print(f"\n  [{idx}] {tag}重试搜索: {keyword}", flush=True)
     try:
-        resp = session.post(ur.MCP_URL, json={
-            "jsonrpc": "2.0", "id": idx + 100, "method": "tools/call",
-            "params": {"name": "search_feeds", "arguments": {"keyword": keyword}},
-        }, headers=headers, timeout=240)
-        data = resp.json()
+        if worker is not None:
+            data = worker.call("search_feeds", {"keyword": keyword},
+                               timeout=240, request_id=idx + 100)
+        else:
+            resp = session.post(ur.MCP_URL, json={
+                "jsonrpc": "2.0", "id": idx + 100, "method": "tools/call",
+                "params": {"name": "search_feeds", "arguments": {"keyword": keyword}},
+            }, headers=headers, timeout=240)
+            data = resp.json()
         if "result" in data:
             for item in data["result"].get("content", []):
                 if item.get("type") == "text":
@@ -94,31 +105,65 @@ def main():
         print("用法: python retry_failed_searches.py <关键词1> [<关键词2> ...] 或 --group <marketing|product|sentiment>")
         return 2
 
-    print(f"🚀 重试 {len(targets)} 组失败搜索（每组最多 {MAX_ATTEMPTS} 次）", flush=True)
+    # --workers N：并发补跑（默认 1=串行，与历史行为一致）
+    workers = 1
+    if "--workers" in args:
+        wi = args.index("--workers")
+        workers = int(args[wi + 1])
+        args = args[:wi] + args[wi + 2:]
+
+    print(f"🚀 重试 {len(targets)} 组失败搜索（每组最多 {MAX_ATTEMPTS} 次"
+          f"{f'，并发 {workers} 实例' if workers > 1 else ''}）", flush=True)
     headers = ur.init_mcp_session()
     session = requests.Session()
     ok_count = 0
     failed = []
-    for i, (keyword, filename) in enumerate(targets, 1):
-        done = False
+    _lock = threading.Lock()
+    counters = {"ok": 0}
+
+    def attempt_one(keyword, filename, i, worker=None):
         for attempt in range(1, MAX_ATTEMPTS + 1):
             if attempt > 1:
                 print(f"    🔁 第 {attempt} 次尝试: {keyword}", flush=True)
-            if do_search(session, headers, keyword, filename, i):
-                ok_count += 1
-                done = True
-                break
+            if do_search(session, headers, keyword, filename, i, worker=worker):
+                with _lock:
+                    counters["ok"] += 1
+                return True
             if attempt <= len(BACKOFFS):
                 backoff = BACKOFFS[attempt - 1] + random.uniform(0, 10)
                 print(f"    ⏳ 失败，退避 {backoff:.1f} 秒后重试...", flush=True)
                 time.sleep(backoff)
-        if not done:
-            failed.append(keyword)
+        failed.append(keyword)
+        return False
+
+    if workers > 1 and mcp_pool is not None:
+        pool = mcp_pool.MCPPool(workers=workers)
+        try:
+            n_started = pool.start()
+        except Exception as e:
+            print(f"⚠️ 并发池启动失败，回落串行: {e}", flush=True)
+            pool = None
+        if pool is not None and len(pool.workers) > 1:
+            def _task(w, t):
+                i, (kw, fn) = t
+                r = attempt_one(kw, fn, i, worker=w)
+                time.sleep(random.uniform(RETRY_DELAY_MIN, RETRY_DELAY_MAX))
+                return r
+            pool.map(list(enumerate(targets, 1)), _task, desc="retry")
+            pool.close()
+            print(f"\n重试完成: 成功 {counters['ok']}/{len(targets)}", flush=True)
+            if failed:
+                print(f"仍失败: {failed}", flush=True)
+            return 0 if not failed else 3
+
+    for i, (keyword, filename) in enumerate(targets, 1):
+        attempt_one(keyword, filename, i)
         if i < len(targets):
             # 补跑时用更长间隔：实测 10-15s 间隔下 MCP（rod 浏览器）容易连续读超时
             delay = random.uniform(RETRY_DELAY_MIN, RETRY_DELAY_MAX)
             print(f"    ⏳ 等待 {delay:.1f} 秒...", flush=True)
             time.sleep(delay)
+    ok_count = counters["ok"]
 
     print(f"\n重试完成: 成功 {ok_count}/{len(targets)}", flush=True)
     if failed:

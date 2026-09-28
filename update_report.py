@@ -28,8 +28,16 @@ import base64
 import hashlib
 import urllib.request
 import urllib.error
+import threading
 from datetime import datetime
 from pathlib import Path
+
+# 2026-09-28：MCP 多实例并发池（方案 1）。单实例串行是全流程最大卡点
+# （get_feed_detail ~98s/篇、search_feeds 60~90s/组），多开几个 rod 浏览器并行。
+try:
+    import mcp_pool
+except Exception:  # pragma: no cover
+    mcp_pool = None
 
 
 
@@ -136,7 +144,15 @@ BATCH_COOLDOWN = 30      # 批次间冷却（秒）
 # 2026-09-21 曾出现 9/14 组超时、2026-09-28 出现 13/14 组返回空，均靠补跑救回。
 # 所以单组搜索失败后原地重试（退避 30s/60s），不要动不动就判定整轮失败。
 SEARCH_MAX_ATTEMPTS = 3
+
+# 单次 MCP 调用超时（秒）：与 mcp_pool.CALL_TIMEOUT 对齐。修正 -bin 后实测搜索 20~35s，
+# 卡死的调用会挂到 MCP 内部 4 分钟上限才返回 204，早失败早换实例重试。
+SEARCH_TIMEOUT = int(os.environ.get("XHS_MCP_CALL_TIMEOUT", "180"))
 SEARCH_RETRY_BACKOFFS = [30, 60]
+
+# 2026-09-28：MCP 并发实例数。默认 2（保守起步，观察小红书风控）。
+# 实测 2 实例搜索墙钟约为串行的一半；3 实例待观察一周无滑块再上。
+MCP_WORKERS = int(os.environ.get("XHS_MCP_WORKERS", "2"))
 
 
 # ============================================================
@@ -338,8 +354,29 @@ def check_port(host, port, timeout=3):
         return False
 
 
+_BOOT_POOL = None   # 保活：自动拉起的实例不能被 GC / close 掉
+
+
 def start_mcp_service():
-    """Try to start Xiaohongshu MCP in the background."""
+    """Try to start Xiaohongshu MCP in the background.
+
+    2026-09-28 修复：旧实现 `Popen([MCP_EXE])` 有三个致命问题——
+      1) 没传 -bin → rod 自动探测浏览器，单次调用 52~90s 且频繁卡满 4 分钟返回 204
+      2) 没传 -headless=true → 有头模式在沙箱里拉不起浏览器
+      3) cwd 用 dirname(MCP_EXE)（C:\\Users\\...\\tools\\...）→ 读到的是旧 cookie
+         （本机两份 cookies.json，有效那份在 D:\\AI agent\\...）
+    统一改走 mcp_pool：它已处理 -bin / -headless / cookie 目录选取。
+    """
+    global _BOOT_POOL
+    if mcp_pool is not None:
+        try:
+            p = mcp_pool.MCPPool(workers=1, verbose=True)
+            if p.start():
+                _BOOT_POOL = p      # 保持引用，实例随本进程生命周期存活
+                return True
+        except Exception as e:
+            warn(f"mcp_pool 拉起失败，回落旧路径: {e}")
+
     if not MCP_EXE:
         warn("未配置 MCP 可执行文件路径，请在 config.local.json 设置 mcp_exe 或设置 XHS_MCP_EXE 环境变量")
         return False
@@ -347,16 +384,21 @@ def start_mcp_service():
         warn(f"MCP 可执行文件不存在: {MCP_EXE}")
         return False
 
-
     try:
+        # 兜底路径：至少把 -bin / -headless / cookie 目录补对
+        chromium = getattr(mcp_pool, "CHROMIUM", "") if mcp_pool else ""
+        cookie_dir = getattr(mcp_pool, "MCP_DIR", "") if mcp_pool else ""
+        args = [MCP_EXE, "-headless=true"]
+        if chromium and os.path.exists(chromium):
+            args += ["-bin", chromium]
         kwargs = {
             "stdout": subprocess.DEVNULL,
             "stderr": subprocess.DEVNULL,
-            "cwd": os.path.dirname(MCP_EXE),
+            "cwd": cookie_dir or os.path.dirname(MCP_EXE),
         }
         if sys.platform == "win32":
             kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS
-        subprocess.Popen([MCP_EXE], **kwargs)
+        subprocess.Popen(args, **kwargs)
         for _ in range(12):
             time.sleep(1)
             if check_port(MCP_HOST, MCP_PORT, timeout=1):
@@ -418,8 +460,15 @@ def init_mcp_session():
     return headers
 
 
-def call_mcp_tool(headers, tool_name, arguments=None, timeout=60, request_id=2):
-    """Call an MCP tool and return parsed JSON response."""
+def call_mcp_tool(headers, tool_name, arguments=None, timeout=60, request_id=2,
+                  worker=None):
+    """Call an MCP tool and return parsed JSON response.
+
+    worker=None 时走单实例 MCP_URL（登录检查等）；传 worker 则走该实例端口。
+    """
+    if worker is not None:
+        return worker.call(tool_name, arguments, timeout=timeout,
+                           request_id=request_id)
     import requests
 
     resp = requests.post(MCP_URL, json={
@@ -644,8 +693,10 @@ def stage_check_login():
 # ============================================================
 # Stage 3: Search (batched, with random delays)
 # ============================================================
-def stage_search(mcp_headers, searches=None, group_label=""):
+def stage_search(mcp_headers, searches=None, group_label="", pool=None):
     label = f"分批搜索小红书（{group_label}）" if group_label else "分批搜索小红书"
+    if pool is not None and len(pool.workers) > 1:
+        label += f" [并发 {len(pool.workers)} 实例]"
     banner(3, label)
     import requests
 
@@ -655,18 +706,23 @@ def stage_search(mcp_headers, searches=None, group_label=""):
     fail_count = 0
     total = len(searches)
 
-    def do_one_search(keyword, filename, idx, attempt=1):
+    def do_one_search(keyword, filename, idx, attempt=1, worker=None):
         """执行单次搜索，成功写入文件并返回 True。"""
         outpath = os.path.join(BASE_DIR, filename)
         try:
-            resp = session.post(MCP_URL, json={
+            payload = {
                 "jsonrpc": "2.0",
                 "id": idx + 10,
                 "method": "tools/call",
                 "params": {"name": "search_feeds", "arguments": {"keyword": keyword}}
-            }, headers=mcp_headers, timeout=240)
-
-            data = resp.json()
+            }
+            if worker is not None:
+                data = worker.call("search_feeds", {"keyword": keyword},
+                                   timeout=SEARCH_TIMEOUT, request_id=idx + 10)
+            else:
+                resp = session.post(MCP_URL, json=payload,
+                                    headers=mcp_headers, timeout=SEARCH_TIMEOUT)
+                data = resp.json()
 
             if "result" in data:
                 content = data["result"].get("content", [])
@@ -686,6 +742,62 @@ def stage_search(mcp_headers, searches=None, group_label=""):
         except Exception as e:
             print(f"    ❌ 异常: {e}", flush=True)
         return False
+
+    # ---------- 并发分支（多实例池）----------
+    # 2026-09-28：任务交给池子动态抢占执行；每个 worker 内部仍保持
+    # 搜索间隔与批次冷却（小红书限流保护），只是不同 worker 之间并行。
+    if pool is not None and len(pool.workers) > 1:
+        _print_lock = threading.Lock()
+
+        def safe_print(msg):
+            with _print_lock:
+                print(msg, flush=True)
+
+        state = {}   # worker.idx -> 上一个任务的批次号
+        counters = {"success": 0, "failed": 0}
+        tasks = [(gi, kw, fn, gi // BATCH_SIZE)
+                 for gi, (kw, fn) in enumerate(searches)]
+
+        def do_task(w, task):
+            gi, keyword, filename, batch_idx = task
+            prev = state.get(w.idx)
+            if prev is not None:
+                if batch_idx != prev:
+                    cd = BATCH_COOLDOWN + random.randint(0, 10)
+                    safe_print(f"    [w{w.idx}] ⏳ 跨批次冷却 {cd}s")
+                    time.sleep(cd)
+                else:
+                    d = random.uniform(SEARCH_DELAY_MIN, SEARCH_DELAY_MAX)
+                    time.sleep(d)
+            state[w.idx] = batch_idx
+
+            safe_print(f"\n  [{gi+1}/{total}] w{w.idx} 搜索: {keyword}")
+            for attempt in range(1, SEARCH_MAX_ATTEMPTS + 1):
+                if attempt > 1:
+                    safe_print(f"    🔁 第 {attempt} 次尝试（MCP 抖动重试）")
+                if do_one_search(keyword, filename, gi, attempt, worker=w):
+                    with _print_lock:
+                        counters["success"] += 1
+                    return True
+                # 卡死多半是这个实例的浏览器僵了：换实例比重试同一个实例有效
+                # （2026-09-28 实测：同实例重试 3 次仍全部 4 分钟 204）
+                try:
+                    w.restart()
+                except Exception:
+                    pass
+                if attempt <= len(SEARCH_RETRY_BACKOFFS):
+                    backoff = SEARCH_RETRY_BACKOFFS[attempt - 1] + random.uniform(0, 10)
+                    safe_print(f"    ⏳ 退避 {backoff:.1f}s 后重试...")
+                    time.sleep(backoff)
+            with _print_lock:
+                counters["failed"] += 1
+            return False
+
+        pool.map(tasks, do_task, desc="search")
+        print(f"\n  搜索完成: 成功 {counters['success']}/{total}, "
+              f"失败 {counters['failed']}/{total}", flush=True)
+        return {"success": counters["success"], "failed": counters["failed"],
+                "total": total}
 
     # Split into batches
     batches = []
@@ -944,6 +1056,8 @@ def main():
     parser.add_argument("--only", choices=["marketing", "product", "sentiment"], default=None,
                         help="只搜索指定分组（默认全量 marketing+product+sentiment）；"
                              "报告始终基于全部已有数据生成。周四舆情任务用 --only sentiment")
+    parser.add_argument("--workers", type=int, default=MCP_WORKERS,
+                        help=f"MCP 并发实例数（默认 {MCP_WORKERS}；1=串行，2=推荐起步，3=待验证）")
     args = parser.parse_args()
 
     print("🚀 小红书声量监控看板更新开始", flush=True)
@@ -957,14 +1071,28 @@ def main():
     groups = [args.only] if args.only else list(GROUP_ORDER)
     group_names = {"marketing": "银行营销活动", "product": "产品功能讨论", "sentiment": "舆情讨论"}
 
-    def run_searches(mcp_headers):
+    def run_searches(mcp_headers, pool=None):
         stats = {"success": 0, "failed": 0, "total": 0}
         for g in groups:
-            s = stage_search(mcp_headers, SEARCH_GROUPS[g], group_label=group_names[g])
+            s = stage_search(mcp_headers, SEARCH_GROUPS[g],
+                             group_label=group_names[g], pool=pool)
             stats["success"] += s["success"]
             stats["failed"] += s["failed"]
             stats["total"] += s["total"]
         return stats
+
+    def open_pool():
+        """拉起 MCP 并发池；失败则回落单实例（不阻断主流程）。"""
+        n = max(1, int(args.workers or 1))
+        if n <= 1 or mcp_pool is None:
+            return None
+        try:
+            p = mcp_pool.MCPPool(workers=n)
+            p.start()
+            return p
+        except Exception as e:
+            warn(f"MCP 并发池启动失败，回落单实例: {e}")
+            return None
 
     if args.report_only:
         print("   模式: --report-only（跳过搜索）", flush=True)
@@ -974,15 +1102,28 @@ def main():
             pushed = stage_git_push()
     elif args.search_only:
         print(f"   模式: --search-only（只搜索: {'+'.join(groups)}）", flush=True)
+        # 先起池：池内 18060 是"自己人"，后续登录检查复用它；
+        # 若反过来先由 stage_check_mcp 拉起单实例，池会把它当外部实例而无法回收重启。
+        pool = open_pool()
         stage_check_mcp()
         mcp_headers = stage_check_login()
-        search_stats = run_searches(mcp_headers)
+        try:
+            search_stats = run_searches(mcp_headers, pool=pool)
+        finally:
+            if pool:
+                pool.close()
     else:
         # Full pipeline
         print(f"   搜索分组: {'+'.join(groups)}", flush=True)
+        pool = open_pool()
         stage_check_mcp()
         mcp_headers = stage_check_login()
-        search_stats = run_searches(mcp_headers)
+        try:
+            search_stats = run_searches(mcp_headers, pool=pool)
+        finally:
+            # 生成阶段是子进程，会自己再开一个池；这里先关掉避免抢端口/重复浏览器
+            if pool:
+                pool.close()
         report_stats = stage_generate_report()
         check_data_quality(report_stats)
         if not args.no_push:

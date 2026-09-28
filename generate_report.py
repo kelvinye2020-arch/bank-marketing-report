@@ -19,8 +19,18 @@ import sys
 import io
 import time
 import base64
+import threading
 from pathlib import Path
 from datetime import date, datetime, timedelta
+
+# 2026-09-28：MCP 多实例并发池。详情抓取是最大卡点（~98s/篇，实测中位），
+# 单实例串行全量要 20+ 分钟；多开 rod 浏览器并行可压到一半以下。
+try:
+    import mcp_pool
+except Exception:  # pragma: no cover
+    mcp_pool = None
+MCP_WORKERS = int(os.environ.get("XHS_MCP_WORKERS", "2"))
+DETAIL_TIMEOUT = int(os.environ.get("XHS_MCP_CALL_TIMEOUT", "180"))
 
 # Fix Windows console encoding for emoji/CJK
 if sys.platform == "win32":
@@ -470,11 +480,43 @@ def _img_url(o):
                     return _sns_to_ci(v)
     return None
 
+def _img_alt(o):
+    """备用直链：ci 域名 404 时退回原始 sns 签名 URL（刚抓到时仍有效）。
+
+    2026-09-28 实测：部分笔记 fileId 是老图床 ID，ci.xiaohongshu.com 直接 404，
+    但同一份响应里的 urlDefault/urlPre 签名 URL 当场可用 —— 留作兜底再试一次。
+    """
+    if not isinstance(o, dict):
+        return None
+    for k in ("urlDefault", "urlPre", "url", "urlScoped", "original"):
+        v = o.get(k)
+        if isinstance(v, str) and v.startswith("http"):
+            if v.startswith("http://sns-webpic"):
+                v = "https://" + v[len("http://"):]
+            return v
+    for k in ("infoList", "info_list"):
+        for info in o.get(k) or []:
+            if isinstance(info, dict):
+                v = info.get("url")
+                if isinstance(v, str) and v.startswith("http"):
+                    if v.startswith("http://sns-webpic"):
+                        v = "https://" + v[len("http://"):]
+                    return v
+    return None
+
+
+_IMG_ALT = {}   # (note_id, idx) -> 备用直链，仅本次进程内有效（不写缓存）
+
+
 def _extract_images(note):
     urls = []
+    nid = note.get("noteId") or note.get("id") or ""
     for img in (note.get("imageList") or [])[:9]:
         u = _img_url(img)
         if u:
+            alt = _img_alt(img)
+            if alt and alt != u:
+                _IMG_ALT[(nid, len(urls))] = alt
             urls.append(u)
     if not urls:
         for cand in ((note.get("cover") or {}),
@@ -518,13 +560,21 @@ def _download_one_img(note_id, idx, url):
     return None
 
 def _localize_images(note_id, images):
-    """把远程图片 URL 列表本地化；下不动的保留远程 URL 兜底。"""
+    """把远程图片 URL 列表本地化；下不动的保留远程 URL 兜底。
+
+    2026-09-28：ci 404（老图床 ID）时再试一次同一张图的 sns 原始直链
+    （_IMG_ALT，抓详情时登记），仍失败才留远程。
+    """
     out = []
     for i, u in enumerate(images or []):
         if isinstance(u, str) and u.startswith("imgs/"):
             out.append(u)  # 已本地化
             continue
         local = _download_one_img(note_id, i, u)
+        if local is None:
+            alt = _IMG_ALT.get((note_id, i))
+            if alt:
+                local = _download_one_img(note_id, i, alt)
         out.append(local if local else u)
     return out
 
@@ -633,16 +683,24 @@ def _extract_comments(data, limit=10):
         })
     return out
 
-def fetch_note_detail_mcp(note_id, xsec_token, with_comments=False):
-    """Fetch note detail via the logged-in MCP browser. Returns dict or None."""
+def fetch_note_detail_mcp(note_id, xsec_token, with_comments=False, worker=None):
+    """Fetch note detail via the logged-in MCP browser. Returns dict or None.
+
+    worker=None → 单实例 MCP_URL（旧路径）；传 worker → 走该实例端口（并发用）。
+    """
     import requests as _rq
     try:
-        resp = _rq.post(MCP_URL, json={
-            "jsonrpc": "2.0", "id": 50, "method": "tools/call",
-            "params": {"name": "get_feed_detail",
-                       "arguments": {"feed_id": note_id, "xsec_token": xsec_token}}
-        }, headers=get_mcp_headers(), timeout=240)
-        data = resp.json().get("result", {})
+        if worker is not None:
+            data = worker.call("get_feed_detail",
+                               {"feed_id": note_id, "xsec_token": xsec_token},
+                               timeout=DETAIL_TIMEOUT, request_id=50).get("result", {})
+        else:
+            resp = _rq.post(MCP_URL, json={
+                "jsonrpc": "2.0", "id": 50, "method": "tools/call",
+                "params": {"name": "get_feed_detail",
+                           "arguments": {"feed_id": note_id, "xsec_token": xsec_token}}
+            }, headers=get_mcp_headers(), timeout=DETAIL_TIMEOUT)
+            data = resp.json().get("result", {})
         if data.get("isError"):
             return None
         content = data.get("content", [])
@@ -706,36 +764,89 @@ if not NO_DETAILS:
         _todo.append(n)
     if _todo:
         print(f"Fetching note details: {len(_todo)} to fetch ({len(note_details)} cached)...", flush=True)
-    for _ti, n in enumerate(_todo, 1):
-        is_senti = n["id"] in _sentiment_ids
-        try:
-            if is_senti:
-                d = fetch_note_detail_mcp(n["id"], n["xsec_token"], with_comments=True)
-                if d:
-                    print(f"  [{_ti}/{len(_todo)}] sentiment detail+cmts via MCP {n['id'][:12]} ({n['title'][:24]}) cmts={len(d.get('cmts', []))}", flush=True)
-            else:
-                d = fetch_note_detail(n["id"], n["xsec_token"])
-                if d is None and n.get("xsec_token"):
-                    d = fetch_note_detail_mcp(n["id"], n["xsec_token"])
-                    if d:
-                        print(f"  [{_ti}/{len(_todo)}] detail via MCP {n['id'][:12]} ({n['title'][:24]})", flush=True)
-        except Exception as e:
-            d = None
-            print(f"  [{_ti}/{len(_todo)}] detail fetch error {n['id'][:12]}: {e}", flush=True)
-        if d:
-            d["images"] = _localize_images(n["id"], d.get("images"))
-            note_details[n["id"]] = d
-            _fetch_ok += 1
-            # 每条增量保存：长批次中途取消不至于全丢（2026-09-21 教训）
+
+    _stats = {"ok": 0, "fail": 0}
+    _save_lock = threading.Lock()
+    _print_lock = threading.Lock()
+
+    def _save_cache():
+        """每条增量保存：长批次中途取消不至于全丢（2026-09-21 教训）。
+        并发下必须加锁，否则多线程同时写会截断文件。"""
+        with _save_lock:
             try:
                 with open(DETAILS_CACHE_PATH, "w", encoding="utf-8") as f:
                     json.dump(note_details, f, ensure_ascii=False, indent=1)
             except IOError:
                 pass
-        else:
-            _fetch_fail += 1
-            print(f"  [{_ti}/{len(_todo)}] detail fetch FAILED {n['id'][:12]} ({n['title'][:24]})", flush=True)
-        time.sleep(random.uniform(1.2, 2.5))
+
+    def _fetch_one(n, worker=None):
+        """抓单篇详情（含图片本地化）+ 增量落盘。返回 True/False。"""
+        is_senti = n["id"] in _sentiment_ids
+        d = None
+        try:
+            if is_senti:
+                d = fetch_note_detail_mcp(n["id"], n["xsec_token"],
+                                          with_comments=True, worker=worker)
+                if d:
+                    with _print_lock:
+                        print(f"  sentiment detail+cmts via MCP {n['id'][:12]} "
+                              f"({n['title'][:24]}) "
+                              f"cmts={len(d.get('cmts', []))}", flush=True)
+            else:
+                d = fetch_note_detail(n["id"], n["xsec_token"])
+                if d is None and n.get("xsec_token"):
+                    d = fetch_note_detail_mcp(n["id"], n["xsec_token"], worker=worker)
+                    if d:
+                        with _print_lock:
+                            print(f"  detail via MCP {n['id'][:12]} "
+                                  f"({n['title'][:24]})", flush=True)
+        except Exception as e:
+            d = None
+            with _print_lock:
+                print(f"  detail fetch error {n['id'][:12]}: {e}", flush=True)
+        if d:
+            d["images"] = _localize_images(n["id"], d.get("images"))
+            with _save_lock:
+                note_details[n["id"]] = d
+                _stats["ok"] += 1
+            _save_cache()
+            return True
+        with _save_lock:
+            _stats["fail"] += 1
+        with _print_lock:
+            print(f"  detail fetch FAILED {n['id'][:12]} ({n['title'][:24]})", flush=True)
+        # 抓取失败（尤其读超时）通常是该实例浏览器僵了，换一个再抓下一篇
+        if worker is not None:
+            try:
+                worker.restart()
+            except Exception:
+                pass
+        return False
+
+    # ---- 并发分支：多实例池，谁空闲谁取下一篇（2026-09-28 方案 1）----
+    _pool = None
+    if _todo and MCP_WORKERS > 1 and mcp_pool is not None:
+        try:
+            _pool = mcp_pool.MCPPool(workers=MCP_WORKERS, verbose=True)
+            _pool.start()
+        except Exception as e:
+            print(f"  ⚠️ MCP 并发池启动失败，回落串行: {e}", flush=True)
+            _pool = None
+
+    if _pool is not None and len(_pool.workers) > 1:
+        def _task(w, n):
+            r = _fetch_one(n, worker=w)
+            time.sleep(random.uniform(1.2, 2.5))   # 单实例内部保持节流
+            return r
+        _pool.map(_todo, _task, desc="detail")
+    else:
+        for _ti, n in enumerate(_todo, 1):
+            _fetch_one(n)
+            time.sleep(random.uniform(1.2, 2.5))
+
+    if _pool is not None:
+        _pool.close()
+    _fetch_ok, _fetch_fail = _stats["ok"], _stats["fail"]
     try:
         with open(DETAILS_CACHE_PATH, "w", encoding="utf-8") as f:
             json.dump(note_details, f, ensure_ascii=False, indent=1)

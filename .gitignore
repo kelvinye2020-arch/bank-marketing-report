@@ -48,3 +48,14 @@ check_imgs.py
 bench_*
 note_sample.json
 mcp_bench.log
+
+bench*.log
+diag*.log
+gen_*.log
+run_*_2w.log
+run_sent_2w.log
+note_details.bak.json
+_test_missing.json
+_patch_bin.py
+mcp_w*.log
+stale_imgs.json
