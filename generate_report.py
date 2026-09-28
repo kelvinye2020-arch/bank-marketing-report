@@ -529,20 +529,24 @@ def _localize_images(note_id, images):
     return out
 
 def _prune_imgs_dir(valid_note_ids):
-    """清理 imgs/ 里已滚出报告窗口的笔记图片，防止仓库无限膨胀。"""
+    """滚出报告窗口的图片文件处理：只写清单不删除。
+
+    2026-09-28 教训：os.remove 批量删除触发 WorkBuddy 沙箱
+    [SAFE_DELETE_BULK_CONFIRM_REQUIRED] 拦截，直接炸掉生成阶段。
+    改为记录到 imgs_prune_list.txt，由人工/后续流程确认后清理。"""
     if not os.path.isdir(IMGS_DIR):
         return
-    removed = 0
+    stale = []
     for fn in os.listdir(IMGS_DIR):
-        nid = fn.split("_")[0]
-        if nid not in valid_note_ids:
-            try:
-                os.remove(os.path.join(IMGS_DIR, fn))
-                removed += 1
-            except OSError:
-                pass
-    if removed:
-        print(f"imgs/ 清理过期图片: {removed} 张", flush=True)
+        if fn.split("_")[0] not in valid_note_ids:
+            stale.append(f"imgs/{fn}")
+    if stale:
+        try:
+            with open(os.path.join(BASE_DIR, "imgs_prune_list.txt"), "w", encoding="utf-8") as f:
+                f.write("\n".join(stale))
+            print(f"imgs/ 待清理 {len(stale)} 张（已写入 imgs_prune_list.txt，不自动删除）", flush=True)
+        except IOError:
+            pass
 
 def fetch_note_detail(note_id, xsec_token):
     """Fetch note detail anonymously. Returns dict or None."""
@@ -637,7 +641,7 @@ def fetch_note_detail_mcp(note_id, xsec_token, with_comments=False):
             "jsonrpc": "2.0", "id": 50, "method": "tools/call",
             "params": {"name": "get_feed_detail",
                        "arguments": {"feed_id": note_id, "xsec_token": xsec_token}}
-        }, headers=get_mcp_headers(), timeout=180)
+        }, headers=get_mcp_headers(), timeout=240)
         data = resp.json().get("result", {})
         if data.get("isError"):
             return None

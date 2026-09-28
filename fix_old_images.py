@@ -22,8 +22,24 @@ print(f"待修复笔记: {len(targets)}", flush=True)
 if not targets:
     sys.exit(0)
 
-# token 来源：搜索缓存 → 缓存 url → 报告 HTML NOTE_DETAILS
+# token 来源：报告 HTML NOTE_DETAILS（最可靠）→ 搜索缓存
+_HTML_USED = {}
+def _html_used():
+    if _HTML_USED:
+        return _HTML_USED
+    try:
+        html = open(os.path.join(BASE, "bank_marketing_report.html"), encoding="utf-8").read()
+        line = [l for l in html.splitlines() if l.startswith("const NOTE_DETAILS = ")][0]
+        _HTML_USED.update(json.loads(line[len("const NOTE_DETAILS = "):].rstrip().rstrip(";")))
+    except Exception:
+        pass
+    return _HTML_USED
+
 def find_token(nid):
+    u = _html_used().get(nid, {}).get("url", "")
+    m = re.search(r"xsec_token=([^&]+)", u)
+    if m:
+        return m.group(1)
     import glob
     for f in glob.glob(os.path.join(BASE, "search_*.json")):
         txt = open(f, encoding="utf-8").read()
@@ -31,17 +47,6 @@ def find_token(nid):
             m = re.search(r'"id"\s*:\s*"' + nid + r'".{0,500}?"xsecToken"\s*:\s*"([^"]+)"', txt, re.S)
             if m:
                 return m.group(1)
-    u = nd.get(nid, {}).get("url", "")
-    m = re.search(r"xsec_token=([^&]+)", u)
-    if m:
-        return m.group(1)
-    html = open(os.path.join(BASE, "bank_marketing_report.html"), encoding="utf-8").read()
-    m = re.search(nid + r'[^"\']*', html)
-    if m and "xsec_token=" in m.group(0):
-        return re.search(r"xsec_token=([^&]+)", m.group(0)).group(1)
-    m2 = re.search(r'"url"\s*:\s*"([^"]*' + nid + r'[^"]*)"', html)
-    if m2 and "xsec_token=" in m2.group(1):
-        return re.search(r"xsec_token=([^&]+)", m2.group(1)).group(1)
     return ""
 
 def img_url(o):

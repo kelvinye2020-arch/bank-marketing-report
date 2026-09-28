@@ -131,6 +131,13 @@ SEARCH_DELAY_MIN = 10    # 单次搜索间隔最小（秒）
 SEARCH_DELAY_MAX = 15    # 单次搜索间隔最大（秒）
 BATCH_COOLDOWN = 30      # 批次间冷却（秒）
 
+# 2026-09-28：MCP（rod 浏览器）抖动是随机偶发的 —— 实测「同 session 第 2 次搜索成功、
+# 换新 session 反而 150s 超时」，说明跟 session 无关，是纯随机 flaky。
+# 2026-09-21 曾出现 9/14 组超时、2026-09-28 出现 13/14 组返回空，均靠补跑救回。
+# 所以单组搜索失败后原地重试（退避 30s/60s），不要动不动就判定整轮失败。
+SEARCH_MAX_ATTEMPTS = 3
+SEARCH_RETRY_BACKOFFS = [30, 60]
+
 
 # ============================================================
 # Helpers
@@ -648,6 +655,38 @@ def stage_search(mcp_headers, searches=None, group_label=""):
     fail_count = 0
     total = len(searches)
 
+    def do_one_search(keyword, filename, idx, attempt=1):
+        """执行单次搜索，成功写入文件并返回 True。"""
+        outpath = os.path.join(BASE_DIR, filename)
+        try:
+            resp = session.post(MCP_URL, json={
+                "jsonrpc": "2.0",
+                "id": idx + 10,
+                "method": "tools/call",
+                "params": {"name": "search_feeds", "arguments": {"keyword": keyword}}
+            }, headers=mcp_headers, timeout=240)
+
+            data = resp.json()
+
+            if "result" in data:
+                content = data["result"].get("content", [])
+                for item in content:
+                    if item.get("type") == "text":
+                        text = item["text"]
+                        with open(outpath, "w", encoding="utf-8") as f:
+                            f.write(text)
+                        print(f"    ✅ 成功（第 {attempt} 次）, {len(text)} bytes → {filename}", flush=True)
+                        return True
+                print("    ⚠️ 响应中无 text 内容", flush=True)
+            elif "error" in data:
+                err_msg = json.dumps(data["error"], ensure_ascii=False)[:200]
+                print(f"    ❌ 错误: {err_msg}", flush=True)
+            else:
+                print("    ⚠️ 异常响应", flush=True)
+        except Exception as e:
+            print(f"    ❌ 异常: {e}", flush=True)
+        return False
+
     # Split into batches
     batches = []
     for i in range(0, total, BATCH_SIZE):
@@ -663,42 +702,23 @@ def stage_search(mcp_headers, searches=None, group_label=""):
 
         for j, (keyword, filename) in enumerate(batch):
             global_idx = batch_idx * BATCH_SIZE + j + 1
-            outpath = os.path.join(BASE_DIR, filename)
             print(f"\n  [{global_idx}/{total}] 搜索: {keyword}", flush=True)
 
-            try:
-                resp = session.post(MCP_URL, json={
-                    "jsonrpc": "2.0",
-                    "id": global_idx + 10,
-                    "method": "tools/call",
-                    "params": {"name": "search_feeds", "arguments": {"keyword": keyword}}
-                }, headers=mcp_headers, timeout=150)
+            succeeded = False
+            for attempt in range(1, SEARCH_MAX_ATTEMPTS + 1):
+                if attempt > 1:
+                    print(f"    🔁 第 {attempt} 次尝试（MCP 抖动重试）", flush=True)
+                if do_one_search(keyword, filename, global_idx, attempt):
+                    succeeded = True
+                    break
+                if attempt <= len(SEARCH_RETRY_BACKOFFS):
+                    backoff = SEARCH_RETRY_BACKOFFS[attempt - 1] + random.uniform(0, 10)
+                    print(f"    ⏳ 退避 {backoff:.1f} 秒后重试...", flush=True)
+                    time.sleep(backoff)
 
-                data = resp.json()
-
-                if "result" in data:
-                    content = data["result"].get("content", [])
-                    for item in content:
-                        if item.get("type") == "text":
-                            text = item["text"]
-                            with open(outpath, "w", encoding="utf-8") as f:
-                                f.write(text)
-                            print(f"    ✅ 成功, {len(text)} bytes → {filename}", flush=True)
-                            success_count += 1
-                            break
-                    else:
-                        print(f"    ⚠️ 响应中无 text 内容", flush=True)
-                        fail_count += 1
-                elif "error" in data:
-                    err_msg = json.dumps(data["error"], ensure_ascii=False)[:200]
-                    print(f"    ❌ 错误: {err_msg}", flush=True)
-                    fail_count += 1
-                else:
-                    print(f"    ⚠️ 异常响应", flush=True)
-                    fail_count += 1
-
-            except Exception as e:
-                print(f"    ❌ 异常: {e}", flush=True)
+            if succeeded:
+                success_count += 1
+            else:
                 fail_count += 1
 
             # Random delay between searches (except last one)
@@ -778,6 +798,53 @@ def stage_generate_report():
     else:
         fail("报告文件未生成")
 
+
+
+# ============================================================
+# Stage 4.5: Data quality self-check (推送前最后防线)
+# ============================================================
+# 2026-09-21 加入：此前流程是「生成报告 → 直接 push」，搜索关键词失效/过滤器异常
+# 时坏数据会静默上线。宁缺毋滥：任一指标低于阈值即停止推送并发企微告警。
+DATA_QUALITY_THRESHOLDS = {
+    "total_unique": 100,        # 正常 150-220
+    "bank_recent": 15,          # 正常 25-35
+    "new_notes": 3,             # 正常 5-15
+    "product_selected": 5,      # 正常 10-25
+    "sentiment_selected": 4,    # 正常 8-20
+}
+
+
+def check_data_quality(report_stats):
+    """校验 generate_report.py 的关键计数器，任一低于阈值则终止流程（不推送）。"""
+    banner("4.5", "数据质量自检（推送前最后防线）")
+    report_stats = report_stats or {}
+    failed = []
+
+    for key, threshold in DATA_QUALITY_THRESHOLDS.items():
+        value = report_stats.get(key)
+        if value is None:
+            warn(f"{key}: 未从 generate_report.py 输出解析到，跳过该指标")
+            continue
+        if value >= threshold:
+            ok(f"{key} = {value}（阈值 ≥{threshold}）")
+        else:
+            print(f"  ❌ {key} = {value}（阈值 ≥{threshold}）", flush=True)
+            failed.append((key, value, threshold))
+
+    if not failed:
+        ok("数据质量自检全部通过")
+        return True
+
+    g = report_stats.get
+    reason = (
+        "⚠️ 小红书声量周报数据异常："
+        f"unique={g('total_unique', '?')} / 营销={g('bank_recent', '?')} / "
+        f"新增={g('new_notes', '?')} / 产品={g('product_selected', '?')} / "
+        f"舆情={g('sentiment_selected', '?')}"
+        "（正常 X≥100 / Y≥15 / Z≥3 / P≥5 / Q≥4），"
+        "疑似搜索关键词或过滤器出问题。本次已停止推送，请人工检查 update_report.py 关键词。"
+    )
+    fail(reason, "定位到问题后重跑：python update_report.py")
 
 
 # ============================================================
@@ -887,6 +954,7 @@ def main():
     if args.report_only:
         print("   模式: --report-only（跳过搜索）", flush=True)
         report_stats = stage_generate_report()
+        check_data_quality(report_stats)
         if not args.no_push:
             pushed = stage_git_push()
     elif args.search_only:
@@ -901,6 +969,7 @@ def main():
         mcp_headers = stage_check_login()
         search_stats = run_searches(mcp_headers)
         report_stats = stage_generate_report()
+        check_data_quality(report_stats)
         if not args.no_push:
             pushed = stage_git_push()
 
