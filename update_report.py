@@ -730,7 +730,22 @@ def stage_search(mcp_headers, searches=None, group_label=""):
     print(f"\n  搜索完成: 成功 {success_count}/{total}, 失败 {fail_count}/{total}", flush=True)
 
     if fail_count > 0 and success_count == 0:
-        fail("全部搜索失败", "可能登录已过期，请重新扫码登录后重试")
+        # 2026-09-28 教训：全失败绝大多数是 MCP/浏览器偶发超时（坑 #23），不是登录过期。
+        # 旧文案「可能登录已过期」会误导人工去扫码，实际扫码并不能解决。
+        _probe = ""
+        try:
+            import requests as _rq
+            _r = _rq.post(MCP_URL, json={"jsonrpc": "2.0", "id": 1, "method": "initialize",
+                                         "params": {"protocolVersion": "2025-03-26", "capabilities": {},
+                                                    "clientInfo": {"name": "probe", "version": "1.0"}}},
+                          headers={"Content-Type": "application/json",
+                                   "Accept": "application/json, text/event-stream"}, timeout=8)
+            _probe = f"（MCP 探测 HTTP {_r.status_code}，服务在跑 → 不是登录问题）"
+        except Exception as _e:
+            _probe = f"（MCP 探测异常：{type(_e).__name__}，可能进程已死 → 先重启 MCP 再重试）"
+        fail("全部搜索失败",
+             f"多半是 MCP/浏览器偶发超时{_probe}，不一定是真的登录过期。"
+             f"先跑 python retry_failed_searches.py 重试；若重试仍全败，再检查登录状态。")
     elif fail_count > 0:
         warn(f"{fail_count} 组搜索失败，将使用已有数据继续生成报告")
 
