@@ -26,6 +26,7 @@ import subprocess
 import argparse
 import base64
 import hashlib
+import re
 import urllib.request
 import urllib.error
 import threading
@@ -1001,6 +1002,27 @@ def stage_git_push():
                 print(f"  {result.stderr.strip()}", flush=True)
         return result
 
+    def add_report_images():
+        """把报告内嵌引用的本地图片一起入库。
+
+        2026-10-05 实发 bug：报告图片已本地化（imgs/*.jpg），但本函数只 add
+        html/json，**新抓的图从来没被提交过** → 线上报告新笔记全是裂图。
+        只 add 报告实际引用的图（待清理旧图不进历史），并用 -u 记录已删的旧图。
+        """
+        html_path = os.path.join(BASE_DIR, "bank_marketing_report.html")
+        try:
+            html = open(html_path, encoding="utf-8", errors="replace").read()
+        except Exception as e:
+            warn(f"读取报告 HTML 失败，跳过图片提交: {e}")
+            return 0
+        refs = sorted(set(re.findall(r"imgs/[A-Za-z0-9_\-]+\.jpg", html)))
+        existing = [p for p in refs if os.path.exists(os.path.join(BASE_DIR, p))]
+        for i in range(0, len(existing), 100):
+            run_git("add", *existing[i:i + 100], check=False)
+        run_git("add", "-u", "imgs", check=False)   # 记录被清理掉的旧图
+        ok(f"图片入库: 报告引用 {len(refs)} 张 / 实际 add {len(existing)} 张")
+        return len(existing)
+
     # Add and commit on master
     print("  git add & commit (master)...", flush=True)
     run_git("add", "bank_marketing_report.html", "note_details.json", check=False)
@@ -1009,6 +1031,8 @@ def stage_git_push():
     for i in range(1, 5):
         run_git("add", f"search_product_{i}.json", check=False)
         run_git("add", f"search_sentiment_{i}.json", check=False)
+    run_git("add", "update_report.py", "generate_report.py", check=False)
+    add_report_images()
 
     commit_msg = f"update: bank marketing report {time.strftime('%Y-%m-%d %H:%M')}"
     commit_result = run_git("commit", "-m", commit_msg, check=False)
