@@ -17,6 +17,16 @@ import socket
 import sys
 import os
 
+# Windows 控制台默认 GBK。当 stdout 被重定向到管道/文件（如 `| Tee-Object`）时，
+# print 含非 GBK 字符（✅ U+2705、⚠️ 等）会抛 UnicodeEncodeError，
+# 导致「MCP 端口实际已就绪」却因打印崩溃返回 exit=1，被上层误判为「自启失败」。
+# 这里强制 UTF-8 输出，errors=replace 兜底，避免打印问题污染退出码判定。
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 MCP_DIR = r"D:\AI agent\xiaohongshu-mcp-windows-amd64"
 EXE = "xiaohongshu-mcp-windows-amd64.exe"
 CHROMIUM = r"D:\AI agent\chromium\chrome-win\chrome.exe"

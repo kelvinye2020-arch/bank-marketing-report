@@ -32,6 +32,15 @@ import threading
 from datetime import datetime
 from pathlib import Path
 
+# Windows 控制台默认 GBK。stdout 被重定向到管道/文件（如 `| Tee-Object`）时，
+# print 含非 GBK 字符（✅ U+2705、⚠️、🔥 等）会抛 UnicodeEncodeError 直接中断流程。
+# 强制 UTF-8 + errors=replace，保证无人值守下打印绝不污染退出码。
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 # 2026-09-28：MCP 多实例并发池（方案 1）。单实例串行是全流程最大卡点
 # （get_feed_detail ~98s/篇、search_feeds 60~90s/组），多开几个 rod 浏览器并行。
 try:
