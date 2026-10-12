@@ -1093,6 +1093,19 @@ def main():
                         help=f"MCP 并发实例数（默认 {MCP_WORKERS}；1=串行，2=推荐起步，3=待验证）")
     args = parser.parse_args()
 
+    # 依赖预检：requests 缺失会导致 MCP 握手失败，若不先拦住，
+    # 会被 stage_check_mcp 误判成「MCP 未运行」并发出一条错误的企微告警。
+    # 正确解释器：C:\Users\kelvinyye\.workbuddy\binaries\python\envs\default\Scripts\python.exe
+    try:
+        import requests  # noqa: F401
+    except ImportError:
+        import sys as _sys
+        print("❌ 当前 Python 缺少 requests 依赖，无法调用 MCP。", flush=True)
+        print(f"   当前解释器: {__import__('sys').executable}", flush=True)
+        print("   请改用: C:\\Users\\kelvinyye\\.workbuddy\\binaries\\python\\envs\\default\\Scripts\\python.exe",
+              flush=True)
+        _sys.exit(2)
+
     print("🚀 小红书声量监控看板更新开始", flush=True)
     print(f"   工作目录: {BASE_DIR}", flush=True)
     print(f"   MCP 地址: {MCP_URL}", flush=True)
