@@ -295,7 +295,7 @@ def notify_failure(reason, hint=None, qr_path=None):
     """
     BAT_PATH = os.path.join(BASE_DIR, "run_xhs_update.bat")
     lines = [
-        "# 小红书银行活动看板更新失败",
+        "# 小红书声量监控看板更新失败",
         f"> 时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
         f"> 原因：<font color=\"warning\">{reason}</font>",
     ]
