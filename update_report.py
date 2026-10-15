@@ -493,7 +493,13 @@ def call_mcp_tool(headers, tool_name, arguments=None, timeout=60, request_id=2,
 def generate_login_qrcode(headers):
     """Generate Xiaohongshu login QR code through MCP and save it locally."""
     print("  登录已过期，正在生成二维码...", flush=True)
-    data = call_mcp_tool(headers, "get_login_qrcode", {}, timeout=60, request_id=3)
+    # 2026-10-15：MCP 进程若已崩（连接被拒/空响应），这里不能抛裸异常掩盖真实原因，
+    # 必须走 fail() 发企微告警，否则无人值守时只会看到一个 traceback、无人知晓。
+    try:
+        data = call_mcp_tool(headers, "get_login_qrcode", {}, timeout=60, request_id=23)
+    except Exception as e:
+        fail("登录已过期，且二维码生成失败（MCP 调用异常，可能已崩溃）",
+             f"get_login_qrcode 调用异常: {e}")
     content = data.get("result", {}).get("content", [])
     text_lines = []
 
@@ -541,8 +547,10 @@ def probe_login_by_search(headers, timeout=LOGIN_PROBE_TIMEOUT):
     """
     probe_kw = SEARCHES[-1][0]  # 用最后一组的关键词（最短，返回最快）
     try:
+        # request_id 必须唯一：同一 session 内与超时未返回的 check_login_status(id=2)
+        # 撞号会让服务端把迟到的登录响应回给本次搜索，造成「登录态误判」（2026-10-15 实测）
         data = call_mcp_tool(headers, "search_feeds", {"keyword": probe_kw},
-                             timeout=timeout, request_id=2)
+                             timeout=timeout, request_id=21)
     except Exception as e:
         return False, f"search_feeds 调用异常: {e}"
 
@@ -592,7 +600,7 @@ def probe_login_by_qrcode(headers):
     返回 (ok: bool, detail: str)
     """
     try:
-        data = call_mcp_tool(headers, "get_login_qrcode", {}, timeout=90, request_id=2)
+        data = call_mcp_tool(headers, "get_login_qrcode", {}, timeout=90, request_id=22)
     except Exception as e:
         return False, f"get_login_qrcode 调用异常: {e}"
 
