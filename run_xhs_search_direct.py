@@ -1,4 +1,9 @@
 """Direct MCP search via JSON-RPC - search_feeds tool."""
+if __name__ != '__main__':
+    raise ImportError('旧搜索模块已停用')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('run_xhs_search_direct.py'))
+
 import json
 import os
 import subprocess

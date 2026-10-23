@@ -1,4 +1,9 @@
 """Search Xiaohongshu via MCP HTTP (/mcp endpoint) - mimicking mcp-call.sh."""
+if __name__ != '__main__':
+    raise ImportError('旧搜索模块已停用，禁止终止未知进程')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('xhs_http_batch.py'))
+
 import subprocess, json, sys, time, os, urllib.request, urllib.error
 
 MCP_EXE = r"C:\Users\kelvinyye\tools\xiaohongshu-mcp\xiaohongshu-mcp-windows-amd64.exe"

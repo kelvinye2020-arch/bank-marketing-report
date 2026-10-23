@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 """拉起 headless MCP 后跑 generate_report.py（同进程生命周期，防沙箱杀子进程）。"""
+if __name__ != '__main__':
+    raise ImportError('旧 MCP 生成模块已停用，build 仅离线')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('run_generate_with_mcp.py'))
+
 import subprocess, sys, time
 import requests
 

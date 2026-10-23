@@ -1,4 +1,9 @@
 """Search via already-running MCP HTTP server on port 18060."""
+if __name__ != '__main__':
+    raise ImportError('旧搜索模块已停用')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('xhs_search_http.py'))
+
 import json, sys, time, urllib.request, urllib.error
 
 MCP_URL = "http://localhost:18060/mcp"

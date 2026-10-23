@@ -14,6 +14,11 @@
 前置：用户必须已手动启动 MCP（双击 start_mcp.bat），脚本不会代启 MCP。
 """
 
+if __name__ != '__main__':
+    raise ImportError('旧 quick_update 模块已停用')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('quick_update.py'))
+
 import requests
 import json
 import os

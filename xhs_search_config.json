@@ -1,0 +1,31 @@
+{
+  "schema_version": 6,
+  "fixed_groups": {
+    "marketing": ["银行立减金", "银行满减优惠活动", "信用卡微信支付优惠", "银行绑卡优惠", "工行立减金", "建行立减金", "中行立减金"],
+    "product": ["理财通转账", "理财通会员权益", "零钱通余额宝", "理财通信用卡还款"],
+    "sentiment": ["理财通投诉", "理财通还款手续费", "零钱通转出失败", "零钱通到账时间"]
+  },
+  "default_mode": {"arguments": "keyword-only", "sort_by": "综合", "publish_time": "不限"},
+  "supplements": [
+    {"keyword": "银行立减金", "filters": {"sort_by": "最新", "publish_time": "一周内"}},
+    {"keyword": "理财通会员权益", "filters": {"sort_by": "最新", "publish_time": "一周内"}}
+  ],
+  "runtime": {
+    "state_dir": "xhs_state",
+    "ports": [18076, 18077],
+    "mcp_exe": "D:/AI agent/xiaohongshu-mcp-windows-amd64/xiaohongshu-mcp-windows-amd64.exe",
+    "chromium": "D:/AI agent/chromium/chrome-win/chrome.exe",
+    "cookie_dirs": ["D:/AI agent/xiaohongshu-mcp-windows-amd64", "C:/Users/kelvinyye/tools/xiaohongshu-mcp", "."],
+    "recycle_after_calls": 1,
+    "search_timeout_seconds": 65,
+    "search_cold_retries": 1,
+    "consecutive_failure_stop": 2,
+    "detail_timeout_seconds": 55,
+    "detail_retries": 0,
+    "detail_limit": 40,
+    "window_days": 60,
+    "download_timeout_seconds": 25,
+    "download_workers": 4,
+    "load_all_comments": false
+  }
+}

@@ -21,6 +21,10 @@
     # 单实例场景（如登录检查）也可以用 pool.primary.call(...)
 """
 
+if __name__ == '__main__':
+    from xhs_weekly_v6 import legacy_main
+    raise SystemExit(legacy_main('mcp_pool.py'))
+
 import collections
 import json
 import os
@@ -46,8 +50,8 @@ CHROMIUM = (os.environ.get("XHS_CHROMIUM")
 # 优先读 config.local.json 的 mcp_exe（与 update_report.py 保持一致）
 def _load_exe():
     try:
-        cfg = json.loads(
-            open(os.path.join(BASE_DIR, "config.local.json"), encoding="utf-8").read())
+        with open(os.path.join(BASE_DIR, "config.local.json"), encoding="utf-8") as stream:
+            cfg = json.load(stream)
         exe = cfg.get("mcp_exe")
         if exe and os.path.exists(exe):
             return exe

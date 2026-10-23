@@ -13,6 +13,11 @@ retry_failed_searches.py — 只重跑失败的搜索组（不重新生成报告
     python retry_failed_searches.py 银行信用卡支付立减 银行活动羊毛攻略2026
     python retry_failed_searches.py --all-failed-marketing   # 便捷：整组重跑
 """
+if __name__ != '__main__':
+    raise ImportError('旧关键词补跑模块已停用，词源仅来自 V6 config')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('retry_failed_searches.py'))
+
 import sys
 import os
 import time

@@ -17,6 +17,11 @@ run_sentiment_update.py — 周四舆情专项一键跑（MCP 拉起 + 搜索 + 
 
 退出码：0 成功；1 MCP 起不来或握手失败；其它为 update_report.py 的退出码
 """
+if __name__ != '__main__':
+    raise ImportError('旧周四舆情模块已停用，三栏统一周一')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('run_sentiment_update.py'))
+
 import sys
 import os
 import subprocess

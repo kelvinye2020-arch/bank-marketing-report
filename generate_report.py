@@ -11,6 +11,11 @@ Features:
 - Focus banks: spotlight notes about key banks (FOCUS_BANKS) with ⭐
 - Note summary: REMOVED (xiaohongshu anti-scraping blocks get_feed_detail, 2026-04-12 decision)
 """
+if __name__ != '__main__':
+    raise ImportError('旧 generate_report 顶层流程已停用；请使用 report_v6')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('generate_report.py'))
+
 import json
 import os
 import random

@@ -56,6 +56,22 @@ run_*_2w.log
 run_sent_2w.log
 note_details.bak.json
 _test_missing.json
+
+# V6 私有证据、原响应、批次和独立部署回执；只能精确发布公开产物
+xhs_state/
+outputs/
+raw/
+batches/
+*raw_response*.json
+probe_*raw*.json
+search_result*.json
+search_product_*.json
+search_sentiment_*.json
+note_details*.json
+candidate_queue*.json
+search_manifest*.json
+*review*.json
+*editorial*.json
 _patch_bin.py
 mcp_w*.log
 stale_imgs.json

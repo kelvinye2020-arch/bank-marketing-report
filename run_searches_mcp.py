@@ -6,6 +6,11 @@
 改动记录：
   2026-05-15: 间隔从3秒改为随机10-15秒，6组分2批（每批3组），批次间冷却30秒
 """
+if __name__ != '__main__':
+    raise ImportError('旧搜索模块已停用')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('run_searches_mcp.py'))
+
 import requests
 import json
 import sys

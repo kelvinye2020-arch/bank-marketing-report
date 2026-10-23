@@ -1,6 +1,11 @@
 """
 Search xiaohongshu via MCP Streamable HTTP transport at localhost:18060/mcp
 """
+if __name__ != '__main__':
+    raise ImportError('旧搜索模块已停用')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('xhs_http_search.py'))
+
 import http.client
 import json
 import sys

@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 """补齐报告里「有卡片但缺详情」的笔记：走 MCP get_feed_detail 抓全文+图+热评，
 图片立即下载本地化，逐条增量写入 note_details.json。同进程拉起 MCP。"""
+if __name__ != '__main__':
+    raise ImportError('旧补详情模块已停用，禁止覆盖生产图')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('fix_missing_details.py'))
+
 import json, os, re, subprocess, sys, time
 from datetime import datetime
 import requests

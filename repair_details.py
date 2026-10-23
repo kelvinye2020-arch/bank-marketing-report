@@ -8,6 +8,11 @@ re-fetch all broken entries with robust image extraction.
 
 Run: python repair_details.py  (starts MCP headless itself, same process)
 """
+if __name__ != '__main__':
+    raise ImportError('旧修复详情模块已停用')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('repair_details.py'))
+
 import subprocess, time, json, re, os, sys, glob
 
 BASE = os.path.dirname(os.path.abspath(__file__))

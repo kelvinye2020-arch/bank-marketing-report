@@ -1,4 +1,9 @@
 """Run 6 XHS searches sequentially, save results as UTF-8 JSON files."""
+if __name__ != '__main__':
+    raise ImportError('旧搜索模块已停用')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('run_xhs_search.py'))
+
 import subprocess
 import sys
 import time

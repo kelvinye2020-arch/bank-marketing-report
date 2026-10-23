@@ -17,6 +17,11 @@ retry_with_restart.py — 「每组搜索前重启 MCP」的补跑脚本。
     python retry_with_restart.py --force              # 14 组全跑
     python retry_with_restart.py --group sentiment    # 只跑指定组
 """
+if __name__ != '__main__':
+    raise ImportError('旧重启补跑模块已停用')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('retry_with_restart.py'))
+
 import sys
 import os
 import time

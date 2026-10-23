@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 """2026-09-28 恢复第二轮：同进程杀旧 MCP → 重拉 → 补 4 组缺失搜索 → --report-only。"""
+if __name__ != '__main__':
+    raise ImportError('旧恢复模块已停用，禁止未知进程清理')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('recovery_0928_r2.py'))
+
 import subprocess, sys, time, os, requests
 
 BASE = os.path.dirname(os.path.abspath(__file__))

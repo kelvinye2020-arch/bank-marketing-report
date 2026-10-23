@@ -1,3 +1,8 @@
+if __name__ != '__main__':
+    raise ImportError('旧单词搜索模块已停用')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('xhs_search_one.py'))
+
 import subprocess, json, os, sys, time
 
 XHS = r"c:\Users\kelvinyye\tools\xiaohongshu-mcp\xiaohongshu-mcp-windows-amd64.exe"

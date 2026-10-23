@@ -10,6 +10,11 @@ Features:
 - New note highlight: notes published within rolling 7 days marked with 🆕
 - Focus banks: spotlight notes about key banks (FOCUS_BANKS) with ⭐
 """
+if __name__ != '__main__':
+    raise ImportError('历史生成器已停用；禁止旧顶层覆盖 V6')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('generate_report_0412.py'))
+
 import json
 import os
 import re

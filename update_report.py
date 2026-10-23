@@ -16,6 +16,11 @@
   - 支持跳过某些阶段（--search-only / --report-only / --no-push）
 """
 
+if __name__ != '__main__':
+    raise ImportError('旧 update_report 模块已停用；禁止复用旧采集/发布函数')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('update_report.py'))
+
 import sys
 import os
 import json

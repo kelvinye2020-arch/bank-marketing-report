@@ -2,6 +2,11 @@
 """一次性修复：缓存里 1040g3k 老图床 ID 已 404 的笔记，走 MCP 重抓详情
 拿新鲜签名 URL 后立即下载到 imgs/ 本地化。同进程拉起 MCP（沙箱约束）。
 每条增量保存。"""
+if __name__ != '__main__':
+    raise ImportError('旧修图模块已停用，禁止覆盖生产旧图')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('fix_old_images.py'))
+
 import json, os, re, subprocess, sys, time
 import requests
 

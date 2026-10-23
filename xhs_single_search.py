@@ -1,4 +1,9 @@
 """Single keyword search with long timeout."""
+if __name__ != '__main__':
+    raise ImportError('旧单词搜索模块已停用，禁止终止未知进程')
+from xhs_weekly_v6 import legacy_main
+raise SystemExit(legacy_main('xhs_single_search.py'))
+
 import subprocess, json, sys, time, threading, os
 
 MCP_EXE = r"C:\Users\kelvinyye\tools\xiaohongshu-mcp\xiaohongshu-mcp-windows-amd64.exe"
