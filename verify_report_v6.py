@@ -21,6 +21,8 @@ from PIL import Image
 
 SECTIONS = ('marketing', 'product', 'sentiment')
 METRICS = ('likes', 'collects', 'comments', 'shares')
+ISSUE_SUBJECTS = ('理财通', '零钱通')
+ISSUE_TOPICS = ('服务投诉', '还款手续费', '资金转入转出', '到账时间', '收益与持有期')
 WIDTHS = (360, 390, 768, 1024, 1120, 1280, 1440)
 CST = timezone(timedelta(hours=8))
 
@@ -74,6 +76,27 @@ def validate_image_sources(images, sources):
     return reverse
 
 
+def validate_issue_scope(review, evidence, verify_image_quotes=False):
+    check(review.get('object') in ISSUE_SUBJECTS, 'sentiment对象准入仅允许理财通/零钱通')
+    scope = review.get('issue_scope')
+    check(isinstance(scope, dict), 'sentiment缺少issue_scope对象')
+    check(scope.get('subject') in ISSUE_SUBJECTS and scope['subject'] == review['object'],
+          'issue_scope.subject必须与object一致且为理财通/零钱通')
+    check(scope.get('topic') in ISSUE_TOPICS, 'issue_scope.topic不在问题枚举内')
+    check(scope.get('source') in ('desc', 'image'), 'issue_scope.source必须为desc/image')
+    quote = scope.get('quote')
+    check(isinstance(quote, str) and bool(quote.strip()), 'issue_scope.quote必须为非空原文')
+    if scope['source'] == 'desc':
+        check(quote in evidence['desc'], 'issue_scope.quote不是evidence.desc逐字子串')
+    else:
+        image = scope.get('image')
+        check(isinstance(image, str) and image in evidence['imgs'], 'issue_scope.image不在evidence.imgs')
+        if verify_image_quotes:
+            image_quotes = review.get('image_quotes')
+            check(isinstance(image_quotes, list) and any(isinstance(item, dict) and item.get('image') == image
+                  and item.get('quote') == quote for item in image_quotes), 'issue_scope图引文未绑定review.image_quotes')
+
+
 def validate_bundle(report_dir, source_paths=None):
     root = Path(report_dir).resolve()
     d = json_file(root / 'public_report_v6.json')
@@ -87,8 +110,8 @@ def validate_bundle(report_dir, source_paths=None):
     check(q['schema_version'] == 1 and q['version'] == d.get('version') == 'V6.2', 'schema/version错误')
     check(q['passed'] is True and type(q['production_data_passed']) is bool, '质量状态错误')
     check(q['report_sha256'] == digest(d) and q['html_sha256'] == sha(html.encode('utf-8')), '公开JSON/HTML哈希不符')
-    check(sha(re.search(r'<style>(.*?)</style>', html, re.S)[1].encode()) == '20ba5c66f12b4d9043f3f886e7ef047b0d908f52fa92d98bc6f047529c28cae7', '冻结CSS被修改')
-    check(sha(''.join(re.findall(r'<[^>]+>', html.split('<script type=')[0])).encode()) == 'db10027ef10d465a6831b05b59096e5ca484be0d5e9ba8a188c43259ed90231c', '冻结静态DOM被修改')
+    check(sha(re.search(r'<style>(.*?)</style>', html, re.S)[1].encode()) == 'baddb021f434b47c9cd2b0d069fe15cc0c7d4b1236dd5a0488c2f0ec9ed128d3', '冻结CSS被修改')
+    check(sha(''.join(re.findall(r'<[^>]+>', html.split('<script type=')[0])).encode()) == '70462928d3c09fd890125b33fed7aaab742e1859ca0595b24799a8355929a939', '冻结静态DOM被修改')
     match = re.search(r'<script type="application/json" id="report-data">(.*?)</script>', html, re.S)
     check(match is not None and json.loads(match.group(1)) == d, '内嵌数据与公开JSON不一致')
     provenance = d.get('provenance')
@@ -124,6 +147,8 @@ def validate_bundle(report_dir, source_paths=None):
         check(set(ev) <= set(('t', 'a', 'desc', 'imgs', 'tags', 'pub', 'url', 'cmts', 'likes', 'collects', 'comments', 'shares', 'captured_at')), '原证据带内部字段')
         check(set(('t', 'a', 'desc', 'imgs', 'tags', 'pub', 'url', 'cmts')) <= ev.keys(), '全文mandatory字段缺失')
         check(isinstance(ev['desc'], str) and (ev['desc'].strip() or ev['imgs']), '全文与图均缺失')
+        if n['primary_section'] == 'sentiment':
+            validate_issue_scope(n, ev)
         pub = datetime.fromisoformat(ev['pub'].replace('Z', '+00:00'))
         pub = pub.replace(tzinfo=CST) if pub.tzinfo is None else pub.astimezone(CST)
         check(end - timedelta(days=59) <= pub.date() <= end and n['date'] == pub.date().isoformat()
@@ -167,11 +192,16 @@ def validate_bundle(report_dir, source_paths=None):
             check(item['refs'] and len(item['refs']) == len(set(item['refs'])), '摘要refs缺失或重复')
             for nid in item['refs']:
                 check(nid in byid and byid[nid]['primary_section'] == s and nid not in refs, '摘要跨栏/重复/残留refs')
+                if s == 'sentiment':
+                    validate_issue_scope(byid[nid], byid[nid]['evidence'])
                 refs.add(nid)
     tabs = [item['tab'] for item in d['overview']]
     check(len(tabs) <= 3 and len(tabs) == len(set(tabs)) and set(tabs) <= set(SECTIONS), 'overview重复栏目')
     for item in d['overview']:
         check(item['refs'] and all(nid in byid and byid[nid]['primary_section'] == item['tab'] for nid in item['refs']), 'overview引用失效')
+        if item['tab'] == 'sentiment':
+            for nid in item['refs']:
+                validate_issue_scope(byid[nid], byid[nid]['evidence'])
     check(set(d['reading_groups']) == set(SECTIONS), 'reading_groups非三栏')
     for s, groups in d['reading_groups'].items():
         grouped_ids, event_keys = [], []
@@ -180,7 +210,7 @@ def validate_bundle(report_dir, source_paths=None):
             event_keys.extend(e['key'] for e in evs)
             grouped_ids.extend(nid for e in evs for nid in e['ids'])
             for event in evs:
-                check(event['ids'] and all(nid in byid and byid[nid]['event_key'] == event['key'] for nid in event['ids']), '主题归组错误')
+                check(event['ids'] and all(nid in byid and (byid[nid]['event_key'] == event['key'] or (s == 'product' and nid == event['key'])) for nid in event['ids']), '主题归组错误')
                 members = [byid[nid] for nid in event['ids']]
                 like = lambda n: n['display_metrics']['likes'] if n['display_metrics']['likes'] is not None else -1
                 check(members == sorted(members, key=lambda n: (like(n), n['published_at_cst']), reverse=True), '主题代表排序错误')
@@ -221,6 +251,13 @@ def validate_bundle(report_dir, source_paths=None):
             check(all(p in public_by_source for p in ev['imgs'])
                   and n['evidence']['imgs'] == [public_by_source[p] for p in ev['imgs']], '原图顺序/图源映射失配')
             check(review['image_sha256'] == {p: q['images'][public_by_source[p]] for p in ev['imgs']}, '源图审核字节不符')
+            check(n['primary_section'] == review['primary_section'] and n['object'] == review['object'], '公开对象/主栏与源review不符')
+            if n['primary_section'] == 'sentiment':
+                validate_issue_scope(review, ev, verify_image_quotes=True)
+                expected_scope = dict(review['issue_scope'])
+                if expected_scope['source'] == 'image':
+                    expected_scope['image'] = public_by_source[expected_scope['image']]
+                check(n['issue_scope'] == expected_scope, '公开issue_scope与源review不符')
     return d, q
 
 
@@ -256,7 +293,7 @@ def browser_verify(root, d, executable=None, screenshots=None, widths=None):
                 page.route('**/*', lambda route: route.continue_() if route.request.url.startswith(origin) else route.abort())
                 page.goto(origin + 'bank_marketing_report.html', wait_until='networkidle')
                 check(page.evaluate('DATA.source_count') == len(d['notes']), '浏览器动态计数不一致')
-                check(page.locator('.version').inner_text().startswith(d['version']), '动态版本未呈现')
+                check(d['version'] in page.locator('#build-line').inner_text(), '动态版本未呈现')
                 check(d['data_as_of'] in page.locator('#date-line').inner_text(), '动态日期未呈现')
                 check(page.locator('#metrics .metric').count() == 4, '四指标结构变化')
                 top_values = [d['source_count'], d['counts']['recent_unique'], d['counts']['direct'], d['image_count']]

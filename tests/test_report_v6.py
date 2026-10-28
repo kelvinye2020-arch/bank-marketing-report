@@ -41,7 +41,7 @@ def fixture(root, as_of='2026-10-23'):
         pub = f'{(end - timedelta(days=index)).isoformat()} 12:30:00'
         ev = {'t': '合成测试标题 ' + section, 'a': '合成测试作者',
               'url': 'https://www.xiaohongshu.com/explore/' + nid + '?xsec_token=fixture&xsec_source=pc_search',
-              'desc': '</script><img onerror="alert(1)">\n合成测试正文，不是真实帖子。费用5元仅用于校验。',
+              'desc': '</script><img onerror="alert(1)">\n合成测试正文，不是真实帖子。理财通资金转出遇到疑问。费用5元仅用于校验。',
               'imgs': imgs, 'tags': ['合成测试'], 'pub': pub, 'cmts': [],
               'likes': 0 if section == 'sentiment' else 10, 'collects': 0, 'comments': 0, 'shares': 0}
         metrics = {key: None if section == 'sentiment' else ev[key] for key in build.METRICS}
@@ -63,11 +63,14 @@ def fixture(root, as_of='2026-10-23'):
 
 
 def review_for(row, section, root):
-    return {'primary_section': section, 'object': '合成测试对象', 'topics': ['合成测试主题'],
+    review = {'primary_section': section, 'object': '理财通' if section == 'sentiment' else '合成测试对象', 'topics': ['合成测试主题'],
             'attitude': '疑问求助' if section == 'sentiment' else '中性分享', 'analyst_note': '合成测试，用户主张未核验。',
             'verification': '合成测试图文；未核验', 'event_key': row['id'], 'event_label': '', 'event_status': '',
             'evidence_sha256': build.digest(row['evidence']),
             'image_sha256': {p: hashlib.sha256((Path(root) / p).read_bytes()).hexdigest() for p in row['evidence']['imgs']}}
+    if section == 'sentiment':
+        review['issue_scope'] = {'subject': '理财通', 'topic': '资金转入转出', 'source': 'desc', 'quote': '资金转出遇到疑问'}
+    return review
 
 
 class ReportTests(unittest.TestCase):
@@ -225,6 +228,225 @@ class ReportTests(unittest.TestCase):
         report, _, _ = self.report()
         self.assertIn(row['id'], {n['id'] for n in report['notes']})
         self.assertEqual(report['counts']['direct'], 1)
+
+    def test_sentiment_object_and_scope_fail_closed_in_builder_and_verifier(self):
+        row = self.store['notes'][2]
+        row['evidence']['desc'] = '银行信用卡投诉。理财通在此不可用，仅作比较。资金转出遇到疑问。'
+        self.approve(row, 'sentiment')
+        report, quality, _ = self.report()
+        nid = row['id']
+        approved = copy.deepcopy(self.reviews['reviews'][nid])
+        invalid = [('object_' + obj, {'object': obj}) for obj in
+                   ('银行', '一般信用卡', '中国银行信用卡', '建设银行', '理财通/银行', ' 理财通', '零钱通 ')]
+        invalid += [('missing_scope', {'issue_scope': None}), ('list_scope', {'issue_scope': []})]
+        for field, value in (('subject', '零钱通'), ('subject', '银行'), ('subject', ['理财通']),
+                             ('quote', '捏造的原文'), ('quote', ''), ('quote', ' '), ('quote', None),
+                             ('topic', '银行投诉'), ('topic', None), ('source', 'title'), ('source', None)):
+            scope = dict(approved['issue_scope'], **{field: value})
+            invalid.append((field + '_' + str(value), {'issue_scope': scope}))
+        for field in ('subject', 'topic', 'source', 'quote'):
+            scope = dict(approved['issue_scope'])
+            scope.pop(field)
+            invalid.append(('missing_' + field, {'issue_scope': scope}))
+        for index, (label, changes) in enumerate(invalid):
+            with self.subTest(case=label):
+                self.reviews['reviews'][nid] = dict(approved, **changes)
+                if label == 'missing_scope':
+                    self.reviews['reviews'][nid].pop('issue_scope')
+                with self.assertRaises(build.ValidationError):
+                    self.report()
+                forged = copy.deepcopy(report)
+                note = next(n for n in forged['notes'] if n['id'] == nid)
+                note.update(copy.deepcopy(changes))
+                if label == 'missing_scope':
+                    note.pop('issue_scope')
+                q = copy.deepcopy(quality)
+                q['report_sha256'] = build.digest(forged)
+                output = self.root / ('invalid_scope_' + str(index))
+                build.write_bundle(forged, q, self.root, output)
+                with self.assertRaises(ValueError):
+                    verify.validate_bundle(output)
+        self.reviews['reviews'][nid] = approved
+
+    def test_sentiment_note_guard_without_any_summary(self):
+        self.editorial.update(insights={s: [] for s in build.SECTIONS}, overview=[])
+        review = self.reviews['reviews']['fixture_sentiment']
+        review['object'] = '银行信用卡'
+        with self.assertRaisesRegex(build.ValidationError, '对象准入'):
+            self.report()
+        review['object'] = '理财通'
+        review.pop('issue_scope')
+        with self.assertRaisesRegex(build.ValidationError, 'issue_scope'):
+            self.report()
+
+    def test_sentiment_mixed_desc_focus_target_and_cross_source_allowed(self):
+        row = self.store['notes'][2]
+        row['evidence']['desc'] = '银行信用卡是背景，理财通仅作比较。零钱通转出后迟迟未到账，请问到账时间？'
+        row.update(source='银行投诉检索', search_keywords=['银行投诉'])
+        self.approve(row, 'sentiment')
+        review = self.reviews['reviews'][row['id']]
+        review.update(object='零钱通', issue_scope={'subject': '零钱通', 'topic': '到账时间',
+                      'source': 'desc', 'quote': '转出后迟迟未到账'})
+        self.editorial['insights']['sentiment'][0].update(body='银行信用卡仅为原文背景；此处只关注零钱通到账疑问。',
+                                                        scope='零钱通用户自述，未核验')
+        before = build.digest([self.store, self.reviews, self.editorial, self.manifest])
+        report, quality, _ = self.report()
+        note = next(n for n in report['notes'] if n['id'] == row['id'])
+        self.assertEqual(note['issue_scope'], review['issue_scope'])
+        self.assertEqual(note['evidence']['desc'], row['evidence']['desc'])
+        self.assertEqual(note['object'], '零钱通')
+        output = self.root / 'mixed_scope_release'
+        build.write_bundle(report, quality, self.root, output)
+        verify.validate_bundle(output)
+        self.assertEqual(build.digest([self.store, self.reviews, self.editorial, self.manifest]), before)
+        for subject in ('理财通', '零钱通'):
+            for topic in ('服务投诉', '还款手续费', '资金转入转出', '到账时间', '收益与持有期'):
+                with self.subTest(subject=subject, topic=topic):
+                    review.update(object=subject, issue_scope=dict(review['issue_scope'], subject=subject, topic=topic))
+                    self.report()
+
+    def test_sentiment_scope_not_required_for_internal_archive_or_unpublished(self):
+        for nid, section, pub in (('internal_bank', 'internal', '2026-10-22 00:00'),
+                                  ('archive_bank', 'archive', '2026-10-22 00:00'),
+                                  ('old_bank', 'sentiment', '2026-08-01 00:00'),
+                                  ('future_bank', 'sentiment', '2026-10-24 00:00'),
+                                  ('unknown_bank', 'sentiment', None)):
+            row = self.extra(nid, pub, section)
+            review = self.reviews['reviews'][nid]
+            review['object'] = '银行信用卡'
+            review.pop('issue_scope', None)
+        report, quality, internal = self.report()
+        self.assertEqual(report['source_count'], 3)
+        self.assertEqual(sum(n['publication'] == 'internal' for n in internal['items']), 5)
+        paths = {}
+        for key, obj in zip(('store', 'reviews', 'editorial', 'manifest'),
+                            (self.store, self.reviews, self.editorial, self.manifest)):
+            paths[key] = self.root / (key + '.json')
+            paths[key].write_bytes(build.canonical(obj))
+        quality['input_file_sha256'] = {k: hashlib.sha256(p.read_bytes()).hexdigest() for k, p in paths.items()}
+        output = self.root / 'internal_scope_release'
+        build.write_bundle(report, quality, self.root, output)
+        verify.validate_bundle(output, paths)
+
+    def test_sentiment_editorial_refs_object_guard_for_insights_and_overview(self):
+        report, _, _ = self.report()
+        for kind in ('insights', 'overview'):
+            editorial = copy.deepcopy(self.editorial)
+            editorial['insights'] = {s: [] for s in build.SECTIONS}
+            editorial['overview'] = []
+            if kind == 'insights':
+                editorial['insights']['sentiment'] = self.editorial['insights']['sentiment']
+            else:
+                editorial['overview'] = [self.editorial['overview'][2]]
+            for obj in ('银行', '一般信用卡', '零钱通'):
+                notes = copy.deepcopy(report['notes'])
+                notes[2]['object'] = obj
+                with self.subTest(kind=kind, object=obj), self.assertRaises(build.ValidationError):
+                    build.validate_editorial(editorial, self.manifest, notes)
+        self.assertNotIn('subjects', report['insights']['sentiment'][0])
+        self.assertNotIn('subjects', report['overview'][2])
+
+    def test_sentiment_image_scope_binding_public_mapping_and_source_equality(self):
+        nid = 'fixture_sentiment'
+        review = self.reviews['reviews'][nid]
+        review['issue_scope'] = {'subject': '理财通', 'topic': '到账时间', 'source': 'image',
+                                 'image': 'imgs/fixture_1.png', 'quote': '转出后迟迟未到账'}
+        approved = [{'image': 'imgs/fixture_0.png', 'quote': '理财通'},
+                    {'image': 'imgs/fixture_1.png', 'quote': '转出后迟迟未到账'}]
+        for binding in (None, [], '错误类型', [{'image': 'imgs/fixture_0.png', 'quote': '转出后迟迟未到账'}],
+                        [{'image': 'imgs/fixture_1.png', 'quote': '捏造引文'}]):
+            review['image_quotes'] = binding
+            with self.subTest(binding=binding), self.assertRaisesRegex(build.ValidationError, '图引文未绑定'):
+                self.report()
+        review.pop('image_quotes')
+        review['_image_quotes'] = approved
+        with self.assertRaisesRegex(build.ValidationError, '图引文未绑定'):
+            self.report()
+        review.pop('_image_quotes')
+        review['image_quotes'] = approved
+        for image in (None, 'imgs/missing.png', '../outside.png'):
+            review['issue_scope']['image'] = image
+            with self.subTest(image=image), self.assertRaisesRegex(build.ValidationError, 'issue_scope.image'):
+                self.report()
+        review['issue_scope']['image'] = 'imgs/fixture_1.png'
+        before = build.digest([self.store, self.reviews, self.editorial, self.manifest])
+        report, quality, _ = self.report()
+        note = next(n for n in report['notes'] if n['id'] == nid)
+        public_image = note['issue_scope']['image']
+        self.assertEqual(public_image, note['evidence']['imgs'][1])
+        self.assertEqual(quality['image_sources'][public_image], review['issue_scope']['image'])
+        self.assertNotEqual(public_image, review['issue_scope']['image'])
+        self.assertNotIn('_image_quotes', note)
+        self.assertNotIn('image_quotes', note)
+        self.assertEqual(build.digest([self.store, self.reviews, self.editorial, self.manifest]), before)
+        paths = {}
+        for key, obj in zip(('store', 'reviews', 'editorial', 'manifest'),
+                            (self.store, self.reviews, self.editorial, self.manifest)):
+            paths[key] = self.root / (key + '.json')
+            paths[key].write_bytes(build.canonical(obj))
+        quality['input_file_sha256'] = {k: hashlib.sha256(p.read_bytes()).hexdigest() for k, p in paths.items()}
+        output = self.root / 'image_scope_release'
+        build.write_bundle(report, quality, self.root, output)
+        verify.validate_bundle(output, paths)
+        for index, binding in enumerate((None, [], '错误类型', [{'image': public_image, 'quote': review['issue_scope']['quote']}])):
+            with self.subTest(source_binding=binding):
+                review['image_quotes'] = binding
+                paths['reviews'].write_bytes(build.canonical(self.reviews))
+                forged = copy.deepcopy(report)
+                q = copy.deepcopy(quality)
+                forged['provenance']['reviews_sha256'] = build.digest(self.reviews['reviews'])
+                q['provenance'] = forged['provenance']
+                q['report_sha256'] = build.digest(forged)
+                q['input_file_sha256']['reviews'] = hashlib.sha256(paths['reviews'].read_bytes()).hexdigest()
+                output = self.root / ('unbound_source_' + str(index))
+                build.write_bundle(forged, q, self.root, output)
+                with self.assertRaisesRegex(ValueError, '图引文未绑定'):
+                    verify.validate_bundle(output, paths)
+        review['image_quotes'] = approved
+        # 引文在源图中已审，但公开scope不能擅自换成另一已审引文。
+        forged = copy.deepcopy(report)
+        next(n for n in forged['notes'] if n['id'] == nid)['issue_scope'].update(image=note['evidence']['imgs'][0], quote='理财通')
+        paths['reviews'].write_bytes(build.canonical(self.reviews))
+        q = copy.deepcopy(quality)
+        q['report_sha256'] = build.digest(forged)
+        output = self.root / 'changed_image_scope'
+        build.write_bundle(forged, q, self.root, output)
+        with self.assertRaisesRegex(ValueError, 'issue_scope与源review不符'):
+            verify.validate_bundle(output, paths)
+        forged = copy.deepcopy(report)
+        next(n for n in forged['notes'] if n['id'] == nid)['issue_scope']['image'] = review['issue_scope']['image']
+        q['report_sha256'] = build.digest(forged)
+        output = self.root / 'unmapped_image_scope'
+        build.write_bundle(forged, q, self.root, output)
+        with self.assertRaisesRegex(ValueError, 'issue_scope.image'):
+            verify.validate_bundle(output)
+
+    def test_sentiment_desc_scope_matches_source_review_not_just_source_text(self):
+        report, quality, _ = self.report()
+        paths = {}
+        for key, obj in zip(('store', 'reviews', 'editorial', 'manifest'),
+                            (self.store, self.reviews, self.editorial, self.manifest)):
+            paths[key] = self.root / (key + '.json')
+            paths[key].write_bytes(build.canonical(obj))
+        quality['input_file_sha256'] = {k: hashlib.sha256(p.read_bytes()).hexdigest() for k, p in paths.items()}
+        for index, changes in enumerate(({'quote': '费用5元'}, {'topic': '服务投诉'})):
+            forged = copy.deepcopy(report)
+            forged['notes'][2]['issue_scope'].update(changes)
+            q = copy.deepcopy(quality)
+            q['report_sha256'] = build.digest(forged)
+            output = self.root / ('changed_desc_scope_' + str(index))
+            build.write_bundle(forged, q, self.root, output)
+            verify.validate_bundle(output)
+            with self.subTest(changes=changes), self.assertRaisesRegex(ValueError, 'issue_scope与源review不符'):
+                verify.validate_bundle(output, paths)
+        forged = copy.deepcopy(report)
+        forged['notes'][2]['object'] = forged['notes'][2]['issue_scope']['subject'] = '零钱通'
+        q = copy.deepcopy(quality)
+        q['report_sha256'] = build.digest(forged)
+        output = self.root / 'changed_subject_scope'
+        build.write_bundle(forged, q, self.root, output)
+        with self.assertRaisesRegex(ValueError, '公开对象/主栏与源review不符'):
+            verify.validate_bundle(output, paths)
 
     def test_no_images_and_missing_fulltext_image_fail(self):
         report, _, _ = self.report()

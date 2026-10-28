@@ -285,6 +285,65 @@ class PipelineTests(unittest.TestCase):
                 with self.assertRaisesRegex(pipeline.PipelineError, 'pipeline源图哈希'):
                     pipeline.checked_bundle(self.args)
 
+    def test_pipeline_sentiment_object_and_scope_rejected_without_output_or_input_changes(self):
+        row = self.inputs[0]['notes'][2]
+        row['evidence']['desc'] = '银行信用卡投诉，理财通仅比较且不可用。资金转出遇到疑问。'
+        review = fixtures.review_for(row, 'sentiment', self.assets)
+        self.inputs[1]['reviews'][row['id']] = review
+        self.save(0)
+        approved = copy.deepcopy(review)
+        invalid = [{'object': '银行信用卡'}, {'issue_scope': None},
+                   {'issue_scope': dict(review['issue_scope'], subject='零钱通')},
+                   {'issue_scope': dict(review['issue_scope'], quote='捏造原文')},
+                   {'issue_scope': dict(review['issue_scope'], topic='银行投诉')},
+                   {'issue_scope': {'subject': '理财通', 'topic': '到账时间', 'source': 'image',
+                                    'image': 'imgs/fixture_0.png', 'quote': '未审核的图中文字'}}]
+        for changes in invalid:
+            with self.subTest(changes=changes):
+                self.inputs[1]['reviews'][row['id']] = dict(approved, **changes)
+                self.save(1)
+                before = pipeline.hashes(self.sources)
+                with patch.object(pipeline, 'network_git') as network, patch.object(pipeline, 'promote') as promote:
+                    with self.assertRaises(report_v6.ValidationError):
+                        pipeline.build(self.args)
+                    network.assert_not_called()
+                    promote.assert_not_called()
+                self.assertEqual(pipeline.hashes(self.sources), before)
+                self.assertFalse(Path(self.args.output).exists())
+                self.assertFalse((self.root / 'bank_marketing_report.html').exists())
+
+    def test_pipeline_mixed_subject_cross_source_and_image_scope_preserve_evidence(self):
+        row = self.inputs[0]['notes'][2]
+        row['evidence']['desc'] = '银行信用卡为背景，零钱通的转出到账疑问见图。'
+        row.update(source='银行投诉检索', search_keywords=['银行投诉'])
+        review = fixtures.review_for(row, 'sentiment', self.assets)
+        review.update(object='零钱通', issue_scope={'subject': '零钱通', 'topic': '到账时间', 'source': 'image',
+                      'image': 'imgs/fixture_1.png', 'quote': '转出后迟迟未到账'},
+                      image_quotes=[{'image': 'imgs/fixture_0.png', 'quote': '零钱通'},
+                                    {'image': 'imgs/fixture_1.png', 'quote': '转出后迟迟未到账'}])
+        self.inputs[1]['reviews'][row['id']] = review
+        self.inputs[2]['insights']['sentiment'][0].update(body='银行信用卡仅为原文背景，此项只关注零钱通到账疑问。',
+                                                       scope='零钱通用户自述，未核验')
+        for index in (0, 1, 2):
+            self.save(index)
+        before = pipeline.hashes(self.sources)
+        images_before = pipeline.hashes({p: self.assets / p for p in row['evidence']['imgs']})
+        bundle = self.bundle()
+        _, _, _, report, quality = pipeline.checked_bundle(self.args)
+        note = next(n for n in report['notes'] if n['id'] == row['id'])
+        public = note['issue_scope']['image']
+        self.assertEqual(note['object'], '零钱通')
+        self.assertEqual(note['issue_scope']['subject'], '零钱通')
+        self.assertEqual(note['evidence']['desc'], row['evidence']['desc'])
+        self.assertEqual(public, note['evidence']['imgs'][1])
+        self.assertEqual(quality['image_sources'][public], review['issue_scope']['image'])
+        self.assertNotIn('subjects', report['insights']['sentiment'][0])
+        self.assertTrue(bundle.is_dir())
+        self.verified()
+        self.assertEqual(pipeline.hashes(self.sources), before)
+        self.assertEqual(pipeline.hashes({p: self.assets / p for p in images_before}), images_before)
+        self.assertFalse((self.root / 'bank_marketing_report.html').exists())
+
     def test_original_filename_collision_does_not_block_mapped_promote(self):
         (self.root / 'imgs').mkdir()
         old = self.root / 'imgs/fixture_0.png'

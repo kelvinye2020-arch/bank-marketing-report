@@ -31,6 +31,8 @@ VERSION = 'V6.2'
 CST = timezone(timedelta(hours=8))
 SECTIONS = ('marketing', 'product', 'sentiment')
 METRICS = ('likes', 'collects', 'comments', 'shares')
+ISSUE_SUBJECTS = ('理财通', '零钱通')
+ISSUE_TOPICS = ('服务投诉', '还款手续费', '资金转入转出', '到账时间', '收益与持有期')
 REVIEW_FIELDS = ('primary_section', 'object', 'topics', 'attitude', 'analyst_note',
                  'verification', 'event_key', 'event_label', 'event_status', 'evidence_sha256')
 IMAGE_RE = re.compile(r'imgs/[A-Za-z0-9_-]+\.(?:jpg|jpeg|png|webp)')
@@ -202,7 +204,10 @@ def reading_groups(notes, end):
         grouped = {}
         for n in notes:
             if n['primary_section'] == section:
-                grouped.setdefault(n['event_key'], []).append(n)
+                # 产品栏样本少、每篇内容差异大，按用户要求逐篇平铺不合并；
+                # 营销栏保持同主题合并。
+                key = n['id'] if section == 'product' else n['event_key']
+                grouped.setdefault(key, []).append(n)
         events = []
         for key, members in grouped.items():
             members.sort(key=lambda n: (likes(n), timekey(n)), reverse=True)
@@ -223,11 +228,16 @@ def reading_groups(notes, end):
             usedkeys = topkeys | {e['key'] for e in recent}
             rest = [e for e in events if e['month'] and e['key'] not in usedkeys]
             history = [e for e in events if not e['month']]
-            buckets = [('popular', '当月高赞参考' if section == 'marketing' else '当月重点使用案例', top, True,
-                        '按样本内点赞排列，同主题合并；并非平台热榜。' if section == 'marketing' else '优先较高赞且细节具体的案例；样本低赞时不强凑热门。'),
-                       ('recent', '近期发现与变化线索', recent, True, '近7天发布，按日期排列；新帖子不等于新活动，具体变化另行标注。'),
-                       ('month', '当月其他证据', rest, len(recent) < 3, '当月其余资料按点赞排列；活动是否仍有效需另行核验。'),
-                       ('history', '历史参考', history, len(recent) < 3, '前60天中当月以前的资料，不混算本期新增。')]
+            if section == 'marketing':
+                buckets = [('popular', '热门活动案例', top, True, '按样本内点赞排列，同主题合并；并非平台热榜。'),
+                           ('recent', '近期新发现', recent, True, '近7天发布，按日期排列；新帖子不等于新活动，最多直接展示前9篇，其余可展开。'),
+                           ('month', '当月其他活动', rest, len(recent) < 3, '当月其余资料按点赞排列；活动是否仍有效需另行核验。'),
+                           ('history', '历史参考', history, len(recent) < 3, '前60天中当月以前的资料，不混算本期新增。')]
+            else:
+                buckets = [('popular', '当月重点使用案例', top, True, '优先较高赞且细节具体的案例；样本低赞时不强凑热门。'),
+                           ('recent', '近期新发现', recent, True, '近7天发布，按日期排列；新帖子不等于新活动，具体变化另行标注。'),
+                           ('month', '当月其他证据', rest, len(recent) < 3, '当月其余资料按点赞排列；活动是否仍有效需另行核验。'),
+                           ('history', '历史参考', history, len(recent) < 3, '前60天中当月以前的资料，不混算本期新增。')]
         result[section] = [{'key': key, 'title': title, 'events': es, 'open': opened, 'note': text}
                            for key, title, es, opened, text in buckets if es]
     return result
@@ -237,6 +247,25 @@ def assert_not_confirmed(text):
     stripped = re.sub(r'(?:未|未经|不能|不应|不代表|并非|非已|不当作|不将|不是)(?:独立)?(?:已)?(?:确认|核验|认定)[^，。；\n]*', '', text)
     require(not re.search(r'已确认(?:投诉|故障|新上线)|官方(?:确认|规则|规定|保证)|已证实|平台确实|人人可领|保证收益', stripped),
             '不可自动确认投诉/故障/官方规则或普遍保证；请改为明确归因、待核验表述')
+
+
+def validate_issue_scope(review, evidence, image_quotes):
+    require(review.get('object') in ISSUE_SUBJECTS, 'sentiment对象准入仅允许理财通/零钱通')
+    scope = review.get('issue_scope')
+    require(isinstance(scope, dict), 'sentiment缺少issue_scope对象')
+    require(scope.get('subject') in ISSUE_SUBJECTS and scope['subject'] == review['object'],
+            'issue_scope.subject必须与object一致且为理财通/零钱通')
+    require(scope.get('topic') in ISSUE_TOPICS, 'issue_scope.topic不在问题枚举内')
+    require(scope.get('source') in ('desc', 'image'), 'issue_scope.source必须为desc/image')
+    quote = scope.get('quote')
+    require(isinstance(quote, str) and bool(quote.strip()), 'issue_scope.quote必须为非空原文')
+    if scope['source'] == 'desc':
+        require(quote in evidence['desc'], 'issue_scope.quote不是evidence.desc逐字子串')
+    else:
+        image = scope.get('image')
+        require(isinstance(image, str) and image in evidence['imgs'], 'issue_scope.image不在evidence.imgs')
+        require(isinstance(image_quotes, list) and any(isinstance(item, dict) and item.get('image') == image
+                and item.get('quote') == quote for item in image_quotes), 'issue_scope图引文未绑定review.image_quotes')
 
 
 def validate_claims(item, byid, allnotes):
@@ -312,6 +341,8 @@ def validate_editorial(editorial, manifest, notes):
                 and len(refs) == len(set(refs)), '摘要必须有不重复refs，不自动填充')
         for nid in refs:
             require(nid in byid and byid[nid]['primary_section'] == section, '摘要引用未发布/窗口外/跨栏证据')
+            if section == 'sentiment':
+                validate_issue_scope(byid[nid], byid[nid]['evidence'], byid[nid].get('_image_quotes', []))
             if unique:
                 require(nid not in used, 'insights全局重复refs')
                 used.add(nid)
@@ -399,7 +430,11 @@ def build_report(store, reviews, editorial, manifest, asset_root, minimums=None)
         audit.append({'id': nid, 'evidence_sha256': digest(ev), 'publication': 'internal' if reasons else 'public', 'reasons': reasons})
         if reasons:
             continue
+        if review['primary_section'] == 'sentiment':
+            validate_issue_scope(review, ev, review.get('image_quotes', []))
         n = {key: copy.deepcopy(review[key]) for key in REVIEW_FIELDS if key != 'evidence_sha256'}
+        if review['primary_section'] == 'sentiment':
+            n['issue_scope'] = copy.deepcopy(review['issue_scope'])
         public_ev = {key: copy.deepcopy(ev[key]) for key in ('t', 'a', 'desc', 'imgs', 'tags', 'pub')}
         public_ev.update(url=origin, cmts=public_cmts, **{key: ev[key] for key in METRICS})
         if 'captured_at' in ev:
@@ -428,6 +463,8 @@ def build_report(store, reviews, editorial, manifest, asset_root, minimums=None)
             public_images[public] = sha
             image_sources[public] = source
             published.append(public)
+        if n['primary_section'] == 'sentiment' and n['issue_scope']['source'] == 'image':
+            n['issue_scope']['image'] = published[n['evidence']['imgs'].index(n['issue_scope']['image'])]
         n['evidence']['imgs'] = published
     validate_image_sources(public_images, image_sources)
     counts = {'unique': len(notes), 'recent_unique': sum(n['recent'] for n in notes),
@@ -463,7 +500,7 @@ def build_report(store, reviews, editorial, manifest, asset_root, minimums=None)
               'window_start': (end - timedelta(days=59)).isoformat(), 'source_count': len(notes), 'image_count': len(public_images),
               'counts': counts, 'visible_counts': copy.deepcopy(counts), 'notes': notes, 'insights': insights, 'overview': overview,
               'reading_groups': reading_groups(notes, end), 'publication': publication, 'provenance': provenance,
-              'coverage_note': f'本期required检索组 {coverage["succeeded"]}/{coverage["required"]} 成功；optional失败 {coverage["optional_failed"]} 组。仅说明采集覆盖，不等于全文全部通过或平台热榜。',
+              'coverage_note': f'搜索覆盖：本期计划搜索 {coverage["required"]} 组关键词，成功 {coverage["succeeded"]} 组，补充词失败 {coverage["optional_failed"]} 组。这只是“搜过哪些词”，不代表覆盖全平台或热门榜。',
               'publication_notice': ('合成测试fixture，仅验证程序与版式，不代表真实采集或本期审核。' if manifest['data_kind'] == 'test_fixture' else '本报告为本期已审核样本观察，不代表全平台声量、活动有效性或已确认投诉。用户自述与业务判断分开保留。')}
     quality = {'schema_version': 1, 'version': VERSION, 'passed': True,
                'production_data_passed': manifest['data_kind'] == 'production', 'publication': publication,
