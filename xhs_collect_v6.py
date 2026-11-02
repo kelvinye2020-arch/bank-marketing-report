@@ -320,7 +320,9 @@ class Collector:
         tasks = [{'key': 'f%02d' % i, 'section': g, 'keyword': kw, 'required': True, 'mode': 'default'}
                  for i, (g, kw) in enumerate(((g, kw) for g, kws in self.config['fixed_groups'].items() for kw in kws), 1)]
         for i, item in enumerate(self.config['supplements'], 1):
-            section = next(g for g, words in self.config['fixed_groups'].items() if item['keyword'] in words)
+            section = next((g for g, words in self.config['fixed_groups'].items() if item['keyword'] in words), item.get('section'))
+            if section not in self.config['fixed_groups']:
+                raise ValueError('补充词归属栏目缺失')
             tasks.append(dict(item, key='s%02d' % i, section=section, required=False, mode='recent'))
         groups = []
         for task in tasks:
@@ -1153,11 +1155,14 @@ def validate(config):
         raise ValueError('关键词重复或为空')
     if config['default_mode'] != {'arguments': 'keyword-only', 'sort_by': '综合', 'publish_time': '不限'}:
         raise ValueError('固定词必须keyword-only默认综合不限')
-    if [i['keyword'] for i in config['supplements']] != ['银行立减金', '理财通会员权益']:
-        raise ValueError('补充槽位必须为指定两词')
-    for item in config['supplements']:
+    if [i['keyword'] for i in config['supplements']] != ['银行立减金', '理财通会员权益', '零钱通不能付款']:
+        raise ValueError('补充槽位必须为指定三词')
+    for item in config['supplements'][:2]:
         if item['keyword'] not in words or item['filters'] != {'sort_by': '最新', 'publish_time': '一周内'}:
             raise ValueError('补充词与显式filters不合规')
+    third = config['supplements'][2]
+    if third['filters'] != {'sort_by': '综合', 'publish_time': '不限'} or third.get('section') != 'sentiment':
+        raise ValueError('第三补充词必须为零钱通不能付款+综合不限+归属问题舆情')
     rt = config['runtime']
     required = {'ports': [18076, 18077], 'recycle_after_calls': 1, 'search_timeout_seconds': 65,
         'search_cold_retries': 1, 'consecutive_failure_stop': 2, 'detail_timeout_seconds': 55,

@@ -8,7 +8,8 @@
   "default_mode": {"arguments": "keyword-only", "sort_by": "综合", "publish_time": "不限"},
   "supplements": [
     {"keyword": "银行立减金", "filters": {"sort_by": "最新", "publish_time": "一周内"}},
-    {"keyword": "理财通会员权益", "filters": {"sort_by": "最新", "publish_time": "一周内"}}
+    {"keyword": "理财通会员权益", "filters": {"sort_by": "最新", "publish_time": "一周内"}},
+    {"keyword": "零钱通不能付款", "filters": {"sort_by": "综合", "publish_time": "不限"}, "section": "sentiment"}
   ],
   "runtime": {
     "state_dir": "xhs_state",

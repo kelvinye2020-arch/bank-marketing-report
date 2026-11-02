@@ -100,7 +100,7 @@ class PipelineTests(unittest.TestCase):
                 groups.append({'key': 'f%02d' % (len(groups) + 1), 'section': s, 'keyword': word,
                     'required': True, 'mode': 'default', 'status': 'success', 'as_of': manifest['as_of'], 'run_id': manifest['run_id']})
         for i, item in enumerate(config['supplements'], 1):
-            groups.append(dict(item, key='s%02d' % i, section=next(s for s, words in config['fixed_groups'].items() if item['keyword'] in words),
+            groups.append(dict(item, key='s%02d' % i, section=next((s for s, words in config['fixed_groups'].items() if item['keyword'] in words), item.get('section')),
                 required=False, mode='recent', status='success', as_of=manifest['as_of'], run_id=manifest['run_id']))
         manifest.update(groups=groups, required_groups=[g['key'] for g in groups if g['required']])
         editorial['publication']['status'] = 'ready'
@@ -941,7 +941,7 @@ class CollectorRolloverTests(unittest.TestCase):
         with patch.object(fresh, 'schedule', side_effect=lambda tasks, fn: scheduled.extend(tasks)):
             fresh.search()
         self.assertEqual([t['key'] for t in scheduled],
-                         ['f%02d' % i for i in range(1, 16)] + ['s01', 's02'])
+                         ['f%02d' % i for i in range(1, 16)] + ['s01', 's02', 's03'])
         self.assertEqual(fresh.manifest['search_succeeded'], 0)
         self.assertEqual(list(fresh.raw.iterdir()), [])
 
@@ -965,10 +965,10 @@ class CollectorRolloverTests(unittest.TestCase):
                 patch.object(collector_module.Collector, 'request', autospec=True, side_effect=request) as tools, \
                 redirect_stdout(io.StringIO()):
             self.assertEqual(collector_module.main(), 0)
-        self.assertEqual(tools.call_count, 17)
+        self.assertEqual(tools.call_count, 18)
         manifest = collector_module.load(self.old.manifest_path)
         self.assertEqual(manifest['run_id'], 'new-week')
-        self.assertEqual(manifest['search_succeeded'], 17)
+        self.assertEqual(manifest['search_succeeded'], 18)
         self.assertTrue((self.old.run / 'archive/archive_hashes.json').is_file())
         self.assertEqual(collector_module.load(self.old.store_path)['notes'], self.old.store['notes'])
 

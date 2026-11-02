@@ -168,7 +168,7 @@ def config_check(path):
     import xhs_collect_v6
     config = read_json(path)
     xhs_collect_v6.validate(config)
-    need(len(config['supplements']) <= 2, '补充词不能超过两个')
+    need(len(config['supplements']) <= 3, '补充词不能超过三个')
     return config
 
 
@@ -184,10 +184,11 @@ def coverage_check(manifest, config):
             expected.append({'key': 'f%02d' % (len(expected) + 1), 'section': section,
                              'keyword': word, 'required': True, 'mode': 'default'})
     for index, item in enumerate(config['supplements'], 1):
-        section = next(s for s, words in config['fixed_groups'].items() if item['keyword'] in words)
+        section = next((s for s, words in config['fixed_groups'].items() if item['keyword'] in words), item.get('section'))
+        need(section in config['fixed_groups'], '补充词归属栏目缺失')
         expected.append(dict(item, key='s%02d' % index, section=section, required=False, mode='recent'))
     actual = {g['key']: g for g in manifest['groups']}
-    need(set(actual) == {g['key'] for g in expected}, 'coverage 必须是 config 完整 15 词及至多两个补充，不能仅单栏')
+    need(set(actual) == {g['key'] for g in expected}, 'coverage 必须是 config 完整 15 词及至多三个补充，不能仅单栏')
     for group in expected:
         row = actual[group['key']]
         need(all(row.get(k) == v for k, v in group.items()), '检索词、栏目或模式与 config 不一致')

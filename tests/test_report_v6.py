@@ -527,7 +527,8 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(quality['coverage']['optional_failed'], 1)
 
     def test_nextweek_old_editorial_rejected_no_residual_refs(self):
-        self.manifest['as_of'] = '2026-12-31'
+        # 断言不依赖运行当天的真实日期：越界/错期/未来审核时点各自独立判定。
+        self.manifest['as_of'] = '2026-10-24'
         self.manifest['run_id'] = 'fixture-next'
         for group in self.manifest['groups']:
             group.update(as_of=self.manifest['as_of'], run_id=self.manifest['run_id'])
@@ -536,13 +537,17 @@ class ReportTests(unittest.TestCase):
         self.editorial.update(as_of=self.manifest['as_of'], run_id=self.manifest['run_id'], reviewed_at='2026-10-23T14:00:00+08:00')
         with self.assertRaises(build.ValidationError):
             self.report()
+        self.editorial['reviewed_at'] = '2099-12-31T00:00:00+08:00'
+        with self.assertRaises(build.ValidationError):
+            self.report()
         # 下周截至日仍可读本月证据，但近期标识应动态清空，不复制旧recent。
         self.manifest['as_of'] = '2026-10-30'
         self.editorial.update(as_of='2026-10-30', reviewed_at='2026-10-30T00:00:00+08:00')
         for group in self.manifest['groups']:
             group['as_of'] = '2026-10-30'
-        with self.assertRaises(build.ValidationError):
-            self.report()
+        report, _, _ = self.report()
+        self.assertTrue(report['notes'])
+        self.assertFalse(any(n['recent'] for n in report['notes']))
 
     def test_rollweek_dynamic_groups_without_fixed_refs(self):
         old = (date.fromisoformat(self.manifest['as_of']) - timedelta(days=8)).isoformat()
@@ -796,7 +801,8 @@ class ReportTests(unittest.TestCase):
         process = subprocess.run(['node', '--check', '-'], input=js, text=True, capture_output=True)
         self.assertEqual(process.returncode, 0, process.stderr)
         self.assertIn('#evidence .grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;', text)
-        self.assertEqual(hashlib.sha256(re.search(r'<style>(.*?)</style>', text, re.S)[1].encode()).hexdigest(), '20ba5c66f12b4d9043f3f886e7ef047b0d908f52fa92d98bc6f047529c28cae7')
+        # 冻结基线随 2026-10-28 版式定稿（三列证据网格/16px间距/纵向摘要）更新，CSS 变更须同步改此哈希。
+        self.assertEqual(hashlib.sha256(re.search(r'<style>(.*?)</style>', text, re.S)[1].encode()).hexdigest(), 'baddb021f434b47c9cd2b0d069fe15cc0c7d4b1236dd5a0488c2f0ec9ed128d3')
         self.assertNotIn('V6.1', text)
         self.assertEqual(text.count('__REPORT_DATA__'), 1)
 

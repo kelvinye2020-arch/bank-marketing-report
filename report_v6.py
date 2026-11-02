@@ -219,15 +219,18 @@ def reading_groups(notes, end):
         events.sort(key=lambda e: (e['likes'], e['time']), reverse=True)
         if section == 'sentiment':
             top = sorted([e for e in events if e['month']], key=lambda e: e['time'], reverse=True)
+            topkeys = {e['key'] for e in top}
+            # 近七天跨月时，已在当月桶展示的主题不再进历史桶，避免同一证据重复出现。
             buckets = [('current', '当月具体问题', top, True, '按发布时间排列；低赞的具体问题同样保留。'),
-                       ('history', '历史关注问题', [e for e in events if not e['month']], True, '按已保存点赞排列；不是本周新增故障。')]
+                       ('history', '历史关注问题', [e for e in events if not e['month'] and e['key'] not in topkeys], True, '按已保存点赞排列；不是本周新增故障。')]
         else:
             top = [e for e in events if e['month'] and not e['reserved']][:6]
             topkeys = {e['key'] for e in top}
             recent = sorted([e for e in events if e['recent'] and e['key'] not in topkeys], key=lambda e: e['time'], reverse=True)
             usedkeys = topkeys | {e['key'] for e in recent}
             rest = [e for e in events if e['month'] and e['key'] not in usedkeys]
-            history = [e for e in events if not e['month']]
+            # 近七天若跨到上月，近期桶已展示的主题不重复计入历史桶。
+            history = [e for e in events if not e['month'] and e['key'] not in usedkeys]
             if section == 'marketing':
                 buckets = [('popular', '热门活动案例', top, True, '按样本内点赞排列，同主题合并；并非平台热榜。'),
                            ('recent', '近期新发现', recent, True, '近7天发布，按日期排列；新帖子不等于新活动，最多直接展示前9篇，其余可展开。'),
