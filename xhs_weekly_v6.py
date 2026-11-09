@@ -479,19 +479,34 @@ def acceptance_check(receipt, bundle, metadata, report, quality, require_fresh=T
 
 
 @contextmanager
-def publish_lock(root):
-    # 独占锁不删除未知锁；若异常崩溃留下锁，需人工确认后处置。
+def publish_lock(root, stale_after=3600):
+    """独占锁。锁内记录 pid，只自动清理"明确已失效"的锁：持有进程已不存在，或锁存在超过 stale_after。
+    不清理仍在运行的进程持有的锁，避免并发发布。"""
     path = root / 'outputs' / '.v6-publish.lock'
     need(path.parent.is_dir(), 'outputs 缺失')
+    if path.exists():
+        info = {}
+        try:
+            info = json.loads(path.read_text(encoding='utf-8') or '{}')
+        except Exception:
+            info = {}
+        age = (datetime.now(CST) - datetime.fromtimestamp(path.stat().st_mtime, CST)).total_seconds()
+        stale = (info.get('pid') is not None and not _pid_alive(info.get('pid'))) or age > stale_after
+        if not stale:
+            raise PipelineError('已有发布锁（pid=%s，%.0f 分钟），拒绝并发；确认无人运行后可人工删除 %s'
+                                % (info.get('pid'), age / 60, path))
+        print('[publish-lock] 清理已失效锁 pid=%s 存在%.0f分钟' % (info.get('pid'), age / 60),
+              file=sys.stderr, flush=True)
+        path.unlink()
+    stream = path.open('x')
     try:
-        stream = path.open('x')
-    except FileExistsError:
-        raise PipelineError('已有发布锁，拒绝并发或自动删除锁')
-    try:
+        stream.write(json.dumps({'pid': os.getpid(),
+                                 'created_at': datetime.now(CST).isoformat(timespec='seconds')}))
         stream.close()
         yield
     finally:
-        path.unlink()
+        if path.exists():
+            path.unlink()
 
 
 def promote(root, bundle, expected):
@@ -570,27 +585,121 @@ def ref_hashes(raw):
     return result
 
 
-def http_hashes(site_url, expected):
-    import requests
-    need(site_url == SITE_URL, '线上验收 URL 必须是现有已授权站点')
-    result = {}
-    with requests.Session() as session:
-        session.trust_env = False
-        for name, sha in expected.items():
+def _pid_alive(pid):
+    """只看进程是否还在；无法判断时保守返回 True。"""
+    try:
+        pid = int(pid)
+    except (TypeError, ValueError):
+        return True
+    if pid <= 0:
+        return False
+    if os.name == 'nt':
+        # Windows 上 os.kill(pid, 0) 会真正终止进程，只能用 OpenProcess 探测。
+        try:
+            import ctypes
+            from ctypes import wintypes
+            handle = ctypes.windll.kernel32.OpenProcess(0x1000, False, pid)
+            if not handle:
+                return False
             try:
-                with session.get(site_url + name, stream=True, allow_redirects=False, timeout=(10, 30),
-                                 headers={'Cache-Control': 'no-cache', 'Accept-Encoding': 'identity'}) as response:
-                    need(response.status_code == 200, '线上 HTTP 未就绪：' + name)
-                    size, digest = 0, hashlib.sha256()
-                    for part in response.iter_content(65536):
-                        size += len(part)
-                        need(size <= 40 * 1024 * 1024, '线上文件超过验收预算')
-                        digest.update(part)
-                    need(digest.hexdigest() == sha, '线上文件哈希不匹配：' + name)
-                    result[name] = sha
-            except requests.RequestException:
-                raise PipelineError('线上 HTTP 验收失败：' + name + '（请求日志已屏蔽）')
-    return result
+                code = wintypes.DWORD()
+                ok = ctypes.windll.kernel32.GetExitCodeProcess(handle, ctypes.byref(code))
+                return bool(ok) and code.value == 259
+            finally:
+                ctypes.windll.kernel32.CloseHandle(handle)
+        except Exception:
+            return True
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    return True
+
+
+def http_hashes(site_url, expected, bundle=None, workers=4, sample_ratio=0.1, min_sample=20):
+    """线上核对：HTML 等非图片资源全量哈希；图片按比例抽样做全量哈希（不低于 min_sample 且必含首尾各 5 张），
+    其余图片只校验 HTTP 200 + Content-Length。并发下载，避免串行拉全量图。
+
+    返回被全量哈希的文件映射；回执必须记录抽样口径，不得把未哈希文件写成已比对。
+    """
+    import requests
+    import threading
+    from concurrent.futures import ThreadPoolExecutor
+    need(site_url == SITE_URL, '线上验收 URL 必须是现有已授权站点')
+    names = sorted(expected)
+    images = [n for n in names if n.startswith('imgs/')]
+    others = [n for n in names if n not in set(images)]
+    picked = set()
+    if images:
+        count = min(len(images), max(min_sample, int(round(len(images) * sample_ratio))))
+        step = len(images) / float(count)
+        picked = {images[min(len(images) - 1, int(i * step))] for i in range(count)}
+        picked |= set(images[:5]) | set(images[-5:])
+    full = sorted(set(others) | picked)
+    rest = [n for n in images if n not in picked]
+    sizes = {}
+    if bundle is not None:
+        root = Path(bundle).resolve()
+        for name in rest:
+            local = (root / name).resolve()
+            need(local.is_relative_to(root) and local.is_file(), '线上轻量核对缺少本地文件：' + name)
+            sizes[name] = local.stat().st_size
+    local_data = threading.local()
+
+    def session():
+        if getattr(local_data, 'session', None) is None:
+            created = requests.Session()
+            created.trust_env = False
+            # 公司网络抖动会出现 SSL 握手/读超时，必须重试；并发过高反而更容易被掐。
+            from requests.adapters import HTTPAdapter
+            try:
+                from urllib3.util.retry import Retry
+            except ImportError:  # 老版本 urllib3 路径
+                from requests.packages.urllib3.util.retry import Retry
+            retry = Retry(total=3, connect=3, read=3, backoff_factor=1.0,
+                          status_forcelist=(429, 500, 502, 503, 504),
+                          allowed_methods=frozenset(['GET', 'HEAD']))
+            adapter = HTTPAdapter(max_retries=retry, pool_connections=workers, pool_maxsize=workers)
+            created.mount('https://', adapter)
+            created.mount('http://', adapter)
+            local_data.session = created
+        return local_data.session
+
+    def check_full(name):
+        try:
+            with session().get(site_url + name, stream=True, allow_redirects=False, timeout=(15, 60),
+                               headers={'Cache-Control': 'no-cache', 'Accept-Encoding': 'identity'}) as response:
+                need(response.status_code == 200, '线上 HTTP 未就绪：' + name)
+                size, digest = 0, hashlib.sha256()
+                for part in response.iter_content(65536):
+                    size += len(part)
+                    need(size <= 40 * 1024 * 1024, '线上文件超过验收预算')
+                    digest.update(part)
+                need(digest.hexdigest() == expected[name], '线上文件哈希不匹配：' + name)
+        except requests.RequestException:
+            raise PipelineError('线上 HTTP 验收失败：' + name + '（请求日志已屏蔽）')
+
+    def check_meta(name):
+        # 只取状态和长度，不下正文：先 HEAD，拿不到长度再退回 GET 流并立即关闭。
+        try:
+            response = session().head(site_url + name, allow_redirects=False, timeout=(15, 45),
+                                      headers={'Cache-Control': 'no-cache'})
+            if response.status_code != 200 or not response.headers.get('Content-Length'):
+                response.close()
+                response = session().get(site_url + name, stream=True, allow_redirects=False, timeout=(15, 45),
+                                         headers={'Cache-Control': 'no-cache', 'Accept-Encoding': 'identity'})
+            need(response.status_code == 200, '线上 HTTP 未就绪：' + name)
+            length = response.headers.get('Content-Length')
+            if name in sizes and length is not None:
+                need(int(length) == sizes[name], '线上文件长度不匹配：' + name)
+            response.close()
+        except requests.RequestException:
+            raise PipelineError('线上 HTTP 验收失败：' + name + '（请求日志已屏蔽）')
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        list(pool.map(check_full, full))
+        list(pool.map(check_meta, rest))
+    return {name: expected[name] for name in full}
 
 
 def publish(args):
@@ -709,7 +818,7 @@ def confirm_online(args):
             url = remote_url(root)
             need(ref_hashes(network_git(root, url, 'ls-remote', url, 'refs/heads/master', 'refs/heads/main')) == refs,
                  '远端 master/main 不等于已 push commit')
-            online = http_hashes(pushed['site_url'], metadata['artifact_sha256'])
+            online = http_hashes(pushed['site_url'], metadata['artifact_sha256'], bundle=bundle)
             need(ref_hashes(network_git(root, url, 'ls-remote', url, 'refs/heads/master', 'refs/heads/main')) == refs,
                  '线上核对期间远端分支变化，不能签发回执')
             checked_bundle(args)
@@ -718,6 +827,10 @@ def confirm_online(args):
             result = dict(pushed, status='confirmed_online', passed=True, verified=True,
                           deployed_at=datetime.now(CST).isoformat(timespec='seconds'),
                           remote_refs=refs, online_sha256=online, pushed_receipt_sha256=pushed_sha,
+                          online_check_mode='sampled',
+                          online_hashed_count=len(online),
+                          online_total_count=len(metadata['artifact_sha256']),
+                          online_length_only_count=len(metadata['artifact_sha256']) - len(online),
                           next_command=None)
             fresh_json(receipt, result)
             return result
