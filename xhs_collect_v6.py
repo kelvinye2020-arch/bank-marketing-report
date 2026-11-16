@@ -533,8 +533,14 @@ class Collector:
         mp.MCP_HOST = '127.0.0.1'
         mp.RECYCLE_AFTER_CALLS = self.rt['recycle_after_calls']
         mp.log = lambda message: print(safe_text(message), flush=True)
-        if not Path(mp.MCP_EXE).is_file() or not Path(mp.CHROMIUM).is_file():
-            raise FileNotFoundError('explicit-bin或MCP不存在，禁止自动浏览器回落')
+        if not Path(mp.MCP_EXE).is_file():
+            raise FileNotFoundError('MCP二进制不存在；禁止自动回落')
+        # v2.7.4 起 -bin 被移除、改用内置浏览器；按 -h usage 自动判定，旧版仍强制显式 Chromium。
+        mp.SKIP_BIN_FLAG = not mp.accepts_bin_flag(mp.MCP_EXE)
+        if not mp.SKIP_BIN_FLAG and not Path(mp.CHROMIUM).is_file():
+            raise FileNotFoundError('explicit-bin不存在，禁止自动浏览器回落')
+        print('浏览器模式：%s' % ('MCP内置浏览器（不传-bin）' if mp.SKIP_BIN_FLAG else '显式-bin'),
+              flush=True)
         dirs = [Path(d) if Path(d).is_absolute() else ROOT / d for d in self.rt['cookie_dirs']]
         dirs.append(Path(mp.MCP_EXE).parent)
         cookies = [d / 'cookies.json' for d in dirs if (d / 'cookies.json').is_file()]
@@ -542,7 +548,10 @@ class Collector:
             raise FileNotFoundError('没有可复用cookie；不将HTTP探活当登录成功')
         cookie = max(cookies, key=lambda p: p.stat().st_mtime_ns)
         mp.MCP_DIR = str(cookie.parent)
-        atomic(self.run / 'environment_internal.json', {'ports': self.rt['ports'], 'explicit_bin': mp.CHROMIUM,
+        atomic(self.run / 'environment_internal.json', {'ports': self.rt['ports'],
+            'explicit_bin': None if mp.SKIP_BIN_FLAG else mp.CHROMIUM,
+            'bin_flag_passed': not mp.SKIP_BIN_FLAG,
+            'browser_mode': 'mcp_builtin' if mp.SKIP_BIN_FLAG else 'explicit_bin',
             'cookie_directory': str(cookie.parent), 'cookie_mtime_ns': cookie.stat().st_mtime_ns,
             'recycle_after_calls': 1, 'mp_base_dir': mp.BASE_DIR, 'service_same_process_tree': True,
             'login_evidence': '只有非错误search响应才成立，HTTP监听不作登录证明'})
@@ -589,6 +598,10 @@ class Collector:
             worker.session.hooks['response'] = []
 
     def schedule(self, tasks, fn):
+        # 详情已全部完成时 selected 为空；ThreadPoolExecutor(max_workers=0) 会抛
+        # ValueError 并把 manifest 写成假失败。空批次是正常收尾，直接返回让调用方自算。
+        if not tasks:
+            return
         todo = deque(tasks)
         qlock = threading.Lock()
         def consume(w):

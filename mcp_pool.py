@@ -175,6 +175,28 @@ def kill_tree(pid, extra_children=None):
         log(f"   ⚠️ kill_tree({pid}) 异常: {type(e).__name__}: {e}")
 
 
+# v2.7.4 起 MCP 移除了 -bin 参数，改用自带浏览器（148）；旧版仍必须显式指定 -bin。
+# 顶部 2026-09-28 的教训只对旧版成立。由调用方按 exe 的 -h usage 自动设置；
+# 默认 False 保持原有行为，换回旧版 exe 可无缝回退。
+SKIP_BIN_FLAG = False
+
+
+def accepts_bin_flag(exe=None):
+    """用 -h usage 判断该 MCP 是否支持 -bin；不启动服务、无副作用。
+
+    探测异常时保守返回 True（保持旧的显式 -bin 行为），避免误伤旧版。
+    """
+    exe = exe or MCP_EXE
+    try:
+        cp = subprocess.run([exe, '-h'], cwd=os.path.dirname(exe) or None,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            stdin=subprocess.DEVNULL, timeout=10)
+        usage = (cp.stdout + cp.stderr).decode('utf-8', 'replace')
+        return '-bin' in usage
+    except Exception:
+        return True
+
+
 def spawn_instance(port, idx, headless=True):
     """拉起一个 MCP 实例（返回 proc、日志文件句柄）。不等待会话初始化。"""
     if not os.path.exists(MCP_EXE):
@@ -184,8 +206,10 @@ def spawn_instance(port, idx, headless=True):
     args = [MCP_EXE, "-port", f":{port}"]
     if headless:
         args.append("-headless=true")
-    if CHROMIUM and os.path.exists(CHROMIUM):
-        args += ["-bin", CHROMIUM]     # 必传，见顶部 CHROMIUM 注释
+    if SKIP_BIN_FLAG:
+        log("   ℹ️ 当前 MCP 不支持 -bin，使用其内置浏览器")
+    elif CHROMIUM and os.path.exists(CHROMIUM):
+        args += ["-bin", CHROMIUM]     # 旧版必传，见顶部 CHROMIUM 注释
     else:
         log(f"   ⚠️ 未找到独立 Chromium: {CHROMIUM}（将走 rod 自动探测）")
     creation = getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0
